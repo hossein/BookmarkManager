@@ -1,9 +1,8 @@
 #include "WinFunctions.h"
 
-#include <string>
 #include <Windows.h>
 
-bool MoveFileToRecycleBin(const QString& filePathName)
+bool WinFunctions::MoveFileToRecycleBin(const QString& filePathName)
 {
     //TODO: Check with unicode file names. and if delete returns 0 on a non-existent file or not!
     int len = filePathName.length();

@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     WinFunctions.cpp \
     BookmarkManager.cpp \
     FileManager.cpp \
-    TagManager.cpp
+    TagManager.cpp \
+    Util.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -32,7 +33,8 @@ HEADERS  += MainWindow.h \
     IManager.h \
     FileManager.h \
     TagManager.h \
-    ISubManager.h
+    ISubManager.h \
+    Util.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui

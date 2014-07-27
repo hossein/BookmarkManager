@@ -48,19 +48,20 @@ bool FileManager::InitializeFilesDirectory()
 
 bool FileManager::RetrieveBookmarkFilesModel(long long BID, QSqlQueryModel& filesModel)
 {
-    filesModel.setQuery("SELECT * FROM BookmarkFile NATURAL JOIN File WHERE BID = ?", db);
+    QString retrieveError = "Could not get attached files information for the bookmark from the database.";
+    QSqlQuery query(db);
+    query.prepare(StandardIndexedBookmarkFileByBIDQuery());
+    query.addBindValue(BID);
+
+    if (!query.exec()) //IMPORTANT For the model and for setting the indexes.
+        return Error(retrieveError, query.lastError());
+
+    filesModel.setQuery(query);
 
     while (filesModel.canFetchMore())
         filesModel.fetchMore();
 
-    bfidx.BFID         = filesModel.record().indexOf("BFID"        );
-    bfidx.BID          = filesModel.record().indexOf("BID"         );
-    bfidx.FID          = filesModel.record().indexOf("FID"         );
-    bfidx.OriginalName = filesModel.record().indexOf("OriginalName");
-    bfidx.ArchiveURL   = filesModel.record().indexOf("ArchiveURL"  );
-    bfidx.ModifyDate   = filesModel.record().indexOf("ModifyDate"  );
-    bfidx.Size         = filesModel.record().indexOf("Size"        );
-    bfidx.MD5          = filesModel.record().indexOf("MD5"         );
+    SetBookmarkFileIndexes(filesModel.record());
 
     filesModel.setHeaderData(bfidx.BFID        , Qt::Horizontal, "BFID"         );
     filesModel.setHeaderData(bfidx.BID         , Qt::Horizontal, "BID"          );
@@ -74,6 +75,36 @@ bool FileManager::RetrieveBookmarkFilesModel(long long BID, QSqlQueryModel& file
     return true; //NOTE: We checked for model.setQuery errors nowhere.
 }
 
+bool FileManager::RetrieveBookmarkFiles(long long BID, QList<FileManager::BookmarkFile>& bookmarkFiles)
+{
+    QString retrieveError = "Could not get attached files information for the bookmark from the database.";
+    QSqlQuery query(db);
+    query.prepare(StandardIndexedBookmarkFileByBIDQuery());
+    query.addBindValue(BID);
+
+    if (!query.exec()) //IMPORTANT For the model.
+        return Error(retrieveError, query.lastError());
+
+    SetBookmarkFileIndexes(query.record());
+
+    while (query.next())
+    {
+        BookmarkFile bf;
+        bf.BFID         = query.value(bfidx.BFID        ).toLongLong();
+        bf.BID          = query.value(bfidx.BID         ).toLongLong();
+        bf.FID          = query.value(bfidx.FID         ).toLongLong();
+        bf.OriginalName = query.value(bfidx.OriginalName).toString();
+        bf.ArchiveURL   = query.value(bfidx.ArchiveURL  ).toString();
+        bf.ModifyDate   = query.value(bfidx.ModifyDate  ).toDateTime();
+        bf.Size         = query.value(bfidx.Size        ).toLongLong();
+        bf.MD5          = query.value(bfidx.MD5         ).toString();
+
+        bookmarkFiles.append(bf);
+    }
+
+    return true; //NOTE: We checked for model.setQuery errors nowhere.
+}
+
 bool FileManager::PutInsideFileArchive(QString& filePathName, bool removeOriginalFile)
 {
     QFileInfo fi(filePathName);
@@ -82,7 +113,7 @@ bool FileManager::PutInsideFileArchive(QString& filePathName, bool removeOrigina
     else if (!fi.isFile())
         return Error("The path \"" + filePathName + "\" does not point to a valid file!");
 
-    int fileNameHash = SumOfFileNameLetters(fi.fileName());
+    int fileNameHash = FileNameHash(fi.fileName());
     fileNameHash = fileNameHash % 16;
 
     QString targetFilePathName = QDir::currentPath()
@@ -98,7 +129,7 @@ bool FileManager::PutInsideFileArchive(QString& filePathName, bool removeOrigina
 
     if (removeOriginalFile)
     {
-        if (!MoveFileToRecycleBin(filePathName))
+        if (!WinFunctions::MoveFileToRecycleBin(filePathName))
         {
             //Note: We just show the dialog, we don't return an error or sth at all.
             QMessageBox::warning(dialogParent, "Warning", "The source file \"" + filePathName +
@@ -128,8 +159,28 @@ bool FileManager::IsInsideFileArchive(const QString& path)
     return false;
 }
 
-int FileManager::SumOfFileNameLetters(const QString& fileNameOnly)
+QString FileManager::StandardIndexedBookmarkFileByBIDQuery() const
 {
+    //Returns a query such that the `bfidx` values remain consistent accross different functions
+    //  in this class.
+    return QString("SELECT * FROM BookmarkFile NATURAL JOIN File WHERE BID = ?");
+}
+
+void FileManager::SetBookmarkFileIndexes(const QSqlRecord& record)
+{
+    bfidx.BFID         = record.indexOf("BFID"        );
+    bfidx.BID          = record.indexOf("BID"         );
+    bfidx.FID          = record.indexOf("FID"         );
+    bfidx.OriginalName = record.indexOf("OriginalName");
+    bfidx.ArchiveURL   = record.indexOf("ArchiveURL"  );
+    bfidx.ModifyDate   = record.indexOf("ModifyDate"  );
+    bfidx.Size         = record.indexOf("Size"        );
+    bfidx.MD5          = record.indexOf("MD5"         );
+}
+
+int FileManager::FileNameHash(const QString& fileNameOnly)
+{
+    //For now just calculates the utf-8 sum of all bytes.
     QByteArray utf8 = fileNameOnly.toUtf8();
     int sum = 0;
 

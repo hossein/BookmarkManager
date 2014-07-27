@@ -3,6 +3,8 @@
 
 #include "FileManager.h"
 
+#include <QtGui/QFileDialog>
+
 BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm,
                                        long long editBId, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm),
@@ -11,6 +13,8 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm,
     ui->setupUi(this);
     ui->leTags->setModel(&dbm->tags.model);
     ui->leTags->setModelColumn(dbm->tags.tidx.TagName);
+
+    InitializeFilesUI();
 
     if (editBId == -1)
     {
@@ -30,9 +34,17 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm,
         if (!canShowTheDialog)
             return;
 
-        canShowTheDialog = dbm->files.RetrieveBookmarkFilesModel(editBId, editOriginalBData.Ex_FilesModel);
+        //Note: We don't retrieve the files model and use custom QList's and QTableWidget instead.
+        //canShowTheDialog = dbm->files.RetrieveBookmarkFilesModel(editBId, editOriginalBData.Ex_FilesModel);
+        //if (!canShowTheDialog)
+        //    return;
+
+        canShowTheDialog = dbm->files.RetrieveBookmarkFiles(editBId, editOriginalBData.Ex_FilesList);
         if (!canShowTheDialog)
             return;
+
+        //Additional bookmark variables.
+        editedFilesList = editOriginalBData.Ex_FilesList;
 
         //Show in the UI.
         ui->leName    ->setText(editOriginalBData.Name);
@@ -40,7 +52,7 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm,
         ui->ptxDesc   ->setPlainText(editOriginalBData.Desc);
         ui->dialRating->setValue(editOriginalBData.Rating);
         PopulateUITags();
-        PopulateUIFiles();
+        PopulateUIFiles(false);
     }
 }
 
@@ -66,8 +78,31 @@ void BookmarkEditDialog::accept()
     //bdata.DefFile = TODO
     bdata.Rating = ui->dialRating->value();
 
+    QStringList tagsList = ui->leTags->text().split(' ', QString::SkipEmptyParts);
+
+    bool success;
+
     //TODO: Manage tags and files
-    //bdata.Tags = ui->leTags->text().trimmed();
+
+    dbm->db.transaction();
+    {
+        success = dbm->bms.AddOrEditBookmark(editBId, bdata); //For Add, the editBID will be modified!
+        if (!success)
+        {
+            dbm->db.rollback();
+            return;
+        }
+
+        success = dbm->tags.SetBookmarkTags(editBId, tagsList);
+        if (!success)
+        {
+            dbm->db.rollback();
+            return;
+        }
+    }
+    dbm->db.commit();
+
+
 /*TODO:
     if (editBId != -1 && editOriginalBData.FileName == bdata.FileName)
     {
@@ -98,8 +133,9 @@ void BookmarkEditDialog::accept()
                 return; //Don't accept the dialog.
         }
     }
-*/
     bool success = dbm->bms.AddOrEditBookmark(editBId, bdata);
+*/
+
     if (success)
         QDialog::accept();
 }
@@ -127,9 +163,41 @@ void BookmarkEditDialog::PopulateUITags()
     ui->leTags->setText(editOriginalBData.Ex_TagsList.join(" "));
 }
 
-void BookmarkEditDialog::PopulateUIFiles()
+void BookmarkEditDialog::InitializeFilesUI()
+{
+    ui->twAttachedFiles->setColumnCount(2);
+    ui->twAttachedFiles->setHorizontalHeaderLabels(QString("File Name,Size").split(','));
+
+    QHeaderView* hh = ui->twAttachedFiles->horizontalHeader();
+    hh->setResizeMode(QHeaderView::ResizeToContents);
+    //hh->setResizeMode(0, QHeaderView::Stretch);
+    //hh->setResizeMode(1, QHeaderView::Fixed  );
+    hh->resizeSection(1, 60);
+
+    QHeaderView* vh = ui->twAttachedFiles->verticalHeader();
+    vh->setResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
+}
+
+void BookmarkEditDialog::PopulateUIFiles(bool saveSelection)
 {
     //TODO: DefFile
+
+    foreach (const FileManager::BookmarkFile& bf, editedFilesList)
+    {
+        int rowIdx = ui->twAttachedFiles->rowCount();
+        ui->twAttachedFiles->insertRow(rowIdx);
+
+        QTableWidgetItem* nameItem = new QTableWidgetItem(bf.OriginalName);
+        //TODO: Show reasonable size.
+        QTableWidgetItem* sizeItem = new QTableWidgetItem(QString::number(bf.Size));
+
+        ui->twAttachedFiles->setItem(rowIdx, 0, nameItem);
+        ui->twAttachedFiles->setItem(rowIdx, 1, sizeItem);
+    }
+
+    ui->twAttachedFiles->resizeColumnsToContents();
+
+    /* PREVIOUS MODEL-VIEW BASED THING:
     ui->tvAttachedFiles->setModel(&editOriginalBData.Ex_FilesModel);
 
     QHeaderView* hh = ui->tvAttachedFiles->horizontalHeader();
@@ -156,6 +224,9 @@ void BookmarkEditDialog::PopulateUIFiles()
     //This function is just called once from the constructor, so this connection is one-time and fine.
     connect(ui->tvAttachedFiles->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
             this, SLOT(tvAttachedFilesCurrentRowChanged(QModelIndex,QModelIndex)));
+
+    NOW BOLD AND HIGHLIGHT THE DefFile.
+    */
 }
 
 void BookmarkEditDialog::on_btnShowAttachUI_clicked()
@@ -163,29 +234,59 @@ void BookmarkEditDialog::on_btnShowAttachUI_clicked()
     ui->stwFileAttachments->setCurrentWidget(ui->pageAttachNew);
 }
 
-void BookmarkEditDialog::on_tvAttachedFiles_activated(const QModelIndex &index)
+void BookmarkEditDialog::on_twAttachedFiles_itemActivated(QTableWidgetItem* item)
 {
-
+    //TODO
 }
 
-void BookmarkEditDialog::tvAttachedFilesCurrentRowChanged(const QModelIndex& current, const QModelIndex& previous)
+void BookmarkEditDialog::on_twAttachedFiles_itemSelectionChanged()
 {
-
+    ui->btnSetFileAsDefault->setEnabled(!(ui->twAttachedFiles->selectedItems().isEmpty()));
 }
 
-void BookmarkEditDialog::on_tvAttachedFiles_customContextMenuRequested(const QPoint &pos)
+void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPoint &pos)
 {
-
+    //TODO
 }
 
 void BookmarkEditDialog::on_btnBrowse_clicked()
 {
+    QStringList filters;
+    filters << "Web Page Files (*.htm; *.html; *.mht; *.mhtml; *.maff)"
+            << "All Files (*.*)";
+    QStringList list = QFileDialog::getOpenFileNames(this, "Select File(s)", QString(),
+                                                     filters.join(";;"), &filters.last());
 
+    //Docs say iterate on copies.
+    QStringList fileNames = list;
+
+    if (fileNames.isEmpty())
+        return;
+
+    foreach (const QString& fileName, fileNames)
+    {
+        //TODO HANDLE THE THINGS BELOW:
+        //Original file Information MUST be filled by us.
+        //  FileManager will take care of the IDs and archive url, etc.
+        FileManager::BookmarkFile bf;
+        bf.BFID         = -1;
+        bf.BID          = editBId; //TODO: Handle adding files
+        bf.FID          = -1; //TODO: Handle.
+        bf.OriginalName = fileName;
+        bf.ArchiveURL   = ""; //TODO: Handle.
+        bf.ModifyDate   = QDateTime::currentDateTime();
+        bf.Size         = rand();
+        bf.MD5          = "query.value(bfidx.MD5         ).toString();";
+
+        editedFilesList.append(bf);
+    }
+
+    PopulateUIFiles(true);
 }
 
 void BookmarkEditDialog::on_btnAttach_clicked()
 {
-
+    //TODO
 }
 
 void BookmarkEditDialog::on_btnCancelAttach_clicked()

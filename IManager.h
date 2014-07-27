@@ -8,6 +8,7 @@ class QWidget;
 
 /// Interface for a class that manages something in the program.
 /// Used only for Database Manager, our main manager.
+/// An IManager MUST NOT begin or end transactions in the database.
 class IManager
 {
 protected:

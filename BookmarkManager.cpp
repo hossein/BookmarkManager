@@ -32,7 +32,7 @@ bool BookmarkManager::RetrieveBookmark(long long BID, BookmarkManager::BookmarkD
     return true;
 }
 
-bool BookmarkManager::AddOrEditBookmark(long long BID, const BookmarkManager::BookmarkData& bdata)
+bool BookmarkManager::AddOrEditBookmark(long long& BID, BookmarkManager::BookmarkData& bdata)
 {
     QString updateError = (BID == -1
                            ? "Could not add bookmark information to database."
@@ -67,6 +67,13 @@ bool BookmarkManager::AddOrEditBookmark(long long BID, const BookmarkManager::Bo
 
     if (!query.exec())
         return Error(updateError, query.lastError());
+
+    if (BID == -1)
+    {
+        long long addedBID = query.lastInsertId().toLongLong();
+        BID = addedBID;
+        bdata.BID = addedBID;
+    }
 
     return true;
 }

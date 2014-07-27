@@ -1,4 +1,8 @@
 #pragma once
 #include <QString>
 
-bool MoveFileToRecycleBin(const QString& filePathName);
+class WinFunctions
+{
+public:
+    static bool MoveFileToRecycleBin(const QString& filePathName);
+};

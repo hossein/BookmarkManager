@@ -26,6 +26,8 @@
 ///   - from the file archive.
 ///   - Saving in zip files, and dynamic number of files per separate-directories.
 ///   - "Trash" viewer and manager. In Trash, tags are saved as csv texts, etc!
+///   - Mass Apply Tag, AND Mass Remove Tag! Yes!
+///   - Zip every 30 backups of the db and MOVE them inside a directory OTHER THAN Backups.
 
 class Config
 {
