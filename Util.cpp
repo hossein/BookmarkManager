@@ -1,5 +1,11 @@
 #include "Util.h"
 
+#include <cstdlib> //rand, srand
+#include <ctime> //time
+
+#include <QCryptographicHash>
+#include <QFile>
+
 void Util::CaseInsensitiveStringListEliminateDuplicates(QStringList& list)
 {
     QStringList temp(list);
@@ -32,4 +38,53 @@ void Util::CaseInsensitiveStringListRemoveElement(QStringList& list, const QStri
 void Util::CaseInsensitiveStringListDifference(QStringList& list1, QStringList& list2)
 {
     //TODO: Needed?
+}
+
+QString Util::UserReadableFileSize(long long size)
+{
+    if (size < 1024L)
+        return QString::number(size) + " Bytes";
+    else if (size < 1024L * 1024)
+        return QString::number(size / 1024.0L, 'f', 3) + " KiB";
+    else if (size < 1024L * 1024 * 1024)
+        return QString::number(size / 1048576.0L, 'f', 3) + " MiB";
+    else if (size < 1024L * 1024 * 1024 * 1024)
+        return QString::number(size / 1073741824.0L, 'f', 3) + " GiB";
+    else //if (size < 1024L * 1024 * 1024 * 1024 * 1024)
+        return QString::number(size / 1099511627776.0L, 'f', 3) + " TiB";
+}
+
+QByteArray Util::GetMD5HashForFile(const QString& fileName)
+{
+    const int FILE_READ_CHUNK_SIZE = 65536;
+    char filebuff[FILE_READ_CHUNK_SIZE];
+
+    int bytesRead;
+    QFile inFile(fileName);
+
+    if (inFile.open(QIODevice::ReadOnly))
+    {
+        QCryptographicHash hasher(QCryptographicHash::Md5);
+        while (!inFile.atEnd())
+        {
+            bytesRead = inFile.read(filebuff, FILE_READ_CHUNK_SIZE);
+            hasher.addData(filebuff, bytesRead);
+        }
+        inFile.close();
+        return hasher.result();
+    }
+    else
+    {
+        return QByteArray(16, '\0');
+    }
+}
+
+void Util::SeedRandomWithTime()
+{
+    srand(time(NULL));
+}
+
+int Util::Random()
+{
+    return rand();
 }

@@ -2,6 +2,7 @@
 #include "ui_BookmarkEditDialog.h"
 
 #include "FileManager.h"
+#include "Util.h"
 
 #include <QtGui/QFileDialog>
 
@@ -73,7 +74,6 @@ void BookmarkEditDialog::accept()
     bdata.BID = editBId; //Not important.
     bdata.Name = ui->leName->text().trimmed();
     bdata.URL = ui->leURL->text().trimmed();
-    //TODO: bdata.FileName = ui->leFileName->text().trimmed();
     bdata.Desc = ui->ptxDesc->toPlainText();
     //bdata.DefFile = TODO
     bdata.Rating = ui->dialRating->value();
@@ -83,8 +83,10 @@ void BookmarkEditDialog::accept()
     bool success;
 
     //TODO: Manage tags and files
-
+//TODO: IN CASE OF ROLLBACK, DO NOT RETURN! MUST SET EDITBID TO ITS ORIGINAL -1 IN CASE OF ADD
+//      THANKSFULLY FILES LIST DON'T NEED CHANGING!
     dbm->db.transaction();
+
     {
         success = dbm->bms.AddOrEditBookmark(editBId, bdata); //For Add, the editBID will be modified!
         if (!success)
@@ -99,6 +101,18 @@ void BookmarkEditDialog::accept()
             dbm->db.rollback();
             return;
         }
+
+        //We use the transactions in a nested manner. But 'linear' ('together') was also possible
+        //  and easier to understand.
+        dbm->files.BeginFilesTransaction();
+        success = dbm->files.UpdateBookmarkFiles(editBId, editOriginalBData.Ex_FilesList, editedFilesList);
+        if (!success)
+        {
+            dbm->db.rollback();
+            dbm->files.RollBackFilesTransaction();
+            return;
+        }
+        dbm->files.CommitFilesTransaction();
     }
     dbm->db.commit();
 
@@ -181,15 +195,20 @@ void BookmarkEditDialog::InitializeFilesUI()
 void BookmarkEditDialog::PopulateUIFiles(bool saveSelection)
 {
     //TODO: DefFile
+    ui->twAttachedFiles->clear();//TODO: Headers gone! clear the items instead.
 
     foreach (const FileManager::BookmarkFile& bf, editedFilesList)
     {
         int rowIdx = ui->twAttachedFiles->rowCount();
         ui->twAttachedFiles->insertRow(rowIdx);
 
-        QTableWidgetItem* nameItem = new QTableWidgetItem(bf.OriginalName);
-        //TODO: Show reasonable size.
-        QTableWidgetItem* sizeItem = new QTableWidgetItem(QString::number(bf.Size));
+        QString fileName;
+        if (bf.FID == -1)
+            fileName = bf.OriginalName;
+        else
+            fileName = dbm->files.makeUserReadableArchiveFilePath(bf.OriginalName);
+        QTableWidgetItem* nameItem = new QTableWidgetItem(fileName);
+        QTableWidgetItem* sizeItem = new QTableWidgetItem(Util::UserReadableFileSize(bf.Size));
 
         ui->twAttachedFiles->setItem(rowIdx, 0, nameItem);
         ui->twAttachedFiles->setItem(rowIdx, 1, sizeItem);
@@ -265,18 +284,27 @@ void BookmarkEditDialog::on_btnBrowse_clicked()
 
     foreach (const QString& fileName, fileNames)
     {
+        QFileInfo fileInfo(fileName);
+
         //TODO HANDLE THE THINGS BELOW:
-        //Original file Information MUST be filled by us.
-        //  FileManager will take care of the IDs and archive url, etc.
+        //Original file Information MUST be filled by us. We will SET BOTH `BFID` AND `FID` to -1,
+        //  for which FileManager will take care of the IDs and archive url, etc.
+        //NOTE: BOTH `BFID` and `FID` are CRUCIAL to be set to `-1`!
+        //      BFID's value lets FileManager know this is a new file-bookmark attachment.
+        //      FID is what in the FileTable and is important for FileManager to determine which
+        //      files are new and must be inserted into the FileArchive.
+        //IN THE FUTURE, when the interface supports sharing a file between two bookmarks, we will
+        //      set BFID=-1 and FID=RealFileID for this purpose.
         FileManager::BookmarkFile bf;
-        bf.BFID         = -1;
-        bf.BID          = editBId; //TODO: Handle adding files
-        bf.FID          = -1; //TODO: Handle.
+        bf.BFID         = -1; //Leave to FileManager.
+        bf.BID          = editBId;
+        bf.FID          = -1; //Leave to FileManager.
         bf.OriginalName = fileName;
-        bf.ArchiveURL   = ""; //TODO: Handle.
-        bf.ModifyDate   = QDateTime::currentDateTime();
-        bf.Size         = rand();
-        bf.MD5          = "query.value(bfidx.MD5         ).toString();";
+        bf.ArchiveURL   = ""; //Leave to FileManager.
+        bf.ModifyDate   = fileInfo.lastModified();
+        bf.Size         = fileInfo.size();
+        bf.MD5          = Util::GetMD5HashForFile(fileName);
+        bf.Ex_RemoveAfterAttach = ui->chkRemoveOriginalFile->isChecked(); //TODO
 
         editedFilesList.append(bf);
     }

@@ -36,8 +36,12 @@ public:
     {
         nominalDatabaseVersion = 1;
         nominalDatabasetFileName = "bmmgr.sqlite";
+
         nominalFileArchiveDirName = "FileArchive";
         fileArchivePrefix = ":archive:";
+
+        nominalFileTrashDirName = "FileTrash";
+        fileTrashPrefix = ":trash:";
     }
     ~Config() { }
 
@@ -46,4 +50,7 @@ public:
 
     QString nominalFileArchiveDirName;
     QString fileArchivePrefix;
+
+    QString nominalFileTrashDirName;
+    QString fileTrashPrefix;
 };
