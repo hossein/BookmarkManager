@@ -20,7 +20,7 @@
       <string notr="true">QLabel { font-weight: bold; }</string>
      </property>
      <property name="text">
-      <string>Name:</string>
+      <string>&amp;Name:</string>
      </property>
      <property name="buddy">
       <cstring>leName</cstring>
@@ -36,7 +36,7 @@
       <string notr="true">QLabel { font-weight: bold; }</string>
      </property>
      <property name="text">
-      <string>Location:</string>
+      <string>Location (&amp;URL):</string>
      </property>
      <property name="buddy">
       <cstring>leURL</cstring>
@@ -56,7 +56,7 @@
       <string notr="true">QLabel { font-weight: bold; }</string>
      </property>
      <property name="text">
-      <string>Tags (space separated):</string>
+      <string>&amp;Tags (space separated):</string>
      </property>
      <property name="buddy">
       <cstring>leTags</cstring>
@@ -80,7 +80,7 @@
            <string notr="true">QLabel { font-weight: bold; }</string>
           </property>
           <property name="text">
-           <string>Description:</string>
+           <string>&amp;Description:</string>
           </property>
           <property name="buddy">
            <cstring>ptxDesc</cstring>
@@ -230,16 +230,13 @@
         </widget>
         <widget class="QWidget" name="pageAttachNew">
          <layout class="QGridLayout" name="gridLayout">
-          <property name="verticalSpacing">
-           <number>4</number>
-          </property>
           <property name="margin">
            <number>0</number>
           </property>
           <item row="0" column="0">
            <widget class="QLabel" name="lblFileName">
             <property name="text">
-             <string>FileName:</string>
+             <string>&amp;File Name:</string>
             </property>
             <property name="buddy">
              <cstring>leFileName</cstring>
@@ -249,12 +246,43 @@
           <item row="0" column="1">
            <widget class="QLineEdit" name="leFileName"/>
           </item>
-          <item row="0" column="2">
-           <widget class="QPushButton" name="btnBrowse">
-            <property name="text">
-             <string>&amp;Browse...</string>
-            </property>
-           </widget>
+          <item row="0" column="2" rowspan="3">
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="QPushButton" name="btnBrowse">
+              <property name="text">
+               <string>&amp;Browse...</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnAttach">
+              <property name="text">
+               <string>&amp;Attach</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnCancelAttach">
+              <property name="text">
+               <string>&amp;Cancel</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
           <item row="1" column="0">
            <widget class="QWidget" name="widget_2" native="true"/>
@@ -262,14 +290,7 @@
           <item row="1" column="1">
            <widget class="QCheckBox" name="chkRemoveOriginalFile">
             <property name="text">
-             <string>Remove Original File After Attaching</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QPushButton" name="btnAttach">
-            <property name="text">
-             <string>&amp;Attach</string>
+             <string>&amp;Remove Original Files After Attaching</string>
             </property>
            </widget>
           </item>
@@ -289,21 +310,11 @@
             </property>
            </spacer>
           </item>
-          <item row="2" column="2">
-           <widget class="QPushButton" name="btnCancelAttach">
-            <property name="text">
-             <string>&amp;Cancel</string>
-            </property>
-           </widget>
-          </item>
          </layout>
          <zorder>chkRemoveOriginalFile</zorder>
-         <zorder>btnAttach</zorder>
          <zorder>lblFileName</zorder>
          <zorder>leFileName</zorder>
-         <zorder>btnBrowse</zorder>
          <zorder>horizontalSpacer_2</zorder>
-         <zorder>btnCancelAttach</zorder>
          <zorder>widget_2</zorder>
          <zorder>widget_3</zorder>
         </widget>

@@ -100,6 +100,7 @@ void MainWindow::LoadDatabaseAndUI()
 void MainWindow::RefreshTVBookmarksModelView()
 {
     //TODO: ^ This can have a `save selection` arg.
+    //TODO: Needed at all? I mean, doesn't the model automatically update the view?
 
     ui->tvBookmarks->setModel(&dbm.bms.model);
 
@@ -110,7 +111,7 @@ void MainWindow::RefreshTVBookmarksModelView()
     {
         hh->hideSection(bidx.BID);
         hh->hideSection(bidx.Desc);
-        hh->hideSection(bidx.DefFile);
+        hh->hideSection(bidx.DefBFID);
 
         hh->setResizeMode(bidx.Name, QHeaderView::Stretch);
         hh->resizeSection(bidx.URL, 200);

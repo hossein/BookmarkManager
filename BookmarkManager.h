@@ -19,7 +19,7 @@ public:
         int Name;
         int URL;
         int Desc;
-        int DefFile;
+        int DefBFID;
         int Rating;
     } bidx;
 
@@ -29,7 +29,7 @@ public:
         QString Name;
         QString URL;
         QString Desc;
-        long long DefFile;
+        long long DefBFID;
         int Rating;
 
         /// The following members ARE NOT filled by the `RetrieveBookmark` function.

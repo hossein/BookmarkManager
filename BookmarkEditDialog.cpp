@@ -9,7 +9,7 @@
 BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm,
                                        long long editBId, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm),
-    canShowTheDialog(false), editBId(editBId)
+    canShowTheDialog(false), editBId(editBId), editedDefBFID(-1)
 {
     ui->setupUi(this);
     ui->leTags->setModel(&dbm->tags.model);
@@ -46,6 +46,7 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm,
 
         //Additional bookmark variables.
         editedFilesList = editOriginalBData.Ex_FilesList;
+        editedDefBFID = editOriginalBData.DefBFID;
 
         //Show in the UI.
         ui->leName    ->setText(editOriginalBData.Name);
@@ -75,16 +76,15 @@ void BookmarkEditDialog::accept()
     bdata.Name = ui->leName->text().trimmed();
     bdata.URL = ui->leURL->text().trimmed();
     bdata.Desc = ui->ptxDesc->toPlainText();
-    //bdata.DefFile = TODO
+    bdata.DefBFID = editedDefBFID; //TODO: MAnage single files...
     bdata.Rating = ui->dialRating->value();
 
     QStringList tagsList = ui->leTags->text().split(' ', QString::SkipEmptyParts);
 
     bool success;
 
-    //TODO: Manage tags and files
-//TODO: IN CASE OF ROLLBACK, DO NOT RETURN! MUST SET EDITBID TO ITS ORIGINAL -1 IN CASE OF ADD
-//      THANKSFULLY FILES LIST DON'T NEED CHANGING!
+    //IMPORTANT: In case of RollBack, do NOT return! Must set editBId to its original `-1` value
+    //           in case of ADDing. Thanksfully FilesList don't need changing.
     dbm->db.transaction();
 
     {
@@ -92,6 +92,8 @@ void BookmarkEditDialog::accept()
         if (!success)
         {
             dbm->db.rollback();
+            todo this not done.
+            editBId = -1;
             return;
         }
 
@@ -115,40 +117,6 @@ void BookmarkEditDialog::accept()
         dbm->files.CommitFilesTransaction();
     }
     dbm->db.commit();
-
-
-/*TODO:
-    if (editBId != -1 && editOriginalBData.FileName == bdata.FileName)
-    {
-        //Do nothing with files
-    }
-    //TODO: Must detect here if user has removed a ":archive:" url in the textbox and do sth with its file!
-    else if (!bdata.FileName.isEmpty())
-    {
-        //Remove possible extra quotes.
-        if (bdata.FileName.left(1) == "\"" && bdata.FileName.right(1) == "\"")
-            bdata.FileName = bdata.FileName.mid(1, bdata.FileName.length() - 2);
-
-        if (fam->IsInsideFileArchive(bdata.FileName))
-        {
-            //TODO: What if the user changes the file to another archive file? We need refcounting here?
-            //TODO: Check if changed and then add to database.
-            //TODO: Support multiple file attaching.
-        }
-        else
-        {
-            //Copy/Move into the file archive.
-            bool removeOriginal = ui->chkRemoveOriginalFile->isChecked();
-            QString NewFileName = bdata.FileName;
-            bool success = fam->PutInsideFileArchive(NewFileName, removeOriginal);
-            if (success)
-                bdata.FileName = NewFileName;
-            else
-                return; //Don't accept the dialog.
-        }
-    }
-    bool success = dbm->bms.AddOrEditBookmark(editBId, bdata);
-*/
 
     if (success)
         QDialog::accept();
@@ -194,9 +162,17 @@ void BookmarkEditDialog::InitializeFilesUI()
 
 void BookmarkEditDialog::PopulateUIFiles(bool saveSelection)
 {
-    //TODO: DefFile
-    ui->twAttachedFiles->clear();//TODO: Headers gone! clear the items instead.
+    int selectedRow = -1;
+    if (saveSelection)
+        if (!ui->twAttachedFiles->selectedItems().empty())
+            selectedRow = ui->twAttachedFiles->selectedItems()[0]->row();
 
+    //ui->twAttachedFiles->clear(); No! headers are cleared this way and you have to
+    //                              set table dimenstions again
+    while (ui->twAttachedFiles->rowCount() > 0)
+        ui->twAttachedFiles->removeRow(0);
+
+    int index = 0;
     foreach (const FileManager::BookmarkFile& bf, editedFilesList)
     {
         int rowIdx = ui->twAttachedFiles->rowCount();
@@ -210,11 +186,27 @@ void BookmarkEditDialog::PopulateUIFiles(bool saveSelection)
         QTableWidgetItem* nameItem = new QTableWidgetItem(fileName);
         QTableWidgetItem* sizeItem = new QTableWidgetItem(Util::UserReadableFileSize(bf.Size));
 
+        //Setting the data to the first item is enough.
+        nameItem->setData(Qt::UserRole, index);
+        index++;
+
+        if (editedDefBFID == bf.BFID)
+        {
+            QFont boldFont(this->font());
+            boldFont.setBold(true);
+            nameItem->setFont(boldFont);
+            sizeItem->setFont(boldFont);
+        }
+
         ui->twAttachedFiles->setItem(rowIdx, 0, nameItem);
         ui->twAttachedFiles->setItem(rowIdx, 1, sizeItem);
     }
 
     ui->twAttachedFiles->resizeColumnsToContents();
+
+    if (saveSelection && selectedRow != -1)
+        if (selectedRow < ui->twAttachedFiles->rowCount())
+            ui->twAttachedFiles->selectRow(selectedRow);
 
     /* PREVIOUS MODEL-VIEW BASED THING:
     ui->tvAttachedFiles->setModel(&editOriginalBData.Ex_FilesModel);
@@ -244,13 +236,21 @@ void BookmarkEditDialog::PopulateUIFiles(bool saveSelection)
     connect(ui->tvAttachedFiles->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
             this, SLOT(tvAttachedFilesCurrentRowChanged(QModelIndex,QModelIndex)));
 
-    NOW BOLD AND HIGHLIGHT THE DefFile.
+    NOW BOLD AND HIGHLIGHT THE DefBFID.
     */
 }
 
 void BookmarkEditDialog::on_btnShowAttachUI_clicked()
 {
     ui->stwFileAttachments->setCurrentWidget(ui->pageAttachNew);
+}
+
+void BookmarkEditDialog::on_btnSetFileAsDefault_clicked()
+{
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    editedDefBFID = editedFilesList[filesListIdx].BFID;
+    PopulateUIFiles(true);
+    ui->twAttachedFiles->setFocus();
 }
 
 void BookmarkEditDialog::on_twAttachedFiles_itemActivated(QTableWidgetItem* item)
@@ -273,20 +273,44 @@ void BookmarkEditDialog::on_btnBrowse_clicked()
     QStringList filters;
     filters << "Web Page Files (*.htm; *.html; *.mht; *.mhtml; *.maff)"
             << "All Files (*.*)";
-    QStringList list = QFileDialog::getOpenFileNames(this, "Select File(s)", QString(),
-                                                     filters.join(";;"), &filters.last());
 
-    //Docs say iterate on copies.
-    QStringList fileNames = list;
+    QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select File(s)", QString(),
+                                                          filters.join(";;"), &filters.last());
 
-    if (fileNames.isEmpty())
-        return;
+    ui->leFileName->setText(fileNames.join("|"));
+}
 
-    foreach (const QString& fileName, fileNames)
+void BookmarkEditDialog::on_btnAttach_clicked()
+{
+    //NOTE: Multiple file handling:
+    //  Must detect here if user has removed a ":archive:" url in the textbox and do sth with its file!
+
+    QString allFileNames = ui->leFileName->text().trimmed();
+    if (allFileNames.isEmpty())
     {
-        QFileInfo fileInfo(fileName);
+        QMessageBox::warning(this, "Can't Attach Files", "No file name is specified. "
+                             "Please select one or more files for attaching.");
+        return;
+    }
 
-        //TODO HANDLE THE THINGS BELOW:
+    QStringList fileNames = allFileNames.split("|", QString::SkipEmptyParts);
+
+
+    foreach (QString fileName, fileNames)
+    {
+        //Remove possible extra quotes.
+        if (fileName.left(1) == "\"" && fileName.right(1) == "\"")
+            fileName = fileName.mid(1, fileName.length() - 2);
+
+        QFileInfo fileInfo(fileName);
+        if (!fileInfo.isFile())
+        {
+            QMessageBox::warning(this, "Can't Attach Files", "The file \"" + fileName + "\" "
+                                 "does not exist! It will be skipped and not attached.");
+            continue;
+        }
+
+        //IMPORTANT:
         //Original file Information MUST be filled by us. We will SET BOTH `BFID` AND `FID` to -1,
         //  for which FileManager will take care of the IDs and archive url, etc.
         //NOTE: BOTH `BFID` and `FID` are CRUCIAL to be set to `-1`!
@@ -304,20 +328,24 @@ void BookmarkEditDialog::on_btnBrowse_clicked()
         bf.ModifyDate   = fileInfo.lastModified();
         bf.Size         = fileInfo.size();
         bf.MD5          = Util::GetMD5HashForFile(fileName);
-        bf.Ex_RemoveAfterAttach = ui->chkRemoveOriginalFile->isChecked(); //TODO
+        bf.Ex_RemoveAfterAttach = ui->chkRemoveOriginalFile->isChecked();
 
         editedFilesList.append(bf);
     }
 
     PopulateUIFiles(true);
-}
-
-void BookmarkEditDialog::on_btnAttach_clicked()
-{
-    //TODO
+    ClearAndSwitchToAttachedFilesTab();
 }
 
 void BookmarkEditDialog::on_btnCancelAttach_clicked()
 {
+    ClearAndSwitchToAttachedFilesTab();
+}
+
+void BookmarkEditDialog::ClearAndSwitchToAttachedFilesTab()
+{
     ui->stwFileAttachments->setCurrentWidget(ui->pageAttachedFiles);
+    ui->leFileName->clear();
+    ui->chkRemoveOriginalFile->setChecked(false);
+    ui->twAttachedFiles->setFocus();
 }

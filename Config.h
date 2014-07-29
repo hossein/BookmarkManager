@@ -7,8 +7,9 @@
 ///   - Make the changes that we need to require multiple file attaching and do it.
 ///   - Manage tag saving as comma separated integers/string or a separate table?
 ///   - Changes to Edit/Add UI for editing tags with mouse only
+///   - Show files information on double click in BOTH add/edit and view bookmark dialogs.
 ///   - Save the selection/scroll position on add/edit/delete.
-///   - Preview dialog
+///   - View bookmark dialog
 ///   - Context menu which shows a brief info and has options edit/view/show in browser, etc etc
 ///     (much like how Word 2010 allows changing font and formatting as well as context-menu via
 ///     right-click)
@@ -25,7 +26,7 @@
 ///     filearchive, move the unused file to our own "Trash!"
 ///   - from the file archive.
 ///   - Saving in zip files, and dynamic number of files per separate-directories.
-///   - "Trash" viewer and manager. In Trash, tags are saved as csv texts, etc!
+///   - "Trash" viewer and manager. (Implemented for files, should implement for tags and bms).
 ///   - Mass Apply Tag, AND Mass Remove Tag! Yes!
 ///   - Zip every 30 backups of the db and MOVE them inside a directory OTHER THAN Backups.
 

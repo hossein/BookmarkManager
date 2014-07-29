@@ -26,7 +26,7 @@ bool BookmarkManager::RetrieveBookmark(long long BID, BookmarkManager::BookmarkD
     bdata.Name     = query.record().value("Name"    ).toString();
     bdata.URL      = query.record().value("URL"     ).toString();
     bdata.Desc     = query.record().value("Desc"    ).toString();
-    bdata.DefFile  = query.record().value("DefFile" ).toLongLong();
+    bdata.DefBFID  = query.record().value("DefBFID" ).toLongLong();
     bdata.Rating   = query.record().value("Rating"  ).toInt();
 
     return true;
@@ -42,14 +42,14 @@ bool BookmarkManager::AddOrEditBookmark(long long& BID, BookmarkManager::Bookmar
     if (BID == -1)
     {
         querystr =
-                "INSERT INTO Bookmark (Name, URL, Desc, DefFile, Rating) "
+                "INSERT INTO Bookmark (Name, URL, Desc, DefBFID, Rating) "
                 "VALUES (?, ?, ?, ?, ?)";
     }
     else
     {
         querystr =
                 "UPDATE Bookmark "
-                "SET Name = ?, URL = ?, Desc = ?, DefFile = ?, Rating = ? "
+                "SET Name = ?, URL = ?, Desc = ?, DefBFID = ?, Rating = ? "
                 "WHERE BID = ?";
     }
 
@@ -59,7 +59,7 @@ bool BookmarkManager::AddOrEditBookmark(long long& BID, BookmarkManager::Bookmar
     query.addBindValue(bdata.Name);
     query.addBindValue(bdata.URL);
     query.addBindValue(bdata.Desc);
-    query.addBindValue(bdata.DefFile);
+    query.addBindValue(bdata.DefBFID);
     query.addBindValue(bdata.Rating);
 
     if (BID != -1)
@@ -96,7 +96,7 @@ void BookmarkManager::CreateTables()
 
     query.exec("CREATE TABLE Bookmark"
                "( BID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, URL TEXT, "
-               "  Desc TEXT, DefFile INTEGER, Rating INTEGER )");
+               "  Desc TEXT, DefBFID INTEGER, Rating INTEGER )");
 }
 
 void BookmarkManager::PopulateModels()
@@ -110,13 +110,13 @@ void BookmarkManager::PopulateModels()
     bidx.Name     = model.record().indexOf("Name"    );
     bidx.URL      = model.record().indexOf("URL"     );
     bidx.Desc     = model.record().indexOf("Desc"    );
-    bidx.DefFile  = model.record().indexOf("DefFile" );
+    bidx.DefBFID  = model.record().indexOf("DefBFID" );
     bidx.Rating   = model.record().indexOf("Rating"  );
 
     model.setHeaderData(bidx.BID     , Qt::Horizontal, "BID"         );
     model.setHeaderData(bidx.Name    , Qt::Horizontal, "Name"        );
     model.setHeaderData(bidx.URL     , Qt::Horizontal, "URL"         );
     model.setHeaderData(bidx.Desc    , Qt::Horizontal, "Description" );
-    model.setHeaderData(bidx.DefFile , Qt::Horizontal, "Default File");
+    model.setHeaderData(bidx.DefBFID , Qt::Horizontal, "Default File");
     model.setHeaderData(bidx.Rating  , Qt::Horizontal, "Rating"      );
 }
