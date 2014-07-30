@@ -31,6 +31,7 @@ public:
 
 public slots:
     void accept();
+    void handleAcceptRollback();
 
 private slots:
     /// UI Things /////////////////////////////////////////////////////////////////////////////////

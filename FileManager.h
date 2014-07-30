@@ -94,6 +94,7 @@ private:
     void SetBookmarkFileIndexes(const QSqlRecord& record);
 
     //Files in file archive handling
+    /// Could be called `CreateFileArchiveURL` too.
     QString CalculateFileArchiveURL(const QString& fileFullPathName);
     QString GetFullArchiveFilePath(const QString& fileArchiveURL, const QString& archiveFolderName);
     int FileNameHash(const QString& fileNameOnly);

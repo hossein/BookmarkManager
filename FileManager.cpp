@@ -27,17 +27,8 @@ bool FileManager::InitializeFilesDirectory()
 
     if (!faDirInfo.exists())
     {
-        if (QDir::current().mkpath(faDirPath))
-        {
-            //We assume creating the directory was successful, so subdirectories will also
-            //  be successfully created.
-            for (int i = 0; i < 16; i++)
-                QDir(faDirPath).mkdir(QString::number(i));
-        }
-        else
-        {
+        if (!QDir::current().mkpath(faDirPath))
             return Error("FileArchive directory could not be created!");
-        }
     }
     else if (!faDirInfo.isDir())
     {
@@ -246,12 +237,6 @@ bool FileManager::AddFile(FileManager::BookmarkFile& bf)
 bool FileManager::AddFileToArchive(const QString& filePathName, bool removeOriginalFile,
                                    QString& fileArchiveURL)
 {
-    //TODO: 1. don't generate duplicate names
-    //      2. mkpath the full path before.
-    //      3. don't mkpath the subdirectories 0..15 in the constructor.
-    //      4. mkpath the subdirectories as 0..F instead of 0..15.
-    //      5. append the file extension to the hash.
-
     //Check if file is valid.
     QFileInfo fi(filePathName);
     if (!fi.exists())
@@ -259,9 +244,28 @@ bool FileManager::AddFileToArchive(const QString& filePathName, bool removeOrigi
     else if (!fi.isFile())
         return Error("The path \"" + filePathName + "\" does not point to a valid file!");
 
-    //Copy the file.
+    //Decide where should the file be copied.
     fileArchiveURL = CalculateFileArchiveURL(filePathName);
     QString targetFilePathName = GetFullArchiveFilePath(fileArchiveURL, conf->nominalFileArchiveDirName);
+
+    //Create its directory if doesn't exist.
+    QString targetFileDir = QFileInfo(targetFilePathName).absolutePath();
+    QFileInfo tdi(targetFileDir);
+    if (!tdi.exists())
+    {
+        //Can NOT use `canonicalFilePath`, since the directory still doesn't exist, it will just
+        //  return an empty string.
+        if (!filesTransaction.MakePath(".", tdi.absoluteFilePath()))
+            return Error("Could not create the directory for placing the attached file."
+                         "\n\nDirectory: " + tdi.absoluteFilePath());
+    }
+    else if (!tdi.isDir())
+    {
+        return Error("The path for placing the attached file is not a directory!"
+                     "\n\nDirectory: " + tdi.absoluteFilePath());
+    }
+
+    //Copy the file.
     bool success = filesTransaction.CopyFile(filePathName, targetFilePathName);
     if (!success)
         return Error(QString("Could not copy the source file to destination directory!"
@@ -389,29 +393,19 @@ void FileManager::SetBookmarkFileIndexes(const QSqlRecord& record)
 
 QString FileManager::CalculateFileArchiveURL(const QString& fileFullPathName)
 {
-    int fileNameHash = FileNameHash(QFileInfo(fileFullPathName).fileName());
+    QFileInfo fi(fileFullPathName);
+
+    int fileNameHash = FileNameHash(fi.fileName());
     fileNameHash = fileNameHash % 16;
 
     //Prefix the randomHash with the already calculated fileNameHash.
-    QString randomHash = QString::number(fileNameHash, 16).toUpper();
-    char randomHashChars[] =
-    {
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
-    };
-    int randomHashCharsSize = sizeof(randomHashChars) / sizeof(char);
+    QString prefix = QString::number(fileNameHash, 16).toUpper();
+    QString fileDir = fi.absolutePath();
+    QString randomHash =
+            Util::NonExistentRandomFileNameInDirectory(fileDir, 7, prefix, "." + fi.suffix());
 
-    Util::SeedRandomWithTime(); //We do it for each file we are adding.
-
-    for (int i = 0; i < 7; i++)
-    {
-        int charIdx = Util::Random() % randomHashCharsSize;
-        randomHash += randomHashChars[charIdx];
-    }
-
-    QString fileArchiveURL = QString::number(fileNameHash) + "/" + randomHash;
-
+    //Use `prefix` again to put files in different directories.
+    QString fileArchiveURL = prefix + "/" + randomHash;
     return fileArchiveURL;
 }
 

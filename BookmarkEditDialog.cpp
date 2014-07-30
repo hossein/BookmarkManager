@@ -6,6 +6,8 @@
 
 #include <QtGui/QFileDialog>
 
+//TODO: The newly added file is highlighted as the DefBFID.
+
 BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm,
                                        long long editBId, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm),
@@ -86,13 +88,11 @@ void BookmarkEditDialog::accept()
     //IMPORTANT: In case of RollBack, do NOT return! Must set editBId to its original `-1` value
     //           in case of ADDing. Thanksfully FilesList don't need changing.
     dbm->db.transaction();
-
     {
         success = dbm->bms.AddOrEditBookmark(editBId, bdata); //For Add, the editBID will be modified!
         if (!success)
         {
             dbm->db.rollback();
-            todo this not done.
             editBId = -1;
             return;
         }
@@ -101,6 +101,7 @@ void BookmarkEditDialog::accept()
         if (!success)
         {
             dbm->db.rollback();
+            editBId = -1;
             return;
         }
 
@@ -111,7 +112,16 @@ void BookmarkEditDialog::accept()
         if (!success)
         {
             dbm->db.rollback();
-            dbm->files.RollBackFilesTransaction();
+            editBId = -1;
+
+            bool rollbackResult = dbm->files.RollBackFilesTransaction();
+            if (!rollbackResult)
+            {
+                QMessageBox::critical(this, "File Transaction Rollback Error", "Not all changes made "
+                                      "to your filesystem in the intermediary process of adding the "
+                                      "bookmark could not be reverted.<br/><br/>"
+                                      "<b>Your filesystem may be in inconsistent state!</b>");
+            }
             return;
         }
         dbm->files.CommitFilesTransaction();
@@ -120,6 +130,11 @@ void BookmarkEditDialog::accept()
 
     if (success)
         QDialog::accept();
+}
+
+void BookmarkEditDialog::handleAcceptRollback()
+{
+
 }
 
 void BookmarkEditDialog::on_dialRating_valueChanged(int value)
