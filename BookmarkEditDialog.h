@@ -31,7 +31,6 @@ public:
 
 public slots:
     void accept();
-    void handleAcceptRollback();
 
 private slots:
     /// UI Things /////////////////////////////////////////////////////////////////////////////////
@@ -59,4 +58,13 @@ private slots:
     void on_btnAttach_clicked();
     void on_btnCancelAttach_clicked();
     void ClearAndSwitchToAttachedFilesTab();
+
+    //Attached files actions.
+    void af_preview();
+    void af_open();
+    void af_openWith();
+    void af_setAsDefault();
+    void af_rename();
+    void af_remove();
+    void af_properties();
 };

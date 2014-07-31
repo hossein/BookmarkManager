@@ -2,12 +2,15 @@
 #include "ui_BookmarkEditDialog.h"
 
 #include "FileManager.h"
+#include "FileViewHandler.h"
 #include "Util.h"
 
+#include <QDebug>
 #include <QtGui/QFileDialog>
+#include <QtGui/QMenu>
 
-//TODO: The newly added file is highlighted as the DefBFID.
-
+//TODO: On remove, if defBFID was removed, set editeddefbfid to -1 so that user has to choose
+//      it again or it will be automatically choosed or remained -1 if no files are remaining.
 BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm,
                                        long long editBId, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm),
@@ -72,13 +75,24 @@ bool BookmarkEditDialog::canShow()
 
 void BookmarkEditDialog::accept()
 {
+    //Choose a default file ourselves if user hasn't made a choice.
+    if (editedDefBFID == -1 && editedFilesList.size() > 0)
+    {
+        QStringList fileNames;
+        foreach(const FileManager::BookmarkFile& bf, editedFilesList)
+            fileNames.append(bf.OriginalName);
+
+        int editedDefBFIDindex = FileViewHandler::ChooseADefaultFileBasedOnExtension(fileNames);
+        editedDefBFID = editedFilesList[editedDefBFIDindex].BFID;
+    }
+
     //TODO: If already exists, show warning, switch to the already existent, etc etc
     BookmarkManager::BookmarkData bdata;
     bdata.BID = editBId; //Not important.
     bdata.Name = ui->leName->text().trimmed();
     bdata.URL = ui->leURL->text().trimmed();
     bdata.Desc = ui->ptxDesc->toPlainText();
-    bdata.DefBFID = editedDefBFID; //TODO: MAnage single files...
+    bdata.DefBFID = editedDefBFID;
     bdata.Rating = ui->dialRating->value();
 
     QStringList tagsList = ui->leTags->text().split(' ', QString::SkipEmptyParts);
@@ -130,11 +144,6 @@ void BookmarkEditDialog::accept()
 
     if (success)
         QDialog::accept();
-}
-
-void BookmarkEditDialog::handleAcceptRollback()
-{
-
 }
 
 void BookmarkEditDialog::on_dialRating_valueChanged(int value)
@@ -205,7 +214,8 @@ void BookmarkEditDialog::PopulateUIFiles(bool saveSelection)
         nameItem->setData(Qt::UserRole, index);
         index++;
 
-        if (editedDefBFID == bf.BFID)
+        //Don't highlight the newly added files.
+        if (bf.BFID != -1 && editedDefBFID == bf.BFID)
         {
             QFont boldFont(this->font());
             boldFont.setBold(true);
@@ -262,10 +272,7 @@ void BookmarkEditDialog::on_btnShowAttachUI_clicked()
 
 void BookmarkEditDialog::on_btnSetFileAsDefault_clicked()
 {
-    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    editedDefBFID = editedFilesList[filesListIdx].BFID;
-    PopulateUIFiles(true);
-    ui->twAttachedFiles->setFocus();
+    af_setAsDefault();
 }
 
 void BookmarkEditDialog::on_twAttachedFiles_itemActivated(QTableWidgetItem* item)
@@ -278,9 +285,48 @@ void BookmarkEditDialog::on_twAttachedFiles_itemSelectionChanged()
     ui->btnSetFileAsDefault->setEnabled(!(ui->twAttachedFiles->selectedItems().isEmpty()));
 }
 
-void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPoint &pos)
+void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPoint& pos)
 {
-    //TODO
+    //Qt automatically selects the item under mouse.
+    int filesListIdx;
+    if (ui->twAttachedFiles->selectedItems().empty())
+        filesListIdx = -1;
+    else
+        filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    bool fileSelected = (filesListIdx != -1);
+
+    typedef QKeySequence QKS;
+    QMenu afMenu("Attached File Menu");
+    QAction* a_preview  = afMenu.addAction("&Preview",      this, SLOT(af_preview()),    QKS("Enter"));
+    QAction* a_open     = afMenu.addAction("&Open",         this, SLOT(af_open()),       QKS("Shift+Enter"));
+    QAction* a_openWith = afMenu.addAction("Open Wit&h...", this, SLOT(af_openWith()),   QKS("Ctrl+Enter"));
+                          afMenu.addSeparator();
+    QAction* a_setDef   = afMenu.addAction("Set &As Default",this,SLOT(af_setAsDefault()));
+    QAction* a_rename   = afMenu.addAction("Rena&me",       this, SLOT(af_rename()));
+    QAction* a_remove   = afMenu.addAction("Remo&ve",       this, SLOT(af_remove()),     QKS("Del"));
+                          afMenu.addSeparator();
+    QAction* a_props    = afMenu.addAction("P&roperties",   this, SLOT(af_properties()), QKS("Alt+Enter"));
+
+    a_preview ->setEnabled(fileSelected);
+    a_open    ->setEnabled(fileSelected);
+    a_openWith->setEnabled(fileSelected);
+    a_setDef  ->setEnabled(fileSelected);
+    a_rename  ->setEnabled(fileSelected);
+    a_remove  ->setEnabled(fileSelected);
+    a_props   ->setEnabled(fileSelected);
+
+    if (fileSelected)
+    {
+        bool canPreview = FileViewHandler::HasPreviewHandler(editedFilesList[filesListIdx].OriginalName);
+        a_preview->setEnabled(canPreview);
+        afMenu.setDefaultAction(canPreview ? a_preview : a_open);
+
+        //TODO: How to set default on files which haven't still been added?!
+        a_setDef->setEnabled(editedFilesList[filesListIdx].BFID != editedDefBFID);
+    }
+
+    QPoint menuPos = ui->twAttachedFiles->viewport()->mapToGlobal(pos);
+    afMenu.exec(menuPos);
 }
 
 void BookmarkEditDialog::on_btnBrowse_clicked()
@@ -363,4 +409,42 @@ void BookmarkEditDialog::ClearAndSwitchToAttachedFilesTab()
     ui->leFileName->clear();
     ui->chkRemoveOriginalFile->setChecked(false);
     ui->twAttachedFiles->setFocus();
+}
+
+void BookmarkEditDialog::af_preview()
+{
+    //TODO
+}
+
+void BookmarkEditDialog::af_open()
+{
+    //TODO
+}
+
+void BookmarkEditDialog::af_openWith()
+{
+    //TODO
+}
+
+void BookmarkEditDialog::af_setAsDefault()
+{
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    editedDefBFID = editedFilesList[filesListIdx].BFID;
+    PopulateUIFiles(true);
+    ui->twAttachedFiles->setFocus();
+}
+
+void BookmarkEditDialog::af_rename()
+{
+    //TODO
+}
+
+void BookmarkEditDialog::af_remove()
+{
+    //TODO
+}
+
+void BookmarkEditDialog::af_properties()
+{
+    //TODO
 }
