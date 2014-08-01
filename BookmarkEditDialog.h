@@ -15,12 +15,15 @@ private:
     Ui::BookmarkEditDialog *ui;
     DatabaseManager* dbm;
     bool canShowTheDialog;
+    long long originalEditBId;
     long long editBId;
     //The contents of this MUST NOT CHANGE during data editing in the dialog.
     BookmarkManager::BookmarkData editOriginalBData;
 
     QList<FileManager::BookmarkFile> editedFilesList;
-    long long editedDefBFID;
+    //Note: We don't use this, since new files that will be added all have BFID=-1 so we use a
+    //      field inside the `FileManager::BookmarkFile` struct instead.
+    //long long editedDefBFID;
 
 public:
     explicit BookmarkEditDialog(DatabaseManager* dbm, long long editBId = -1, QWidget *parent = 0);
@@ -31,6 +34,9 @@ public:
 
 public slots:
     void accept();
+private slots:
+    /// Rolls back transactions and shows error if they failed, also sets editBId = -1.
+    void DoRollBackAction();
 
 private slots:
     /// UI Things /////////////////////////////////////////////////////////////////////////////////
@@ -44,6 +50,12 @@ private slots:
     /// File Attachments Section //////////////////////////////////////////////////////////////////
     void InitializeFilesUI();
     void PopulateUIFiles(bool saveSelection);
+
+    void SetDefaultBFID(long long BFID);
+    void SetDefaultFileToIndex(int bfIdx);
+    /// The following functions return -1 if no file is default, or there are no files.
+    long long DefaultBFID();
+    int DefaultFileIndex();
 
     void on_btnShowAttachUI_clicked();
     void on_btnSetFileAsDefault_clicked();
@@ -60,6 +72,7 @@ private slots:
     void ClearAndSwitchToAttachedFilesTab();
 
     //Attached files actions.
+    void af_previewOrOpen();
     void af_preview();
     void af_open();
     void af_openWith();

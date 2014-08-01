@@ -28,6 +28,7 @@ bool BookmarkManager::RetrieveBookmark(long long BID, BookmarkManager::BookmarkD
     bdata.Desc     = query.record().value("Desc"    ).toString();
     bdata.DefBFID  = query.record().value("DefBFID" ).toLongLong();
     bdata.Rating   = query.record().value("Rating"  ).toInt();
+    bdata.AddDate  = query.record().value("AddDate" ).toLongLong();
 
     return true;
 }
@@ -42,8 +43,8 @@ bool BookmarkManager::AddOrEditBookmark(long long& BID, BookmarkManager::Bookmar
     if (BID == -1)
     {
         querystr =
-                "INSERT INTO Bookmark (Name, URL, Desc, DefBFID, Rating) "
-                "VALUES (?, ?, ?, ?, ?)";
+                "INSERT INTO Bookmark (Name, URL, Desc, DefBFID, Rating, AddDate) "
+                "VALUES (?, ?, ?, ?, ?, ?)";
     }
     else
     {
@@ -62,8 +63,10 @@ bool BookmarkManager::AddOrEditBookmark(long long& BID, BookmarkManager::Bookmar
     query.addBindValue(bdata.DefBFID);
     query.addBindValue(bdata.Rating);
 
-    if (BID != -1)
-        query.addBindValue(BID);
+    if (BID == -1) //We ignore bdata.AddDate. We manage it ourselves ONLY upon Adding a bookmark.
+        query.addBindValue(QDateTime::currentMSecsSinceEpoch()); //Add
+    else
+        query.addBindValue(BID); //Edit
 
     if (!query.exec())
         return Error(updateError, query.lastError());
@@ -74,6 +77,22 @@ bool BookmarkManager::AddOrEditBookmark(long long& BID, BookmarkManager::Bookmar
         BID = addedBID;
         bdata.BID = addedBID;
     }
+
+    return true;
+}
+
+bool BookmarkManager::SetBookmarkDefBFID(long long BID, long long BFID)
+{
+    QString setDefBFIDError =
+            "Could not alter attached files information for the bookmark in the database.";
+
+    QSqlQuery query(db);
+    query.prepare("UPDATE Bookmark SET DefBFID = ? WHERE BID = ?");
+    query.addBindValue(BFID);
+    query.addBindValue(BID);
+
+    if (!query.exec())
+        return Error(setDefBFIDError, query.lastError());
 
     return true;
 }
@@ -96,7 +115,11 @@ void BookmarkManager::CreateTables()
 
     query.exec("CREATE TABLE Bookmark"
                "( BID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, URL TEXT, "
-               "  Desc TEXT, DefBFID INTEGER, Rating INTEGER )");
+               "  Desc TEXT, DefBFID INTEGER, Rating INTEGER, AddDate INTEGER )");
+
+    query.exec("CREATE TABLE BookmarkTrash"
+               "( BID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, URL TEXT, "
+               "  Desc TEXT, DefBFID INTEGER, Rating INTEGER, AddDate INTEGER )");
 }
 
 void BookmarkManager::PopulateModels()
@@ -112,6 +135,7 @@ void BookmarkManager::PopulateModels()
     bidx.Desc     = model.record().indexOf("Desc"    );
     bidx.DefBFID  = model.record().indexOf("DefBFID" );
     bidx.Rating   = model.record().indexOf("Rating"  );
+    bidx.AddDate  = model.record().indexOf("AddDate" );
 
     model.setHeaderData(bidx.BID     , Qt::Horizontal, "BID"         );
     model.setHeaderData(bidx.Name    , Qt::Horizontal, "Name"        );
@@ -119,4 +143,5 @@ void BookmarkManager::PopulateModels()
     model.setHeaderData(bidx.Desc    , Qt::Horizontal, "Description" );
     model.setHeaderData(bidx.DefBFID , Qt::Horizontal, "Default File");
     model.setHeaderData(bidx.Rating  , Qt::Horizontal, "Rating"      );
+    model.setHeaderData(bidx.AddDate , Qt::Horizontal, "Date Added"  );
 }

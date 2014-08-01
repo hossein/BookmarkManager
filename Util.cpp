@@ -64,7 +64,8 @@ void Util::CaseInsensitiveStringListDifference(QStringList& list1, QStringList& 
     //If we call `CaseInsensitiveStringListEliminateDuplicates` for both lists at the beginning,
     //  the conditions inside the for loop are not needed, however removing the duplicates can be
     //  time consuming, so we prefer the "conditional" way.
-    //TODO: Use `Set`s at a later version.
+    //TODO: Use `Set`s at a later version. << BUT They don't preserve order, we need descending
+    //  order for removing the elements! The docs say we can use QMap instead.
 
     int len1 = list1.length();
     int len2 = list2.length();
@@ -124,13 +125,13 @@ QString Util::UserReadableFileSize(long long size)
         return QString::number(size / 1099511627776.0L, 'f', 3) + " TiB";
 }
 
-QByteArray Util::GetMD5HashForFile(const QString& fileName)
+QByteArray Util::GetMD5HashForFile(const QString& filePathName)
 {
     const int FILE_READ_CHUNK_SIZE = 65536;
     char filebuff[FILE_READ_CHUNK_SIZE];
 
     int bytesRead;
-    QFile inFile(fileName);
+    QFile inFile(filePathName);
 
     if (inFile.open(QIODevice::ReadOnly))
     {
@@ -147,6 +148,62 @@ QByteArray Util::GetMD5HashForFile(const QString& fileName)
     {
         return QByteArray(16, '\0');
     }
+}
+
+bool Util::IsValidFileName(const QString& fileName)
+{
+    //http://stackoverflow.com/questions/3038351/check-whether-a-string-is-a-valid-filename-with-qt
+    //http://www.boost.org/doc/libs/1_43_0/libs/filesystem/doc/portability_guide.htm
+    //http://stackoverflow.com/questions/62771/how-check-if-given-string-is-legal-allowed-file-name-under-windows
+    //  (--> http://stackoverflow.com/a/62888/656366)
+
+    int len = fileName.length();
+
+    if (fileName.isEmpty())
+        return false;
+
+#if defined(Q_OS_WIN32)
+    QList<QChar> invalidChars;
+    invalidChars.append('<');
+    invalidChars.append('>');
+    invalidChars.append(':');
+    invalidChars.append('"');
+    invalidChars.append('/');
+    invalidChars.append('\\');
+    invalidChars.append('?');
+    invalidChars.append('*');
+
+    for (int i = 0; i < len; i++)
+        if (fileName[i] <= 31 || invalidChars.contains(fileName[i]))
+            return false;
+
+    //We are being conservative here, we check trailing periods and spaces.
+    QChar lastChar = fileName[len - 1];
+    if (lastChar == ' ' || lastChar == '.')
+        return false;
+
+    //CLOCK$ is accepted nowadays, but we are being conservative.
+    //Also, Windows 7 explorer throws errors with COM0 and LPT0, so we include them too.
+    QStringList invalidNames;
+    invalidNames << "CON" << "PRN" << "AUX" << "NUL" << "CLOCK$"
+        <<"COM0" <<"COM1" <<"COM2" <<"COM3" <<"COM4" <<"COM5" <<"COM6" <<"COM7" <<"COM8" <<"COM9"
+        <<"LPT0" <<"LPT1" <<"LPT2" <<"LPT3" <<"LPT4" <<"LPT5" <<"LPT6" <<"LPT7" <<"LPT8" <<"LPT9";
+
+    if (invalidNames.contains(fileName, Qt::CaseInsensitive) ||
+        invalidNames.contains(QFileInfo(fileName).baseName(), Qt::CaseInsensitive))
+        return false;
+
+#elif defined(Q_OS_LINUX) || defined(Q_OS_UNIX) || defined(Q_OS_MAC)
+    //So we are extremely free here and NOT conservative, unlike on windows.
+    if (fileName.contains('/'))
+        return false;
+#endif
+
+    //We also don't let creating file names which are all dots.
+    if (fileName.count('.') == len)
+        return false;
+
+    return true;
 }
 
 void Util::SeedRandomWithTime()

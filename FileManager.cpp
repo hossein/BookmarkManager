@@ -38,11 +38,6 @@ bool FileManager::InitializeFilesDirectory()
     return true;
 }
 
-QString FileManager::makeUserReadableArchiveFilePath(const QString& originalFileName)
-{
-    return conf->fileArchivePrefix + "/" + originalFileName;
-}
-
 bool FileManager::IsInsideFileArchive(const QString& userReadablePath)
 {
     int faPrefixLength = conf->fileArchivePrefix.length();
@@ -51,6 +46,26 @@ bool FileManager::IsInsideFileArchive(const QString& userReadablePath)
         (userReadablePath[faPrefixLength] == '/' || userReadablePath[faPrefixLength] == '\\'))
         return true;
     return false;
+}
+
+QString FileManager::GetUserReadableArchiveFilePath(const QString& originalName)
+{
+    return conf->fileArchivePrefix + "/" + originalName;
+}
+
+QString FileManager::GetFileNameOnlyFromOriginalNameField(const QString& originalName)
+{
+    //In the DB the original only-file-name of the file is stored without prefixes and suffixes
+    //  and stuff, so it is simply the only-file-name of the file.
+    return originalName;
+}
+
+QString FileManager::ChangeOriginalNameField(const QString& originalName, const QString& newName)
+{
+    //In the DB the original only-file-name of the file is stored without prefixes and suffixes
+    //  and stuff, so we can simply change it to what we want.
+    Q_UNUSED(originalName);
+    return newName;
 }
 
 bool FileManager::BeginFilesTransaction()
@@ -138,7 +153,8 @@ bool FileManager::RetrieveBookmarkFiles(long long BID, QList<FileManager::Bookma
 
 bool FileManager::UpdateBookmarkFiles(long long BID,
                                       const QList<BookmarkFile>& originalBookmarkFiles,
-                                      const QList<BookmarkFile>& editedBookmarkFiles)
+                                      const QList<BookmarkFile>& editedBookmarkFiles,
+                                      QList<long long>& editedBFIDs)
 {
     QSqlQuery query(db);
 
@@ -152,19 +168,31 @@ bool FileManager::UpdateBookmarkFiles(long long BID,
             if (nbf.BFID == obf.BFID)
             {
                 originalBookmarkRelationUsed = true;
+
+                //The user might have changed the file information as a result of renaming the file
+                //  or editing it.
+                if (nbf != obf)
+                    if (!UpdateFile(nbf.FID, nbf))
+                        return false;
+
                 break;
             }
         }
 
         if (!originalBookmarkRelationUsed)
-            RemoveBookmarkFile(obf.BFID, obf.FID);
+            if (!RemoveBookmarkFile(obf.BFID, obf.FID))
+                return false;
     }
 
     //Add the new bookmarks
     foreach (const BookmarkFile& nbf, editedBookmarkFiles)
     {
         if (nbf.BFID != -1)
-            continue; //Already attached.
+        {
+            //Already attached.
+            editedBFIDs.append(nbf.BFID);
+            continue;
+        }
 
         //Make a writable copy, such that addSuccess can modify its `.FID` field.
         BookmarkFile bf = nbf;
@@ -177,14 +205,17 @@ bool FileManager::UpdateBookmarkFiles(long long BID,
         }
 
         //Associate the bookmark-file relationship.
-        if (!AddBookmarkFile(BID, bf.FID))
+        long long addedBFID;
+        if (!AddBookmarkFile(BID, bf.FID, addedBFID))
             return false;
+
+        editedBFIDs.append(addedBFID);
     }
 
     return true;
 }
 
-bool FileManager::AddBookmarkFile(long long BID, long long FID)
+bool FileManager::AddBookmarkFile(long long BID, long long FID, long long& addedBFID)
 {
     QString attachError = "Could not set attached files information for the bookmark in the database.";
     QSqlQuery query(db);
@@ -194,6 +225,29 @@ bool FileManager::AddBookmarkFile(long long BID, long long FID)
     query.addBindValue(FID);
     if (!query.exec())
         return Error(attachError, query.lastError());
+
+    addedBFID = query.lastInsertId().toLongLong();
+
+    return true;
+}
+
+bool FileManager::UpdateFile(long long FID, const FileManager::BookmarkFile& bf)
+{
+    QString updateFileError = "Unable To alter the information of attached files in the database.";
+    QSqlQuery query(db);
+
+    query.prepare("UPDATE File "
+                  "SET OriginalName = ?, ModifyDate = ?, Size = ?, MD5 = ? "
+                  "WHERE FID = ?");
+
+    query.addBindValue(bf.OriginalName);
+    query.addBindValue(bf.ModifyDate);
+    query.addBindValue(bf.Size);
+    query.addBindValue(bf.MD5);
+    query.addBindValue(FID);
+
+    if (!query.exec())
+        return Error(updateFileError, query.lastError());
 
     return true;
 }
@@ -356,11 +410,8 @@ bool FileManager::RemoveFileFromArchive(const QString& fileArchiveURL)
 {
     QString fileOperationError = "Unable to remove a file from the FileArchive.";
 
-    QString faDirPath = QDir::currentPath() + "/" + conf->nominalFileArchiveDirName;
-    QString ftDirPath = QDir::currentPath() + "/" + conf->nominalFileTrashDirName;
-
-    QString fullFilePathName = GetFullArchiveFilePath(fileArchiveURL, faDirPath);
-    QString fullTrashPathName = GetFullArchiveFilePath(fileArchiveURL, ftDirPath);
+    QString fullFilePathName = GetFullArchiveFilePath(fileArchiveURL, conf->nominalFileArchiveDirName);
+    QString fullTrashPathName = GetFullArchiveFilePath(fileArchiveURL, conf->nominalFileTrashDirName);
 
     QString fullTrashPath = QFileInfo(fullTrashPathName).absolutePath();
     if (!QDir::current().mkpath(fullTrashPath))
@@ -450,4 +501,25 @@ void FileManager::CreateTables()
 void FileManager::PopulateModels()
 {
     //FileManager does not have a model.
+}
+
+
+bool operator==(const FileManager::BookmarkFile& lhs, const FileManager::BookmarkFile& rhs)
+{
+    //Note: Since we don't want to check the `Ex_` fields, we have to override `operator==`.
+    //      Also we don't have to check BFID, BID, FID and ArchiveURL for the purposes of comparing
+    //      BookmarkFiles in this program.
+
+    bool isSame = true;
+    isSame = isSame && (lhs.OriginalName == rhs.OriginalName);
+    isSame = isSame && (lhs.ModifyDate   == rhs.ModifyDate  );
+    isSame = isSame && (lhs.Size         == rhs.Size        );
+    isSame = isSame && (lhs.MD5          == rhs.MD5         );
+
+    return isSame;
+}
+
+bool operator!=(const FileManager::BookmarkFile& lhs, const FileManager::BookmarkFile& rhs)
+{
+    return !operator==(lhs, rhs);
 }

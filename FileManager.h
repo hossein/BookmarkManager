@@ -26,15 +26,20 @@ public:
 
     struct BookmarkFile
     {
+        /// [DISTINCT PROPERTY]'s are the properties that show the properties of the real attached
+        ///     file. If attached file changes, they must change, too.
+        /// THEY ARE important for `FileManager::UpdateFile` and `operator==(BookmarkFile,BookmarkFile)`
+        ///     and these two functions must be updated if distinct properties change.
         long long BFID;
         long long BID;
         long long FID;
-        QString OriginalName;
+        QString OriginalName; //[DISTINCT PROPERTY]
         QString ArchiveURL;
-        QDateTime ModifyDate;
-        long long Size;
-        QByteArray MD5;
+        QDateTime ModifyDate; //[DISTINCT PROPERTY]
+        long long Size;       //[DISTINCT PROPERTY]
+        QByteArray MD5;       //[DISTINCT PROPERTY]
 
+        bool Ex_IsDefaultFileForEditedBookmark;
         bool Ex_RemoveAfterAttach;
     };
 
@@ -47,8 +52,10 @@ public:
     bool InitializeFilesDirectory();
 
     //Files in file archive: Name convenience functions.
-    QString makeUserReadableArchiveFilePath(const QString& originalFileName);
     bool IsInsideFileArchive(const QString& userReadablePath);
+    QString GetUserReadableArchiveFilePath(const QString& originalName);
+    static QString GetFileNameOnlyFromOriginalNameField(const QString& originalName);
+    static QString ChangeOriginalNameField(const QString& originalName, const QString& newName);
 
     //Transaction functions
     bool BeginFilesTransaction();
@@ -57,22 +64,30 @@ public:
 
     //Bookmark retrieving functions.
     bool RetrieveBookmarkFilesModel(long long BID, QSqlQueryModel& filesModel);
-    /// NOTE: We return a QList. We could have made our own QAbstractItem/TableModel for
+    /// Note: We return a QList. We could have made our own QAbstractItem/TableModel for
     ///       files, but we preferred this way and using QTableWidget for displaying, etc.
+    /// This function DOES NOT set any `Ex_` fields in the returned structs.
     bool RetrieveBookmarkFiles(long long BID, QList<BookmarkFile>& bookmarkFiles);
 
     //Bookmark updating: involves BOTH adding and deleting.
-    /// Although the interface currently doesn't allow sharing a file between two bookmarks,
+    //NOTE: "Shar"e and "Multiple" and "Two" are keywords for file sharing between multiple bookmarks.
+    /// Although the interface currently doesn't allow sharing a file between multiple bookmarks,
     ///     this function uses BFID for its calculations and allows it.
     /// IMPORTANT: Do NOT make `editedBookmarkFiles` non-const; in transactions where consecutive
     ///     actions are happening, this can't just change the parameters it wants.
+    ///     This function just returns the BFIDs that are added or edited in EQUIVALENT INDEXES TO
+    ///     the `editedBookmarkFiles` arg in `editedBFIDs` list.
     bool UpdateBookmarkFiles(long long BID,
                              const QList<BookmarkFile>& originalBookmarkFiles,
-                             const QList<BookmarkFile>& editedBookmarkFiles);
+                             const QList<BookmarkFile>& editedBookmarkFiles,
+                             QList<long long>& editedBFIDs);
 
 private:
     //Adding bookmarks
-    bool AddBookmarkFile(long long BID, long long FID);
+    bool AddBookmarkFile(long long BID, long long FID, long long& addedBFID);
+    /// Merely updates OriginalName, ModifyDate, Size and MD5.
+    /// `bf.FID` WILL BE DISREGARDED! The `FID` argument will be used to determine the file.
+    bool UpdateFile(long long FID, const BookmarkFile& bf);
     /// Adds the file into the FileArchive folder and Updates the "FID" and "ArchiveURL" fields.
     bool AddFile(BookmarkFile& bf);
     /// Only to be called by `AddFile`.
@@ -95,6 +110,11 @@ private:
 
     //Files in file archive handling
     /// Could be called `CreateFileArchiveURL` too.
+    /// Note: This only happens ONCE, and later if file name in archive, or any other property
+    ///       that is used to calculate the hash or anyhting in the FileArchive changes, the file
+    ///       remains in the folder that it always was and doesn't change location.
+    ///       Also, remaining the file extension does NOT change the extension that is used with
+    ///       the file in the FileArchive.
     QString CalculateFileArchiveURL(const QString& fileFullPathName);
     QString GetFullArchiveFilePath(const QString& fileArchiveURL, const QString& archiveFolderName);
     int FileNameHash(const QString& fileNameOnly);
@@ -104,3 +124,6 @@ protected:
     void CreateTables();
     void PopulateModels();
 };
+
+inline bool operator==(const FileManager::BookmarkFile& lhs, const FileManager::BookmarkFile& rhs);
+inline bool operator!=(const FileManager::BookmarkFile& lhs, const FileManager::BookmarkFile& rhs);

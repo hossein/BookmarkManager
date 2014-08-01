@@ -16,6 +16,7 @@ bool WinFunctions::MoveFileToRecycleBin(const QString& filePathName)
     fileOp.wFunc = FO_DELETE;
     fileOp.pFrom = wsFilePathName;
     fileOp.pTo = NULL;
+    //TODO: Test these flags and enable all of them...
     fileOp.fFlags = FOF_ALLOWUNDO /* | FOF_NOCONFIRMATION */ | FOF_NOERRORUI /* | FOF_SILENT| FOF_WANTNUKEWARNING */;
 
     int result = SHFileOperationW(&fileOp);

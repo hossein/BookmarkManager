@@ -21,6 +21,7 @@ public:
         int Desc;
         int DefBFID;
         int Rating;
+        int AddDate;
     } bidx;
 
     struct BookmarkData
@@ -31,6 +32,7 @@ public:
         QString Desc;
         long long DefBFID;
         int Rating;
+        long long AddDate;
 
         /// The following members ARE NOT filled by the `RetrieveBookmark` function.
         /// and ARE NOT saved by the `AddOrEditBookmark` function.
@@ -46,6 +48,7 @@ public:
     /// For adding bookmark (i.e when BID == -1), both the BID arg and bdata.BID will contain
     ///   the BID of the inserted bookmark.
     bool AddOrEditBookmark(long long& BID, BookmarkData& bdata);
+    bool SetBookmarkDefBFID(long long BID, long long BFID);
     bool DeleteBookmark(long long BID);
 
 protected:

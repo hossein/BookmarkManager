@@ -7,14 +7,19 @@
 
 #include <QDebug>
 #include <QtGui/QFileDialog>
+#include <QtGui/QInputDialog>
 #include <QtGui/QMenu>
 
-//TODO: On remove, if defBFID was removed, set editeddefbfid to -1 so that user has to choose
-//      it again or it will be automatically choosed or remained -1 if no files are remaining.
+//[KeepDefaultFile-1]
+//Note: On remove, if defBFID was removed we should set editedDefBFID to -1 so that user has to
+//      choose it again or it will be automatically choosed or remained -1 if no files are
+//      remaining. We achieve this by not keeping a editedDefBFID and instead having a bool field
+//      editedFilesList.
+
 BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm,
                                        long long editBId, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm),
-    canShowTheDialog(false), editBId(editBId), editedDefBFID(-1)
+    canShowTheDialog(false), originalEditBId(editBId), editBId(editBId) //[why-two-editbids]
 {
     ui->setupUi(this);
     ui->leTags->setModel(&dbm->tags.model);
@@ -51,7 +56,7 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm,
 
         //Additional bookmark variables.
         editedFilesList = editOriginalBData.Ex_FilesList;
-        editedDefBFID = editOriginalBData.DefBFID;
+        SetDefaultBFID(editOriginalBData.DefBFID); //Needed; retrieving functions don't set this.
 
         //Show in the UI.
         ui->leName    ->setText(editOriginalBData.Name);
@@ -76,14 +81,15 @@ bool BookmarkEditDialog::canShow()
 void BookmarkEditDialog::accept()
 {
     //Choose a default file ourselves if user hasn't made a choice.
-    if (editedDefBFID == -1 && editedFilesList.size() > 0)
+    if (editedFilesList.size() > 0 && DefaultFileIndex() == -1)
     {
         QStringList fileNames;
         foreach(const FileManager::BookmarkFile& bf, editedFilesList)
             fileNames.append(bf.OriginalName);
 
         int editedDefBFIDindex = FileViewHandler::ChooseADefaultFileBasedOnExtension(fileNames);
-        editedDefBFID = editedFilesList[editedDefBFIDindex].BFID;
+        SetDefaultFileToIndex(editedDefBFIDindex);
+        //editedDefBFID = editedFilesList[editedDefBFIDindex].BFID;
     }
 
     //TODO: If already exists, show warning, switch to the already existent, etc etc
@@ -92,58 +98,69 @@ void BookmarkEditDialog::accept()
     bdata.Name = ui->leName->text().trimmed();
     bdata.URL = ui->leURL->text().trimmed();
     bdata.Desc = ui->ptxDesc->toPlainText();
-    bdata.DefBFID = editedDefBFID;
+    bdata.DefBFID = -1; //[KeepDefaultFile-1]
     bdata.Rating = ui->dialRating->value();
 
     QStringList tagsList = ui->leTags->text().split(' ', QString::SkipEmptyParts);
 
     bool success;
 
-    //IMPORTANT: In case of RollBack, do NOT return! Must set editBId to its original `-1` value
-    //           in case of ADDing. Thanksfully FilesList don't need changing.
+    //We do NOT use the transactions in a nested manner. This 'linear' ('together') mode is was
+    //  not only and easier to understand, it's better for error management, too.
+    //IMPORTANT: In case of RollBack, do NOT return!
+    //           [why-two-editbids]: In case of ADDing, MUST set editBId to its original `-1` value!
+    //           Thanksfully FilesList don't need changing.
     dbm->db.transaction();
+    dbm->files.BeginFilesTransaction();
     {
         success = dbm->bms.AddOrEditBookmark(editBId, bdata); //For Add, the editBID will be modified!
         if (!success)
-        {
-            dbm->db.rollback();
-            editBId = -1;
-            return;
-        }
+            return DoRollBackAction();
 
         success = dbm->tags.SetBookmarkTags(editBId, tagsList);
         if (!success)
-        {
-            dbm->db.rollback();
-            editBId = -1;
-            return;
-        }
+            return DoRollBackAction();
 
-        //We use the transactions in a nested manner. But 'linear' ('together') was also possible
-        //  and easier to understand.
-        dbm->files.BeginFilesTransaction();
-        success = dbm->files.UpdateBookmarkFiles(editBId, editOriginalBData.Ex_FilesList, editedFilesList);
+        QList<long long> updatedBFIDs;
+        success = dbm->files.UpdateBookmarkFiles(editBId,
+                                                 editOriginalBData.Ex_FilesList, editedFilesList,
+                                                 updatedBFIDs);
         if (!success)
-        {
-            dbm->db.rollback();
-            editBId = -1;
+            return DoRollBackAction();
 
-            bool rollbackResult = dbm->files.RollBackFilesTransaction();
-            if (!rollbackResult)
-            {
-                QMessageBox::critical(this, "File Transaction Rollback Error", "Not all changes made "
-                                      "to your filesystem in the intermediary process of adding the "
-                                      "bookmark could not be reverted.<br/><br/>"
-                                      "<b>Your filesystem may be in inconsistent state!</b>");
-            }
-            return;
+        //Set the default file BFID for the bookmark. We already set defBFID to `-1` in the database
+        //  according to [KeepDefaultFile-1], so we only do it if it's other than -1.
+        //The following line is WRONG and can't be used! Our original `editedFilesList` hasn't changed!
+        //long long editedDefBFID = DefaultBFID(editedFilesList);
+        long long editedDefBFIDIndex = DefaultFileIndex();
+        if (editedDefBFIDIndex != -1)
+        {
+            long long editedDefBFID = updatedBFIDs[editedDefBFIDIndex];
+            success = dbm->bms.SetBookmarkDefBFID(editBId, editedDefBFID);
         }
-        dbm->files.CommitFilesTransaction();
+        if (!success)
+            return DoRollBackAction();
     }
+    dbm->files.CommitFilesTransaction(); //Committing files transaction doesn't fail!
     dbm->db.commit();
 
     if (success)
         QDialog::accept();
+}
+
+void BookmarkEditDialog::DoRollBackAction()
+{
+    dbm->db.rollback();
+    editBId = originalEditBId; //Affects only the Adding mode.
+
+    bool rollbackResult = dbm->files.RollBackFilesTransaction();
+    if (!rollbackResult)
+    {
+        QMessageBox::critical(this, "File Transaction Rollback Error", "Not all changes made "
+                              "to your filesystem in the intermediary process of adding the "
+                              "bookmark could not be reverted.<br/><br/>"
+                              "<b>Your filesystem may be in inconsistent state!</b>");
+    }
 }
 
 void BookmarkEditDialog::on_dialRating_valueChanged(int value)
@@ -206,7 +223,7 @@ void BookmarkEditDialog::PopulateUIFiles(bool saveSelection)
         if (bf.FID == -1)
             fileName = bf.OriginalName;
         else
-            fileName = dbm->files.makeUserReadableArchiveFilePath(bf.OriginalName);
+            fileName = dbm->files.GetUserReadableArchiveFilePath(bf.OriginalName);
         QTableWidgetItem* nameItem = new QTableWidgetItem(fileName);
         QTableWidgetItem* sizeItem = new QTableWidgetItem(Util::UserReadableFileSize(bf.Size));
 
@@ -214,8 +231,7 @@ void BookmarkEditDialog::PopulateUIFiles(bool saveSelection)
         nameItem->setData(Qt::UserRole, index);
         index++;
 
-        //Don't highlight the newly added files.
-        if (bf.BFID != -1 && editedDefBFID == bf.BFID)
+        if (bf.Ex_IsDefaultFileForEditedBookmark)
         {
             QFont boldFont(this->font());
             boldFont.setBold(true);
@@ -265,6 +281,36 @@ void BookmarkEditDialog::PopulateUIFiles(bool saveSelection)
     */
 }
 
+void BookmarkEditDialog::SetDefaultBFID(long long BFID)
+{
+    //`false` values must also be set.
+    for (int i = 0; i < editedFilesList.size(); i++)
+        editedFilesList[i].Ex_IsDefaultFileForEditedBookmark = (editedFilesList[i].BFID == BFID);
+}
+
+void BookmarkEditDialog::SetDefaultFileToIndex(int bfIdx)
+{
+    //`false` values must also be set.
+    for (int i = 0; i < editedFilesList.size(); i++)
+        editedFilesList[i].Ex_IsDefaultFileForEditedBookmark = (i == bfIdx);
+}
+
+long long BookmarkEditDialog::DefaultBFID()
+{
+    foreach (const FileManager::BookmarkFile& bf, editedFilesList)
+        if (bf.Ex_IsDefaultFileForEditedBookmark)
+            return bf.BFID;
+    return -1;
+}
+
+int BookmarkEditDialog::DefaultFileIndex()
+{
+    for (int i = 0; i < editedFilesList.size(); i++)
+        if (editedFilesList[i].Ex_IsDefaultFileForEditedBookmark)
+            return i;
+    return -1;
+}
+
 void BookmarkEditDialog::on_btnShowAttachUI_clicked()
 {
     ui->stwFileAttachments->setCurrentWidget(ui->pageAttachNew);
@@ -277,7 +323,8 @@ void BookmarkEditDialog::on_btnSetFileAsDefault_clicked()
 
 void BookmarkEditDialog::on_twAttachedFiles_itemActivated(QTableWidgetItem* item)
 {
-    //TODO
+    Q_UNUSED(item);
+    af_previewOrOpen();
 }
 
 void BookmarkEditDialog::on_twAttachedFiles_itemSelectionChanged()
@@ -321,8 +368,8 @@ void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
         a_preview->setEnabled(canPreview);
         afMenu.setDefaultAction(canPreview ? a_preview : a_open);
 
-        //TODO: How to set default on files which haven't still been added?!
-        a_setDef->setEnabled(editedFilesList[filesListIdx].BFID != editedDefBFID);
+        a_setDef->setEnabled(!editedFilesList[filesListIdx].Ex_IsDefaultFileForEditedBookmark);
+        a_rename->setEnabled(editedFilesList[filesListIdx].BFID != -1);
     }
 
     QPoint menuPos = ui->twAttachedFiles->viewport()->mapToGlobal(pos);
@@ -343,7 +390,7 @@ void BookmarkEditDialog::on_btnBrowse_clicked()
 
 void BookmarkEditDialog::on_btnAttach_clicked()
 {
-    //NOTE: Multiple file handling:
+    //Note: Multiple file handling:
     //  Must detect here if user has removed a ":archive:" url in the textbox and do sth with its file!
 
     QString allFileNames = ui->leFileName->text().trimmed();
@@ -374,7 +421,7 @@ void BookmarkEditDialog::on_btnAttach_clicked()
         //IMPORTANT:
         //Original file Information MUST be filled by us. We will SET BOTH `BFID` AND `FID` to -1,
         //  for which FileManager will take care of the IDs and archive url, etc.
-        //NOTE: BOTH `BFID` and `FID` are CRUCIAL to be set to `-1`!
+        //Note: BOTH `BFID` and `FID` are CRUCIAL to be set to `-1`!
         //      BFID's value lets FileManager know this is a new file-bookmark attachment.
         //      FID is what in the FileTable and is important for FileManager to determine which
         //      files are new and must be inserted into the FileArchive.
@@ -389,6 +436,7 @@ void BookmarkEditDialog::on_btnAttach_clicked()
         bf.ModifyDate   = fileInfo.lastModified();
         bf.Size         = fileInfo.size();
         bf.MD5          = Util::GetMD5HashForFile(fileName);
+        bf.Ex_IsDefaultFileForEditedBookmark = false;
         bf.Ex_RemoveAfterAttach = ui->chkRemoveOriginalFile->isChecked();
 
         editedFilesList.append(bf);
@@ -411,37 +459,100 @@ void BookmarkEditDialog::ClearAndSwitchToAttachedFilesTab()
     ui->twAttachedFiles->setFocus();
 }
 
+void BookmarkEditDialog::af_previewOrOpen()
+{
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    bool canPreview = FileViewHandler::HasPreviewHandler(editedFilesList[filesListIdx].OriginalName);
+    if (canPreview)
+        af_preview();
+    else
+        af_open();
+}
+
 void BookmarkEditDialog::af_preview()
 {
     //TODO
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
 }
 
 void BookmarkEditDialog::af_open()
 {
     //TODO
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
 }
 
 void BookmarkEditDialog::af_openWith()
 {
     //TODO
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
 }
 
 void BookmarkEditDialog::af_setAsDefault()
 {
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    editedDefBFID = editedFilesList[filesListIdx].BFID;
+    SetDefaultFileToIndex(filesListIdx);
+    //editedDefBFID = editedFilesList[filesListIdx].BFID;
     PopulateUIFiles(true);
     ui->twAttachedFiles->setFocus();
 }
 
 void BookmarkEditDialog::af_rename()
 {
-    //TODO
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    const QString originalName = editedFilesList[filesListIdx].OriginalName;
+    QString currentFileNameOnly = dbm->files.GetFileNameOnlyFromOriginalNameField(originalName);
+
+    bool renameConfirmed;
+    QString changedName = QInputDialog::getText(this, "Rename File", "File Name", QLineEdit::Normal,
+                                                currentFileNameOnly, &renameConfirmed);
+    if (!renameConfirmed)
+        return;
+
+    changedName = changedName.trimmed();
+    if (!Util::IsValidFileName(changedName))
+    {
+        QMessageBox::critical(this, "Invalid Name", "Invalid File Name \"" + changedName + "\".\n"
+                              "The file wasn't renamed.");
+        return;
+    }
+
+    //Rename the file.
+    editedFilesList[filesListIdx].OriginalName =
+            dbm->files.ChangeOriginalNameField(originalName, changedName);
+    PopulateUIFiles(true);
 }
 
 void BookmarkEditDialog::af_remove()
 {
-    //TODO
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+
+
+
+    QString removeConfirmText;
+    if (editedFilesList[filesListIdx].BFID == -1)
+    {
+        removeConfirmText = "Are you sure you do not want to include the file \"" +
+                editedFilesList[filesListIdx].OriginalName + "\" with this bookmark?";
+    }
+    else
+    {
+        const QString userReadableFileName =
+                dbm->files.GetUserReadableArchiveFilePath(editedFilesList[filesListIdx].OriginalName);
+        removeConfirmText = "Are you sure you want to remove the file \"" + userReadableFileName +
+                "\"?\nIt will be removed from the File Archive as well, if no other bookmarks "
+                "are referencing it.";
+    }
+
+    int removeConfirmed = (QMessageBox::Yes == QMessageBox::question(
+                this, "Remove File", removeConfirmText, QMessageBox::Yes | QMessageBox::No,
+                QMessageBox::No));
+
+    if (!removeConfirmed)
+        return;
+
+    //Remove the file.
+    editedFilesList.removeAt(filesListIdx);
+    PopulateUIFiles(true);
 }
 
 void BookmarkEditDialog::af_properties()

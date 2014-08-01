@@ -37,3 +37,13 @@ bool FileViewHandler::HasPreviewHandler(const QString& fileName)
             QString("mht|mhtml|htm|html|maff|txt|bmp|gif|png|jpg|jpeg").split('|');
     return filesWithPreviewHandlers.contains(QFileInfo(fileName).suffix().toLower());
 }
+
+void FileViewHandler::Preview(const QString& filePathName)
+{
+
+}
+
+void FileViewHandler::Open(const QString& filePathName)
+{
+
+}

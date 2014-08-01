@@ -75,7 +75,7 @@ void TagLineEdit::keyPressEvent(QKeyEvent* event)
             requestComplete = true;
         break;
 
-    //NOTE: The following two are not directly received, we pass them from the `event()` function.
+    //Note: The following two are not directly received, we pass them from the `event()` function.
     case Qt::Key_Tab:
     case Qt::Key_Backtab:
         if (lwPopup->isVisible())

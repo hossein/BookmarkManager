@@ -112,6 +112,7 @@ void MainWindow::RefreshTVBookmarksModelView()
         hh->hideSection(bidx.BID);
         hh->hideSection(bidx.Desc);
         hh->hideSection(bidx.DefBFID);
+        hh->hideSection(bidx.AddDate);
 
         hh->setResizeMode(bidx.Name, QHeaderView::Stretch);
         hh->resizeSection(bidx.URL, 200);

@@ -11,4 +11,6 @@ public:
     /// Only file extension will be verified.
     static bool HasPreviewHandler(const QString& fileName);
 
+    static void Preview(const QString& filePathName);
+    static void Open(const QString& filePathName);
 };
