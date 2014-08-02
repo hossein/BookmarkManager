@@ -19,8 +19,8 @@ bool BookmarkManager::RetrieveBookmark(long long BID, BookmarkManager::BookmarkD
     if (!query.exec())
         return Error(retrieveError, query.lastError());
 
-    if (!query.first())
-        return Error(retrieveError, query.lastError());
+    if (!query.first()) //Simply no results where returned.
+        return Error(retrieveError + "\nThe selected bookmark was not found.");
 
     bdata.BID      = query.record().value("BID"     ).toLongLong();
     bdata.Name     = query.record().value("Name"    ).toString();

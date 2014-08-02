@@ -36,6 +36,12 @@
 ///     deleted Tags and Files!
 ///   - Mass Apply Tag, AND Mass Remove Tag! Yes!
 ///   - Zip every 30 backups of the db and MOVE them inside a directory OTHER THAN Backups.
+///   - Delete file from RecycleBin when roolling back TransactFileOps:
+///     (FULL CODE, HAHA!) http://social.msdn.microsoft.com/Forums/vstudio/en-US/
+///                        05f1476f-a101-4766-847b-0bdf4f6ad397/restore-undelete-
+///                        file-from-recycle-bin?forum=csharpgeneral
+///     (ANOTHER PROJECT) http://www.codeproject.com/Articles/2783/
+///                       How-to-programmatically-use-the-Recycle-Bin
 
 class Config
 {

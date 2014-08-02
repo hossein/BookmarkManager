@@ -154,10 +154,12 @@ void MainWindow::ViewSelectedBookmark()
 
 void MainWindow::EditSelectedBookmark()
 {
-    BookmarkEditDialog* bmEditDialog = new BookmarkEditDialog(&dbm, GetSelectedBookmarkID(), this);
-    //TODO: Use `canshowthedialog` first!
-    int result = bmEditDialog->exec();
+    BookmarkEditDialog* bmEditDialog = new BookmarkEditDialog(&dbm, 50, this);// GetSelectedBookmarkID(), this);
 
+    if (!bmEditDialog->canShow())
+        return; //In case of errors a message is already shown.
+
+    int result = bmEditDialog->exec();
     if (result != QDialog::Accepted)
         return;
 

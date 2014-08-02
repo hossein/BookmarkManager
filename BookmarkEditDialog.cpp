@@ -2,7 +2,7 @@
 #include "ui_BookmarkEditDialog.h"
 
 #include "FileManager.h"
-#include "FileViewHandler.h"
+#include "FileViewManager.h"
 #include "Util.h"
 
 #include <QDebug>
@@ -87,7 +87,7 @@ void BookmarkEditDialog::accept()
         foreach(const FileManager::BookmarkFile& bf, editedFilesList)
             fileNames.append(bf.OriginalName);
 
-        int editedDefBFIDindex = FileViewHandler::ChooseADefaultFileBasedOnExtension(fileNames);
+        int editedDefBFIDindex = dbm->fview.ChooseADefaultFileBasedOnExtension(fileNames);
         SetDefaultFileToIndex(editedDefBFIDindex);
         //editedDefBFID = editedFilesList[editedDefBFIDindex].BFID;
     }
@@ -364,7 +364,7 @@ void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
 
     if (fileSelected)
     {
-        bool canPreview = FileViewHandler::HasPreviewHandler(editedFilesList[filesListIdx].OriginalName);
+        bool canPreview = dbm->fview.HasPreviewHandler(editedFilesList[filesListIdx].OriginalName);
         a_preview->setEnabled(canPreview);
         afMenu.setDefaultAction(canPreview ? a_preview : a_open);
 
@@ -462,7 +462,7 @@ void BookmarkEditDialog::ClearAndSwitchToAttachedFilesTab()
 void BookmarkEditDialog::af_previewOrOpen()
 {
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    bool canPreview = FileViewHandler::HasPreviewHandler(editedFilesList[filesListIdx].OriginalName);
+    bool canPreview = dbm->fview.HasPreviewHandler(editedFilesList[filesListIdx].OriginalName);
     if (canPreview)
         af_preview();
     else

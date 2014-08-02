@@ -1,8 +1,9 @@
 #pragma once
 #include "IManager.h"
-#include <BookmarkManager.h>
-#include <FileManager.h>
-#include <TagManager.h>
+#include "BookmarkManager.h"
+#include "FileManager.h"
+#include "FileViewManager.h"
+#include "TagManager.h"
 #include <QtSql/QSqlDatabase>
 
 class DatabaseManager : public IManager
@@ -11,6 +12,7 @@ public:
     QSqlDatabase db;
     BookmarkManager bms;
     FileManager files;
+    FileViewManager fview;
     TagManager tags;
 
     DatabaseManager(QWidget* dialogParent, Config* conf);
