@@ -72,12 +72,14 @@ bool FileManager::BeginFilesTransaction()
 {
     if (!filesTransaction.BeginTransaction())
         return Error("Could not start a transactional file operation session.");
+    return true;
 }
 
 bool FileManager::CommitFilesTransaction()
 {
     if (!filesTransaction.CommitTransaction())
         return Error("Could not start a transactional file operation session.");
+    return true;
 }
 
 bool FileManager::RollBackFilesTransaction()
@@ -85,6 +87,7 @@ bool FileManager::RollBackFilesTransaction()
     if (!filesTransaction.RollBackTransaction())
         return Error("Could not roll back the applied changes to your file system. "
                      "Your files will be in a non-consistent state.");
+    return true;
 }
 
 bool FileManager::RetrieveBookmarkFilesModel(long long BID, QSqlQueryModel& filesModel)
@@ -99,6 +102,7 @@ bool FileManager::RetrieveBookmarkFilesModel(long long BID, QSqlQueryModel& file
     if (!query.exec()) //IMPORTANT For the model and for setting the indexes.
         return Error(retrieveError, query.lastError());
 
+    //Since the query is already executed, we think no errors happened in here.
     filesModel.setQuery(query);
 
     while (filesModel.canFetchMore())
@@ -115,7 +119,7 @@ bool FileManager::RetrieveBookmarkFilesModel(long long BID, QSqlQueryModel& file
     filesModel.setHeaderData(bfidx.Size        , Qt::Horizontal, "Size"         );
     filesModel.setHeaderData(bfidx.MD5         , Qt::Horizontal, "MD5"          );
 
-    return true; //NOTE: We checked for model.setQuery errors nowhere.
+    return true;
 }
 
 bool FileManager::RetrieveBookmarkFiles(long long BID, QList<FileManager::BookmarkFile>& bookmarkFiles)
@@ -148,7 +152,7 @@ bool FileManager::RetrieveBookmarkFiles(long long BID, QList<FileManager::Bookma
         bookmarkFiles.append(bf);
     }
 
-    return true; //NOTE: We checked for model.setQuery errors nowhere.
+    return true;
 }
 
 bool FileManager::UpdateBookmarkFiles(long long BID,

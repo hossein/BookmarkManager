@@ -17,9 +17,10 @@
 //      editedFilesList.
 
 BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm,
-                                       long long editBId, QWidget *parent) :
+                                       long long editBId, long long* resultAddedBId, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm),
-    canShowTheDialog(false), originalEditBId(editBId), editBId(editBId) //[why-two-editbids]
+    canShowTheDialog(false), reportAddedBId(resultAddedBId),
+    originalEditBId(editBId), editBId(editBId) //[why-two-editbids]
 {
     ui->setupUi(this);
     ui->leTags->setModel(&dbm->tags.model);
@@ -145,7 +146,12 @@ void BookmarkEditDialog::accept()
     dbm->db.commit();
 
     if (success)
+    {
+        if (reportAddedBId != NULL)
+            *reportAddedBId = editBId;
+
         QDialog::accept();
+    }
 }
 
 void BookmarkEditDialog::DoRollBackAction()
@@ -170,6 +176,7 @@ void BookmarkEditDialog::on_dialRating_valueChanged(int value)
 
 void BookmarkEditDialog::on_dialRating_sliderMoved(int position)
 {
+    Q_UNUSED(position);
     //This only applies to moving with mouse.
     //ui->dialRating->setValue((position / 10) * 10);
 }

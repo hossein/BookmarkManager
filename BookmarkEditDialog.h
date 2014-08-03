@@ -15,6 +15,7 @@ private:
     Ui::BookmarkEditDialog *ui;
     DatabaseManager* dbm;
     bool canShowTheDialog;
+    long long* reportAddedBId;
     long long originalEditBId;
     long long editBId;
     //The contents of this MUST NOT CHANGE during data editing in the dialog.
@@ -26,7 +27,8 @@ private:
     //long long editedDefBFID;
 
 public:
-    explicit BookmarkEditDialog(DatabaseManager* dbm, long long editBId = -1, QWidget *parent = 0);
+    explicit BookmarkEditDialog(DatabaseManager* dbm, long long editBId = -1,
+                                long long* resultAddedBId = NULL, QWidget *parent = 0);
     ~BookmarkEditDialog();
 
 public:

@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QSet>
 
 QString Util::RandomHash(int length)
 {
@@ -64,12 +65,20 @@ void Util::CaseInsensitiveStringListDifference(QStringList& list1, QStringList& 
     //If we call `CaseInsensitiveStringListEliminateDuplicates` for both lists at the beginning,
     //  the conditions inside the for loop are not needed, however removing the duplicates can be
     //  time consuming, so we prefer the "conditional" way.
-    //TODO: Use `Set`s at a later version. << BUT They don't preserve order, we need descending
-    //  order for removing the elements! The docs say we can use QMap instead.
+    //Note: One might think of using `QSet`s instead of QList's for the to-be-removed's.
+    //  BUT They don't preserve order, we need descending order for removing the elements!
+    //  The docs say we can use QMap instead, but I am lazy and don't implement it now, because
+    //  that needs reverse iterating with QMapIterator or sth that we don't implement because I
+    //  don't know of speed impacts of this (QMap::keys, etc don't return the keys in order).
+    //Update: Still I use lightweight `Set`s and convert them to list later.
 
     int len1 = list1.length();
     int len2 = list2.length();
-    QList<int> removeList1, removeList2;
+
+    //Why we use Sets instead of Lists:
+    //RemoveSet1 must be set to handle duplicate elements in list2, e.g L1={A}, L2={A,A}.
+    //RemoveSet2 must be set to handle duplicate elements in list1, e.g L1={A,A}, L2={A}.
+    QSet<int> removeSet1, removeSet2;
 
     for (int i1 = 0; i1 < len1; i1++)
     {
@@ -77,22 +86,25 @@ void Util::CaseInsensitiveStringListDifference(QStringList& list1, QStringList& 
         {
             if (list2[i2].compare(list1[i1], Qt::CaseInsensitive) == 0)
             {
-                //This condition is for handling duplicate elements in list2, e.g L1={A}, L2={A,A}.
-                if (!removeList1.contains(i1))
-                    removeList1.append(i1);
-
-                //This condition is for handling duplicate elements in list1, e.g L1={A,A}, L2={A}.
-                if (!removeList2.contains(i2))
-                    removeList2.append(i2);
+                //These are faster than QList check for containing and inserting used up to
+                //  revision BookmarkManager-201404102.
+                removeSet1.insert(i1);
+                removeSet2.insert(i2);
             }
         }
     }
 
-    for (int r = removeList1.size(); r >= 0; r--)
-        list1.removeAt(removeList1[r]);
+    //Could also sort in reverse order with qSort and use an i=0..size loop, but maybe this size..0
+    //  loop is faster.
+    QList<int> removeList = removeSet1.toList();
+    qSort(removeList.begin(), removeList.end());
+    for (int r = removeList.size(); r >= 0; r--)
+        list1.removeAt(removeList[r]);
 
-    for (int r = removeList2.size(); r >= 0; r--)
-        list2.removeAt(removeList2[r]);
+    removeList = removeSet2.toList();
+    qSort(removeList.begin(), removeList.end());
+    for (int r = removeList.size(); r >= 0; r--)
+        list2.removeAt(removeList[r]);
 }
 
 QString Util::NonExistentRandomFileNameInDirectory(const QString& dirPath, int length,
@@ -115,11 +127,11 @@ QString Util::UserReadableFileSize(long long size)
 {
     if (size < 1024L)
         return QString::number(size) + " Bytes";
-    else if (size < 1024L * 1024)
+    else if (size < 1048576L)
         return QString::number(size / 1024.0L, 'f', 3) + " KiB";
-    else if (size < 1024L * 1024 * 1024)
+    else if (size < 1073741824L)
         return QString::number(size / 1048576.0L, 'f', 3) + " MiB";
-    else if (size < 1024L * 1024 * 1024 * 1024)
+    else if (size < 1099511627776L)
         return QString::number(size / 1073741824.0L, 'f', 3) + " GiB";
     else //if (size < 1024L * 1024 * 1024 * 1024 * 1024)
         return QString::number(size / 1099511627776.0L, 'f', 3) + " TiB";

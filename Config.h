@@ -18,6 +18,10 @@
 ///   - "Delete" moves the bookmarks or archivefiles to a "Trash", never deletes them!
 ///   - Search
 ///   - Import Firefox bookmarks (by both browsing the json file and selecting profile!)
+///   - Extension Association Edit Dialog: For each extension, show the list of Open With (but not
+///     the system default Open dialog, because we want to be system-independent and not use
+///     Windows' registry CLASSES, etc) and let user (only!) Remove the apps he needs. Also a
+///     dialog for the global programs that are used for every extension.
 ///
 /// LATER:
 ///   - When user opens a file, CAN HE CHANGE IT? And should we save Changes? YES AND ALSO CHANGES

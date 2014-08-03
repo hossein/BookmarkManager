@@ -132,4 +132,7 @@ void TagManager::PopulateModels()
 
     model.setHeaderData(tidx.TID    , Qt::Horizontal, "TID"    );
     model.setHeaderData(tidx.TagName, Qt::Horizontal, "TagName");
+
+    //For tags model, we handle the sorting very here!
+    model.sort(tidx.TagName);
 }
