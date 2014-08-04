@@ -120,6 +120,8 @@ void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
     //Connect the signal we disconnected.
     connect(ui->lwTags, SIGNAL(itemChanged(QListWidgetItem*)),
             this, SLOT(lwTagsItemChanged(QListWidgetItem*)));
+
+    //TODO: Now filter the bookmarks according to those tags.
 }
 
 void MainWindow::LoadDatabaseAndUI()
