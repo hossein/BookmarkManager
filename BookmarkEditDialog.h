@@ -74,6 +74,7 @@ private slots:
     void ClearAndSwitchToAttachedFilesTab();
 
     //Attached files actions.
+    void af_showAttachUI();
     void af_previewOrOpen();
     void af_preview();
     void af_open();

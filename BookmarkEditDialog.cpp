@@ -320,7 +320,7 @@ int BookmarkEditDialog::DefaultFileIndex()
 
 void BookmarkEditDialog::on_btnShowAttachUI_clicked()
 {
-    ui->stwFileAttachments->setCurrentWidget(ui->pageAttachNew);
+    af_showAttachUI();
 }
 
 void BookmarkEditDialog::on_btnSetFileAsDefault_clicked()
@@ -341,7 +341,11 @@ void BookmarkEditDialog::on_twAttachedFiles_itemSelectionChanged()
 
 void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPoint& pos)
 {
-    //Qt automatically selects the item under mouse.
+    //[Clear selection on useless right-click]
+    if (ui->twAttachedFiles->itemAt(pos) == NULL)
+        ui->twAttachedFiles->clearSelection();
+
+    //Now  check for selection.
     int filesListIdx;
     if (ui->twAttachedFiles->selectedItems().empty())
         filesListIdx = -1;
@@ -351,26 +355,28 @@ void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
 
     typedef QKeySequence QKS;
     QMenu afMenu("Attached File Menu");
-    QAction* a_preview  = afMenu.addAction("&Preview",      this, SLOT(af_preview()),    QKS("Enter"));
-    QAction* a_open     = afMenu.addAction("&Open",         this, SLOT(af_open()),       QKS("Shift+Enter"));
-    QAction* a_openWith = afMenu.addAction("Open Wit&h...", this, SLOT(af_openWith()),   QKS("Ctrl+Enter"));
-                          afMenu.addSeparator();
-    QAction* a_setDef   = afMenu.addAction("Set &As Default",this,SLOT(af_setAsDefault()));
-    QAction* a_rename   = afMenu.addAction("Rena&me",       this, SLOT(af_rename()));
-    QAction* a_remove   = afMenu.addAction("Remo&ve",       this, SLOT(af_remove()),     QKS("Del"));
-                          afMenu.addSeparator();
-    QAction* a_props    = afMenu.addAction("P&roperties",   this, SLOT(af_properties()), QKS("Alt+Enter"));
 
-    a_preview ->setEnabled(fileSelected);
-    a_open    ->setEnabled(fileSelected);
-    a_openWith->setEnabled(fileSelected);
-    a_setDef  ->setEnabled(fileSelected);
-    a_rename  ->setEnabled(fileSelected);
-    a_remove  ->setEnabled(fileSelected);
-    a_props   ->setEnabled(fileSelected);
-
-    if (fileSelected)
+    if (!fileSelected)
     {
+        QAction* a_attach = afMenu.addAction("&Attach Files...",this,SLOT(af_showAttachUI()));
+        Q_UNUSED(a_attach);
+    }
+    else
+    {
+        QAction* a_preview  = afMenu.addAction("&Preview",      this, SLOT(af_preview()),    QKS("Enter"));
+        QAction* a_open     = afMenu.addAction("&Open",         this, SLOT(af_open()),       QKS("Shift+Enter"));
+        QAction* a_openWith = afMenu.addAction("Open Wit&h...", this, SLOT(af_openWith()),   QKS("Ctrl+Enter"));
+                              afMenu.addSeparator();
+        QAction* a_setDef   = afMenu.addAction("Set &As Default",this,SLOT(af_setAsDefault()));
+        QAction* a_rename   = afMenu.addAction("Rena&me",       this, SLOT(af_rename()));
+        QAction* a_remove   = afMenu.addAction("Remo&ve",       this, SLOT(af_remove()),     QKS("Del"));
+                              afMenu.addSeparator();
+        QAction* a_props    = afMenu.addAction("P&roperties",   this, SLOT(af_properties()), QKS("Alt+Enter"));
+
+        Q_UNUSED(a_openWith);
+        Q_UNUSED(a_remove);
+        Q_UNUSED(a_props);
+
         bool canPreview = dbm->fview.HasPreviewHandler(editedFilesList[filesListIdx].OriginalName);
         a_preview->setEnabled(canPreview);
         afMenu.setDefaultAction(canPreview ? a_preview : a_open);
@@ -464,6 +470,11 @@ void BookmarkEditDialog::ClearAndSwitchToAttachedFilesTab()
     ui->leFileName->clear();
     ui->chkRemoveOriginalFile->setChecked(false);
     ui->twAttachedFiles->setFocus();
+}
+
+void BookmarkEditDialog::af_showAttachUI()
+{
+    ui->stwFileAttachments->setCurrentWidget(ui->pageAttachNew);
 }
 
 void BookmarkEditDialog::af_previewOrOpen()

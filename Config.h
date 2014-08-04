@@ -2,6 +2,12 @@
 #include <QDebug>
 #include <QString>
 
+//Note: [Clear selection on useless right-click]
+//Qt automatically selects the item under mouse, but if an item is already selected, it doesn't
+//  deselect it when an item-less area is clicked! So we deselect it automatically. However
+//  this also disables the BOTH-CLICK action in Win7 for displaying the context menu; we do
+//  nothing about it.
+
 /// TODO: Plan:
 ///   - File Manager
 ///   - Make the changes that we need to require multiple file attaching and do it.
