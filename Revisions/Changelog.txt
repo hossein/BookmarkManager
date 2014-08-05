@@ -1,0 +1,14 @@
+2014-03-??  00   Start
+2014-03-20  12  Initial Version, tags and filename in Bookmark table, only one DBManager class for all
+2014-03-25  24  Separate manager and table for tags and files and bookmarks, multiple files UI
+2014-03-27  33  Implemented tag handling by DB, File Retrieval by DB, some BookmarkEditDialog tag and file handling
+2014-03-29  32  Implemented file management (both db and disk) and improved and almost completed BMEditDialog's 
+                file handling, transactional file operations, also implemented File trashing (not viewing the trash).
+2014-03-31  22  Worked on the Add/Edit dialog more and almost implemented the DefFile.
+2014-04-01  21  Worked more on file handling and file transactions.
+2014-04-03  26  Worked on default file selection and editdialog's attached files context menu preparation.
+2014-04-08  19  Default file selection completed, Rename and Remove in BMEditDlg implemented, bugfixes,
+                added adding date property for bookmarks.
+2014-04-10  18  Implemented FileViewManager as a new manager, bugfixes.
+2014-04-11  13  Implemented MainWindow selection saving, bugfixing.
+2014-04-15  13  Small improvement for file selection in Add/Edit dialog.
