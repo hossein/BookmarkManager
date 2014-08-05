@@ -85,6 +85,43 @@ void MainWindow::tvBookmarksCurrentRowChanged(const QModelIndex& current, const 
     ui->btnDelete->setEnabled(valid);
 }
 
+void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
+{
+    //Disconnect this signal-slot connection to make sure ItemChanged
+    //  signals for lwTags are not fired while updating the tag item's checkState.
+    //  We connect it at function's end.
+    //static int i = 0;
+    //qDebug() << "CHANGE" << i++;
+    //Strange: This doesn't work:
+    //disconnect(ui->lwTags, SIGNAL(itemChanged(QListWidgetItem*)));
+    ui->lwTags->disconnect(SIGNAL(itemChanged(QListWidgetItem*)));
+
+    long long theTID = item->data(Qt::UserRole + 0).toLongLong();
+
+    if (theTID == -1)
+    {
+        //The "All Tags" item was checked/unchecked. Check/Uncheck all tags.
+        Qt::CheckState checkState = item->checkState();
+        foreach (QListWidgetItem* item, tagItems.values())
+            item->setCheckState(checkState);
+    }
+    else
+    {
+        //A tag item was checked/unchecked. Set the check state of the "All Tags" item.
+        TagCheckStateResult tagsCheckState = areAllTagsChecked();
+        if (tagsCheckState == TCSR_NoneChecked)
+            ui->lwTags->item(0)->setCheckState(Qt::Unchecked);
+        else if (tagsCheckState == TCSR_SomeChecked)
+            ui->lwTags->item(0)->setCheckState(Qt::PartiallyChecked);
+        else if (tagsCheckState == TCSR_AllChecked)
+            ui->lwTags->item(0)->setCheckState(Qt::Checked);
+    }
+
+    //Connect the signal we disconnected.
+    connect(ui->lwTags, SIGNAL(itemChanged(QListWidgetItem*)),
+            this, SLOT(lwTagsItemChanged(QListWidgetItem*)));
+}
+
 void MainWindow::LoadDatabaseAndUI()
 {
     bool success;
@@ -101,6 +138,11 @@ void MainWindow::RefreshUIDataDisplay(MainWindow::RefreshAction bookmarksAction,
                                       MainWindow::RefreshAction tagsAction, long long selectTID)
 {
     //TODO: What about sorting?
+
+    //TODO: If some or all tags are checked, we need to preserve their check state.
+    //  ALSO: If a new tag is added in this situation, it needs to become Checked so that it's
+    //  visible in the tags list.
+
     //Calling this function after changes is needed, even for the bookmarks list.
     //  The model does NOT automatically update its view. Actually calliong `PopulateModels`
     //  DOES invalidate the selection, etc, but the tableView is not updated.
@@ -114,6 +156,11 @@ void MainWindow::RefreshUIDataDisplay(MainWindow::RefreshAction bookmarksAction,
     //[RestoringScrollPositionProceedsCustomSelection]
     //This is useful for tags, where we want to ensure the selected tag is visible even if new tags
     //  are added, while keeping the previous original scroll position if possible.
+
+    //Disconnect this signal-slot connection to make sure ItemChanged
+    //  signals for lwTags are not fired while updating the tags view.
+    //  We connect it at function's end.
+    ui->lwTags->disconnect(SIGNAL(itemChanged(QListWidgetItem*)));
 
     int selectedTId = -1, selectedBRow = -1;
     int hTagsScrollPos = 0, hBScrollPos = 0, vBScrollPos = 0;
@@ -171,6 +218,10 @@ void MainWindow::RefreshUIDataDisplay(MainWindow::RefreshAction bookmarksAction,
         ui->tvBookmarks->setFocus();
     if (tagsAction & RA_Focus)
         ui->lwTags->setFocus();
+
+    //Connect the signal we disconnected.
+    connect(ui->lwTags, SIGNAL(itemChanged(QListWidgetItem*)),
+            this, SLOT(lwTagsItemChanged(QListWidgetItem*)));
 }
 
 void MainWindow::RefreshTVBookmarksModelView()
@@ -278,9 +329,6 @@ void MainWindow::DeleteSelectedBookmark()
 
 void MainWindow::RefreshTagsDisplay()
 {
-    //TODO: A bold "All Tags" item at top which get checked/unchecked when an item is
-    //  selected/deselected.
-
     //Explains checkboxes with both QListWidget and QListView.
     //  http://www.qtcentre.org/threads/47119-checkbox-on-QListView
 
@@ -290,6 +338,19 @@ void MainWindow::RefreshTagsDisplay()
     tagItems.clear();
     ui->lwTags->clear();
 
+    //Add the bold "All Tags" item at top which get checked/unchecked when an item is
+    //  selected/deselected.
+    //We don't need to keep the "All Tags" item separate.
+    //  We simply don't put it in `tagItems` to not require skipping the first item or something.
+    item = new QListWidgetItem("All Tags");
+    QFont boldFont(this->font());
+    boldFont.setBold(true);
+    item->setFont(boldFont);
+    item->setCheckState(Qt::Unchecked);
+    item->setData(Qt::UserRole + 0, -1);
+    ui->lwTags->addItem(item);
+
+    //Add the rest of the tags.
     const int TIDIdx = dbm.tags.tidx.TID;
     const int tagNameIdx = dbm.tags.tidx.TagName;
     int tagsCount = dbm.tags.model.rowCount();
@@ -322,4 +383,29 @@ void MainWindow::SelectTagWithID(long long tagId)
     ui->lwTags->selectedItems().clear();
     ui->lwTags->selectedItems().append(item);
     ui->lwTags->scrollToItem(item, QAbstractItemView::EnsureVisible);
+}
+
+MainWindow::TagCheckStateResult MainWindow::areAllTagsChecked()
+{
+    bool seenChecked = false;
+    bool seenUnchecked = false;
+    foreach (QListWidgetItem* item, tagItems.values())
+    {
+        if (seenChecked && seenUnchecked)
+            break;
+
+        if (item->checkState() == Qt::Checked)
+            seenChecked = true;
+        else if (item->checkState() == Qt::Unchecked)
+            seenUnchecked = true;
+    }
+
+    if (seenChecked && seenUnchecked)
+        return TCSR_SomeChecked;
+    else if (seenChecked) // && !seenUnchecked
+        return TCSR_AllChecked;
+    else if (seenUnchecked) // && !seenChecked
+        return TCSR_NoneChecked;
+    else //Empty tag items.
+        return TCSR_NoneChecked;
 }

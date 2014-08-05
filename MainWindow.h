@@ -31,6 +31,7 @@ private slots:
     void on_btnDelete_clicked();
     void on_tvBookmarks_activated(const QModelIndex &index);
     void tvBookmarksCurrentRowChanged(const QModelIndex& current, const QModelIndex& previous);
+    void lwTagsItemChanged(QListWidgetItem* item);
 
 private:
     void LoadDatabaseAndUI();
@@ -63,4 +64,11 @@ private:
     void RefreshTagsDisplay();
     long long GetSelectedTagID();
     void SelectTagWithID(long long tagId);
+    enum TagCheckStateResult
+    {
+        TCSR_NoneChecked = 0,
+        TCSR_SomeChecked = 1,
+        TCSR_AllChecked = 2,
+    };
+    TagCheckStateResult areAllTagsChecked();
 };
