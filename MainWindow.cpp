@@ -2,6 +2,7 @@
 #include "ui_MainWindow.h"
 
 #include "BookmarkEditDialog.h"
+#include "BookmarksFilteredByTagsSortProxyModel.h"
 
 #include <QDebug>
 #include <QDir>
@@ -121,7 +122,11 @@ void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
     connect(ui->lwTags, SIGNAL(itemChanged(QListWidgetItem*)),
             this, SLOT(lwTagsItemChanged(QListWidgetItem*)));
 
-    //TODO: Now filter the bookmarks according to those tags.
+    //Now filter the bookmarks according to those tags.
+    RefreshTVBookmarksModelView();
+    //TODO: Q: Shall we use this? This even re-populates the models:
+    //      A: Yes, if we want to possibly save the selection.
+    //RefreshUIDataDisplay(RA_SaveSelAndFocus);
 }
 
 void MainWindow::LoadDatabaseAndUI()
@@ -228,7 +233,31 @@ void MainWindow::RefreshUIDataDisplay(MainWindow::RefreshAction bookmarksAction,
 
 void MainWindow::RefreshTVBookmarksModelView()
 {
-    ui->tvBookmarks->setModel(&dbm.bms.model);
+    //First we check if "All Items" is checked or not. If it's fully checked or fully unchecked,
+    //  we don't filter by tags.
+    bool allTagsOrNoneOfTheTags = ui->lwTags->item(0)->checkState() == Qt::Checked
+                               || ui->lwTags->item(0)->checkState() == Qt::Unchecked;
+
+    if (allTagsOrNoneOfTheTags)
+    {
+        ui->tvBookmarks->setModel(&dbm.bms.model);
+    }
+    else
+    {
+        QSet<long long> tagIDs;
+        for (auto it = tagItems.constBegin(); it != tagItems.constEnd(); ++it)
+            if (it.value()->checkState() == Qt::Checked) //"All Items" is excluded by this condition.
+                tagIDs.insert(it.key());
+
+        BookmarksFilteredByTagsSortProxyModel* filteredBookmarksModel =
+                new BookmarksFilteredByTagsSortProxyModel(&dbm, tagIDs, this, &conf, this);
+        filteredBookmarksModel->setSourceModel(&dbm.bms.model);
+
+        //NOTE: After we are done with this model; we have to delete it, don't we? Otherwise we
+        //  end up with plenty of unused proxy models in memory until MainWindow is destructed.
+        //  Check when this model is deleted using diagnostic messages with destructors.
+        ui->tvBookmarks->setModel(filteredBookmarksModel);
+    }
 
     QHeaderView* hh = ui->tvBookmarks->horizontalHeader();
 

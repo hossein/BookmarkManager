@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     TagManager.cpp \
     Util.cpp \
     TransactionalFileOperator.cpp \
-    FileViewManager.cpp
+    FileViewManager.cpp \
+    BookmarksFilteredByTagsSortProxyModel.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -38,7 +39,8 @@ HEADERS  += MainWindow.h \
     ISubManager.h \
     Util.h \
     TransactionalFileOperator.h \
-    FileViewManager.h
+    FileViewManager.h \
+    BookmarksFilteredByTagsSortProxyModel.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui
