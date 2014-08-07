@@ -286,7 +286,9 @@ void MainWindow::RefreshTVBookmarksModelView()
 void MainWindow::NewBookmark()
 {
     long long addedBId;
-    BookmarkEditDialog* bmEditDialog = new BookmarkEditDialog(&dbm, -1, &addedBId, this);
+    QList<long long> newlyAssociatedTIDs;
+    BookmarkEditDialog* bmEditDialog = new BookmarkEditDialog(&dbm, -1, &addedBId,
+                                                              &newlyAssociatedTIDs, this);
 
     int result = bmEditDialog->exec();
     if (result != QDialog::Accepted)
@@ -326,7 +328,9 @@ void MainWindow::ViewSelectedBookmark()
 
 void MainWindow::EditSelectedBookmark()
 {
-    BookmarkEditDialog* bmEditDialog = new BookmarkEditDialog(&dbm, GetSelectedBookmarkID(), NULL, this);
+    QList<long long> newlyAssociatedTIDs;
+    BookmarkEditDialog* bmEditDialog = new BookmarkEditDialog(&dbm, GetSelectedBookmarkID(), NULL,
+                                                              &newlyAssociatedTIDs, this);
 
     if (!bmEditDialog->canShow())
         return; //In case of errors a message is already shown.

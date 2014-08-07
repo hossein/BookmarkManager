@@ -16,10 +16,11 @@
 //      remaining. We achieve this by not keeping a editedDefBFID and instead having a bool field
 //      editedFilesList.
 
-BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm,
-                                       long long editBId, long long* resultAddedBId, QWidget *parent) :
+BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId,
+                                       long long* resultAddedBId, QList<long long>* associatedTIDs,
+                                       QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm),
-    canShowTheDialog(false), reportAddedBId(resultAddedBId),
+    canShowTheDialog(false), reportAddedBId(resultAddedBId), associatedTIDs(associatedTIDs),
     originalEditBId(editBId), editBId(editBId) //[why-two-editbids]
 {
     ui->setupUi(this);
@@ -105,6 +106,7 @@ void BookmarkEditDialog::accept()
     QStringList tagsList = ui->leTags->text().split(' ', QString::SkipEmptyParts);
 
     bool success;
+    QList<long long> newAssociatedTIDs;
 
     //We do NOT use the transactions in a nested manner. This 'linear' ('together') mode is was
     //  not only and easier to understand, it's better for error management, too.
@@ -118,7 +120,7 @@ void BookmarkEditDialog::accept()
         if (!success)
             return DoRollBackAction();
 
-        success = dbm->tags.SetBookmarkTags(editBId, tagsList);
+        success = dbm->tags.SetBookmarkTags(editBId, tagsList, newAssociatedTIDs);
         if (!success)
             return DoRollBackAction();
 
@@ -149,6 +151,9 @@ void BookmarkEditDialog::accept()
     {
         if (reportAddedBId != NULL)
             *reportAddedBId = editBId;
+
+        if (associatedTIDs != NULL)
+            associatedTIDs->append(newAssociatedTIDs);
 
         QDialog::accept();
     }

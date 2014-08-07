@@ -27,7 +27,8 @@ bool TagManager::RetrieveBookmarkTags(long long BID, QStringList& tagsList)
     return true;
 }
 
-bool TagManager::SetBookmarkTags(long long BID, const QStringList& tagsList)
+bool TagManager::SetBookmarkTags(long long BID, const QStringList& tagsList,
+                                 QList<long long>& associatedTIDs)
 {
     QString setTagsError = "Could not alter tag information for bookmark in the database.";
     QSqlQuery query(db);
@@ -68,9 +69,11 @@ bool TagManager::SetBookmarkTags(long long BID, const QStringList& tagsList)
     }
 
     //Add the new tags to DB.
+    associatedTIDs.clear(); //Do it for user.
     for (int i = 0; i < tagsToAdd.count(); i++)
     {
         long long TID = MaybeCreateTagAndReturnTID(tagsToAdd[i]);
+        associatedTIDs.append(TID);
 
         query.prepare("INSERT INTO BookmarkTag ( BID , TID ) VALUES ( ? , ? )");
         query.addBindValue(BID);

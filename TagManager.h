@@ -25,7 +25,11 @@ public:
 
     bool RetrieveBookmarkTags(long long BID, QStringList& tagsList);
     /// It's okay if tags are duplicate.
-    bool SetBookmarkTags(long long BID, const QStringList& tagsList);
+    /// Puts only those tags who were added to the bookmark in associatedTIDs, whether tags were
+    /// themselves new or not. E.g if a bookmark is tagged A B C and we call this function with
+    /// tags B C D, it just puts D in the associatedTIDs, whether or not a tag called D already
+    /// exists or not.
+    bool SetBookmarkTags(long long BID, const QStringList& tagsList, QList<long long>& associatedTIDs);
 
 private:
     long long MaybeCreateTagAndReturnTID(const QString& tagName);
