@@ -11,12 +11,18 @@ class BookmarkEditDialog : public QDialog
 {
     Q_OBJECT
 
+public:
+    struct OutParams
+    {
+        long long addedBId;
+        QList<long long> associatedTIDs;
+    };
+
 private:
     Ui::BookmarkEditDialog *ui;
     DatabaseManager* dbm;
     bool canShowTheDialog;
-    long long* out_reportAddedBId;
-    QList<long long>* out_associatedTIDs;
+    OutParams* outParams;
     long long originalEditBId;
     long long editBId;
     //The contents of this MUST NOT CHANGE during data editing in the dialog.
@@ -29,8 +35,7 @@ private:
 
 public:
     explicit BookmarkEditDialog(DatabaseManager* dbm, long long editBId = -1,
-                                long long* resultAddedBId = NULL, QList<long long>* associatedTIDs = NULL,
-                                QWidget *parent = 0);
+                                OutParams* outParams = NULL, QWidget *parent = 0);
     ~BookmarkEditDialog();
 
 public:

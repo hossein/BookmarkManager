@@ -17,10 +17,9 @@
 //      editedFilesList.
 
 BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId,
-                                       long long* resultAddedBId, QList<long long>* associatedTIDs,
-                                       QWidget *parent) :
+                                       OutParams* outParams, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm),
-    canShowTheDialog(false), out_reportAddedBId(resultAddedBId), out_associatedTIDs(associatedTIDs),
+    canShowTheDialog(false), outParams(outParams),
     originalEditBId(editBId), editBId(editBId) //[why-two-editbids]
 {
     ui->setupUi(this);
@@ -149,11 +148,11 @@ void BookmarkEditDialog::accept()
 
     if (success)
     {
-        if (out_reportAddedBId != NULL)
-            *out_reportAddedBId = editBId;
-
-        if (out_associatedTIDs != NULL)
-            out_associatedTIDs->append(associatedTIDs);
+        if (outParams != NULL)
+        {
+            outParams->addedBId = editBId;
+            outParams->associatedTIDs.append(associatedTIDs);
+        }
 
         QDialog::accept();
     }
