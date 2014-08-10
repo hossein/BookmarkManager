@@ -122,6 +122,10 @@ void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
     connect(ui->lwTags, SIGNAL(itemChanged(QListWidgetItem*)),
             this, SLOT(lwTagsItemChanged(QListWidgetItem*)));
 
+    //TODO: If you check C++ tag and the second bookmark is the only filtered bookmark, double-clicking
+    //  it opens the Edit dialog for the FIRST bookmark! Is it related to the following TODO? That we
+    //  have to use RefreshUIDataDisplay for it?
+
     //Now filter the bookmarks according to those tags.
     RefreshTVBookmarksModelView();
     //TODO: Q: Shall we use this? This even re-populates the models:
@@ -141,8 +145,10 @@ void MainWindow::LoadDatabaseAndUI()
     RefreshUIDataDisplay(RA_Focus);
 }
 
-void MainWindow::RefreshUIDataDisplay(MainWindow::RefreshAction bookmarksAction, long long selectBID,
-                                      MainWindow::RefreshAction tagsAction, long long selectTID)
+void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
+                                      MainWindow::RefreshAction bookmarksAction, long long selectBID,
+                                      MainWindow::RefreshAction tagsAction, long long selectTID,
+                                      const QList<long long>& newTIDsToCheck)
 {
     //TODO: What about sorting?
 
@@ -188,9 +194,17 @@ void MainWindow::RefreshUIDataDisplay(MainWindow::RefreshAction bookmarksAction,
     if (tagsAction & RA_SaveScrollPos)
         if (ui->lwTags->verticalScrollBar() != NULL)
             hTagsScrollPos = ui->lwTags->verticalScrollBar()->value();
+    //ONLY care about check states if there were already tag FILTERations.
+    //TODO: Can cache the result of `areAllTagsChecked` in "All Items" check box.
+    bool mustCareAboutCheckStates = (TCSR_SomeChecked == areAllTagsChecked());
+    QList<long long> checkedTIDs;
+    if ((tagsAction & RA_SaveCheckState) && mustCareAboutCheckStates)
+        checkedTIDs  = GetCheckedTIDs();
 
     //Real updating here
-    dbm.PopulateModels();
+    if (rePopulateModels)
+        dbm.PopulateModels();
+
     RefreshTagsDisplay();
     RefreshTVBookmarksModelView();
 
@@ -226,6 +240,21 @@ void MainWindow::RefreshUIDataDisplay(MainWindow::RefreshAction bookmarksAction,
     if (tagsAction & RA_Focus)
         ui->lwTags->setFocus();
 
+    //Now make sure those we want to check are checked.
+    //Note: If `!mustCareAboutCheckStates` then the `checkedTIDs` list is already empty,
+    //  however the user supplied `newTIDsToCheck` contains items so we do need the
+    //  `mustCareAboutCheckStates` at the beginning to prevent checking additional items.
+    if ((tagsAction & RA_SaveCheckState) && mustCareAboutCheckStates)
+    {
+        //New TIDs are already added to `tagItems` as the tags are refreshed above.
+        foreach (long long checkTID, checkedTIDs)
+            tagItems[checkTID]->setCheckState(Qt::Checked);
+
+        //We check additional items ONLY IF RA_SaveCheckState is set.
+        foreach (long long checkTID, newTIDsToCheck)
+            tagItems[checkTID]->setCheckState(Qt::Checked);
+    }
+
     //Connect the signal we disconnected.
     connect(ui->lwTags, SIGNAL(itemChanged(QListWidgetItem*)),
             this, SLOT(lwTagsItemChanged(QListWidgetItem*)));
@@ -244,9 +273,11 @@ void MainWindow::RefreshTVBookmarksModelView()
     }
     else
     {
+        //"All Items" does not appear in `tagItems`. Even if it was, it was excluded by the Qt::Checked
+        //  condition, as we have already checked `allTagsOrNoneOfTheTags`.
         QSet<long long> tagIDs;
         for (auto it = tagItems.constBegin(); it != tagItems.constEnd(); ++it)
-            if (it.value()->checkState() == Qt::Checked) //"All Items" is excluded by this condition.
+            if (it.value()->checkState() == Qt::Checked)
                 tagIDs.insert(it.key());
 
         BookmarksFilteredByTagsSortProxyModel* filteredBookmarksModel =
@@ -292,7 +323,8 @@ void MainWindow::NewBookmark()
     if (result != QDialog::Accepted)
         return;
 
-    RefreshUIDataDisplay(RA_CustomSelectAndFocus, outParams.addedBId, RA_SaveSelAndScroll);
+    RefreshUIDataDisplay(true, RA_CustomSelectAndFocus, outParams.addedBId, RA_SaveSelAndScrollAndCheck,
+                         -1, outParams.associatedTIDs);
 }
 
 long long MainWindow::GetSelectedBookmarkID()
@@ -337,7 +369,8 @@ void MainWindow::EditSelectedBookmark()
     if (result != QDialog::Accepted)
         return;
 
-    RefreshUIDataDisplay(RA_SaveSelAndScrollAndFocus, -1, RA_SaveSelAndScroll);
+    RefreshUIDataDisplay(true, RA_SaveSelAndScrollAndFocus, -1, RA_SaveSelAndScrollAndCheck,
+                         -1, outParams.associatedTIDs);
 }
 
 void MainWindow::DeleteSelectedBookmark()
@@ -357,7 +390,7 @@ void MainWindow::DeleteSelectedBookmark()
     if (!success)
         return;
 
-    RefreshUIDataDisplay(RA_SaveScrollPosAndFocus, -1, RA_SaveSelAndScroll);
+    RefreshUIDataDisplay(true, RA_SaveScrollPosAndFocus, -1, RA_SaveSelAndScrollAndCheck);
 }
 
 void MainWindow::RefreshTagsDisplay()
@@ -441,4 +474,13 @@ MainWindow::TagCheckStateResult MainWindow::areAllTagsChecked()
         return TCSR_NoneChecked;
     else //Empty tag items.
         return TCSR_NoneChecked;
+}
+
+QList<long long> MainWindow::GetCheckedTIDs()
+{
+    QList<long long> checkedTIDs;
+    for (auto it = tagItems.constBegin(); it != tagItems.constEnd(); ++it)
+        if (it.value()->checkState() == Qt::Checked) //"All Items" does not appear in `tagItems`.
+            checkedTIDs.append(it.key());
+    return checkedTIDs;
 }

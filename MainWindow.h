@@ -44,14 +44,17 @@ private:
         RA_SaveSelAndScroll = RA_SaveSel | RA_SaveScrollPos,
         RA_CustomSelect = 0x04,
         RA_Focus = 0x08, //Make the selection vivid blue! Instead of gray.
-        //RA_SaveCheckState = 0x10, //Only for Tags
         RA_SaveSelAndFocus = RA_SaveSel | RA_Focus,
         RA_SaveScrollPosAndFocus = RA_SaveScrollPos | RA_Focus,
         RA_SaveSelAndScrollAndFocus = RA_SaveSelAndScroll | RA_Focus,
-        RA_CustomSelectAndFocus = RA_CustomSelect | RA_Focus
+        RA_CustomSelectAndFocus = RA_CustomSelect | RA_Focus,
+        RA_SaveCheckState = 0x10, //Only for Tags
+        RA_SaveSelAndScrollAndCheck = RA_SaveSelAndScroll | RA_SaveCheckState
     };
-    void RefreshUIDataDisplay(RefreshAction bookmarksAction = RA_None, long long selectBID = -1,
-                              RefreshAction tagsAction = RA_None, long long selectTID = -1);
+    void RefreshUIDataDisplay(bool rePopulateModels,
+                              RefreshAction bookmarksAction = RA_None, long long selectBID = -1,
+                              RefreshAction tagsAction = RA_None, long long selectTID = -1,
+                              const QList<long long>& newTIDsToCheck = QList<long long>());
 
 
     void RefreshTVBookmarksModelView();
@@ -72,4 +75,5 @@ private:
         TCSR_AllChecked = 2,
     };
     TagCheckStateResult areAllTagsChecked();
+    QList<long long> GetCheckedTIDs();
 };
