@@ -14,3 +14,5 @@
 2014-04-15  13  Small improvement for file selection in Add/Edit dialog.
 2014-08-23  15  Implemented the "All Tags" checkbox UI only.
 2014-08-24  17  Initial implementation of filtering Bookmarks by Tags.
+2014-08-25  19  Implemented RA_SaveCheckState and passing associated TIDs from TagManager::
+                SetBookmarkTags to MainWindow to check them.

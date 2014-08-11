@@ -130,7 +130,7 @@ void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
     RefreshTVBookmarksModelView();
     //TODO: Q: Shall we use this? This even re-populates the models:
     //      A: Yes, if we want to possibly save the selection.
-    //RefreshUIDataDisplay(RA_SaveSelAndFocus);
+    //RefreshUIDataDisplay(false, RA_SaveSelAndFocus);
 }
 
 void MainWindow::LoadDatabaseAndUI()
@@ -142,7 +142,7 @@ void MainWindow::LoadDatabaseAndUI()
     if (!success)
         return;
 
-    RefreshUIDataDisplay(RA_Focus);
+    RefreshUIDataDisplay(true, RA_Focus);
 }
 
 void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
