@@ -5,11 +5,23 @@
 #include <QtSql/QSqlResult>
 
 BookmarksFilteredByTagsSortProxyModel::BookmarksFilteredByTagsSortProxyModel
-    (DatabaseManager* dbm, const QSet<long long>& tagIDs,
+    (DatabaseManager* dbm,
      QWidget* dialogParent, Config* conf, QObject* parent)
-    : QSortFilterProxyModel(parent), IManager(dialogParent, conf), dbm(dbm)
+    : QSortFilterProxyModel(parent), IManager(dialogParent, conf), dbm(dbm), allowAllTags(true)
 {
-    populateValidBookmarkIDs(tagIDs);
+
+}
+
+void BookmarksFilteredByTagsSortProxyModel::ClearFilters()
+{
+    allowAllTags = true;
+    filteredBookmarkIDs.clear();
+}
+
+bool BookmarksFilteredByTagsSortProxyModel::FilterSpecificTagIDs(const QSet<long long>& tagIDs)
+{
+    allowAllTags = false;
+    return populateValidBookmarkIDs(tagIDs);
 }
 
 bool BookmarksFilteredByTagsSortProxyModel::populateValidBookmarkIDs(const QSet<long long>& tagIDs)
@@ -31,8 +43,7 @@ bool BookmarksFilteredByTagsSortProxyModel::populateValidBookmarkIDs(const QSet<
     if (!query.exec())
         return Error(retrieveError, query.lastError());
 
-    //Clear this before further work; although in current implementation we only reach here
-    //  via constructor.
+    //Might have remained from previous filter; called without calling `ClearFilters` first.
     filteredBookmarkIDs.clear();
 
     //TODO: Test with zero bookmarks to see if `query.record()` works or not.
@@ -52,8 +63,12 @@ bool BookmarksFilteredByTagsSortProxyModel::filterAcceptsRow
 {
     Q_UNUSED(source_parent);
 
+    if (allowAllTags)
+        return true;
+
     if (filteredBookmarkIDs.contains(
         dbm->bms.model.index(source_row, dbm->bms.bidx.BID).data().toLongLong()))
         return true;
+
     return false;
 }

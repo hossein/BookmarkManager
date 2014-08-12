@@ -11,11 +11,15 @@ class BookmarksFilteredByTagsSortProxyModel : public QSortFilterProxyModel, publ
 
 private:
     DatabaseManager* dbm;
+    bool allowAllTags;
     QSet<long long> filteredBookmarkIDs;
 
 public:
-    BookmarksFilteredByTagsSortProxyModel(DatabaseManager* dbm, const QSet<long long>& tagIDs,
-                                         QWidget* dialogParent, Config* conf, QObject* parent = NULL);
+    BookmarksFilteredByTagsSortProxyModel(DatabaseManager* dbm, QWidget* dialogParent, Config* conf,
+                                          QObject* parent = NULL);
+
+    void ClearFilters();
+    bool FilterSpecificTagIDs(const QSet<long long>& tagIDs);
 
 private:
     bool populateValidBookmarkIDs(const QSet<long long>& tagIDs);
