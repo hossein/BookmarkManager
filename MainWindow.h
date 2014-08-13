@@ -4,6 +4,7 @@
 #include "Config.h"
 #include "DatabaseManager.h"
 #include "FileManager.h"
+#include "BookmarksFilteredByTagsSortProxyModel.h"
 
 #include <QHash>
 #include <QModelIndex>
@@ -20,6 +21,7 @@ private:
     Config conf;
     DatabaseManager dbm;
     QHash<long long, QListWidgetItem*> tagItems;
+    BookmarksFilteredByTagsSortProxyModel filteredBookmarksModel;
 
 public:
     explicit MainWindow(QWidget *parent = 0);

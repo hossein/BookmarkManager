@@ -2,7 +2,6 @@
 #include "ui_MainWindow.h"
 
 #include "BookmarkEditDialog.h"
-#include "BookmarksFilteredByTagsSortProxyModel.h"
 
 #include <QDebug>
 #include <QDir>
@@ -13,7 +12,8 @@
 #include <QtGui/QToolButton>
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent), ui(new Ui::MainWindow), dbm(this, &conf)
+    QMainWindow(parent), ui(new Ui::MainWindow), conf(), dbm(this, &conf),
+    filteredBookmarksModel(&dbm, this, &conf, this)
 {
     ui->setupUi(this);
 
@@ -211,7 +211,7 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
     //Pour out saved selections, scrolls, etc.
     if (bookmarksAction & RA_SaveSel)
         if (selectedBRow != -1)
-            ui->tvBookmarks->setCurrentIndex(dbm.bms.model.index(selectedBRow, 0));
+            ui->tvBookmarks->setCurrentIndex(filteredBookmarksModel.index(selectedBRow, 0));
     if (tagsAction & RA_SaveSel)
         if (selectedTId != -1)
             SelectTagWithID(selectedTId);
@@ -267,9 +267,11 @@ void MainWindow::RefreshTVBookmarksModelView()
     bool allTagsOrNoneOfTheTags = ui->lwTags->item(0)->checkState() == Qt::Checked
                                || ui->lwTags->item(0)->checkState() == Qt::Unchecked;
 
+    //TODO: Neede everytime?
+    filteredBookmarksModel.setSourceModel(&dbm.bms.model);
     if (allTagsOrNoneOfTheTags)
     {
-        ui->tvBookmarks->setModel(&dbm.bms.model);
+        filteredBookmarksModel.ClearFilters();
     }
     else
     {
@@ -280,15 +282,10 @@ void MainWindow::RefreshTVBookmarksModelView()
             if (it.value()->checkState() == Qt::Checked)
                 tagIDs.insert(it.key());
 
-        BookmarksFilteredByTagsSortProxyModel* filteredBookmarksModel =
-                new BookmarksFilteredByTagsSortProxyModel(&dbm, tagIDs, this, &conf, this);
-        filteredBookmarksModel->setSourceModel(&dbm.bms.model);
-
-        //NOTE: After we are done with this model; we have to delete it, don't we? Otherwise we
-        //  end up with plenty of unused proxy models in memory until MainWindow is destructed.
-        //  Check when this model is deleted using diagnostic messages with destructors.
-        ui->tvBookmarks->setModel(filteredBookmarksModel);
+        filteredBookmarksModel.FilterSpecificTagIDs(tagIDs);
     }
+
+    ui->tvBookmarks->setModel(&filteredBookmarksModel);
 
     QHeaderView* hh = ui->tvBookmarks->horizontalHeader();
 
@@ -334,18 +331,19 @@ long long MainWindow::GetSelectedBookmarkID()
 
     int selRow = ui->tvBookmarks->currentIndex().row();
     int selectedBId =
-            dbm.bms.model.data(dbm.bms.model.index(selRow, dbm.bms.bidx.BID)).toLongLong();
+            filteredBookmarksModel.data(filteredBookmarksModel.index(selRow, dbm.bms.bidx.BID))
+                                  .toLongLong();
     return selectedBId;
 }
 
 void MainWindow::SelectBookmarkWithID(long long bookmarkId)
 {
-    QModelIndexList matches = dbm.bms.model.match(
-                dbm.bms.model.index(0, dbm.bms.bidx.BID), Qt::DisplayRole,
+    QModelIndexList matches = filteredBookmarksModel.match(
+                filteredBookmarksModel.index(0, dbm.bms.bidx.BID), Qt::DisplayRole,
                 bookmarkId, 1, Qt::MatchExactly);
 
     if (matches.length() != 1)
-        return; //Not found for some reason.
+        return; //Not found for some reason, e.g filtered out.
 
     ui->tvBookmarks->setCurrentIndex(matches[0]);
     ui->tvBookmarks->scrollTo(matches[0], QAbstractItemView::EnsureVisible);
@@ -377,7 +375,8 @@ void MainWindow::DeleteSelectedBookmark()
 {
     int selRow = ui->tvBookmarks->currentIndex().row();
     QString selectedBookmarkName =
-            dbm.bms.model.data(dbm.bms.model.index(selRow, dbm.bms.bidx.Name)).toString();
+            filteredBookmarksModel.data(filteredBookmarksModel.index(selRow, dbm.bms.bidx.Name))
+                                  .toString();
 
     if (QMessageBox::Yes !=
         QMessageBox::question(this, "Delete Bookmark",
