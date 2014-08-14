@@ -5,8 +5,7 @@
 #include <QtSql/QSqlResult>
 
 BookmarksFilteredByTagsSortProxyModel::BookmarksFilteredByTagsSortProxyModel
-    (DatabaseManager* dbm,
-     QWidget* dialogParent, Config* conf, QObject* parent)
+    (DatabaseManager* dbm, QWidget* dialogParent, Config* conf, QObject* parent)
     : QSortFilterProxyModel(parent), IManager(dialogParent, conf), dbm(dbm), allowAllTags(true)
 {
 
@@ -16,12 +15,15 @@ void BookmarksFilteredByTagsSortProxyModel::ClearFilters()
 {
     allowAllTags = true;
     filteredBookmarkIDs.clear();
+    invalidateFilter(); //Read function header docs
 }
 
 bool BookmarksFilteredByTagsSortProxyModel::FilterSpecificTagIDs(const QSet<long long>& tagIDs)
 {
     allowAllTags = false;
-    return populateValidBookmarkIDs(tagIDs);
+    bool populateSuccess = populateValidBookmarkIDs(tagIDs);
+    invalidateFilter(); //Read function header docs
+    return populateSuccess;
 }
 
 bool BookmarksFilteredByTagsSortProxyModel::populateValidBookmarkIDs(const QSet<long long>& tagIDs)
