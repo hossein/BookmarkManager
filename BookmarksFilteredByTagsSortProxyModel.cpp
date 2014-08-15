@@ -35,7 +35,7 @@ bool BookmarksFilteredByTagsSortProxyModel::populateValidBookmarkIDs(const QSet<
         commaSeparatedTIDs += QString::number(TID) + ",";
     //Remove the last comma.
     if (commaSeparatedTIDs.length() > 0) //Empty-check
-        commaSeparatedTIDs = commaSeparatedTIDs.left(commaSeparatedTIDs.length() - 1);
+        commaSeparatedTIDs.chop(1);
 
     QString retrieveError = "Could not get tag information for bookmarks from database.";
     QSqlQuery query(dbm->db);

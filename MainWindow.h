@@ -57,7 +57,7 @@ private:
                               RefreshAction bookmarksAction = RA_None, long long selectBID = -1,
                               RefreshAction tagsAction = RA_None, long long selectTID = -1,
                               const QList<long long>& newTIDsToCheck = QList<long long>());
-
+    void RefreshStatusLabels();
 
     void RefreshTVBookmarksModelView();
     void NewBookmark();

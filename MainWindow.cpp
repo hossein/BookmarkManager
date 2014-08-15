@@ -207,6 +207,7 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
 
     RefreshTagsDisplay();
     RefreshTVBookmarksModelView();
+    RefreshStatusLabels();
 
     //Pour out saved selections, scrolls, etc.
     if (bookmarksAction & RA_SaveSel)
@@ -258,6 +259,33 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
     //Connect the signal we disconnected.
     connect(ui->lwTags, SIGNAL(itemChanged(QListWidgetItem*)),
             this, SLOT(lwTagsItemChanged(QListWidgetItem*)));
+}
+
+void MainWindow::RefreshStatusLabels()
+{
+    //NOTE: Again, we can cache this.
+    bool allTagsOrNoneOfTheTags = ui->lwTags->item(0)->checkState() == Qt::Checked
+                               || ui->lwTags->item(0)->checkState() == Qt::Unchecked;
+
+    if (allTagsOrNoneOfTheTags)
+    {
+        ui->lblFilter->setText("Showing All Bookmarks");
+        ui->lblBMCount->setText(QString("%1 Bookmarks").arg(dbm.bms.model.rowCount()));
+    }
+    else
+    {
+        QString checkedTagsNameList;
+        foreach (QListWidgetItem* tagItem, tagItems) //Values
+            if (tagItem->checkState() == Qt::Checked)
+                checkedTagsNameList += tagItem->text() + ", ";
+        //We are sure there was at least one tag selected.
+        checkedTagsNameList.chop(2);
+
+        ui->lblFilter->setText("Filtering By Tags: " + checkedTagsNameList);
+        ui->lblBMCount->setText(QString("%1/%2 Bookmarks")
+                                .arg(filteredBookmarksModel.rowCount())
+                                .arg(dbm.bms.model.rowCount()));
+    }
 }
 
 void MainWindow::RefreshTVBookmarksModelView()
