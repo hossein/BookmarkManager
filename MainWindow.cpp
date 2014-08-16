@@ -127,10 +127,10 @@ void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
     //  have to use RefreshUIDataDisplay for it?
 
     //Now filter the bookmarks according to those tags.
-    RefreshTVBookmarksModelView();
-    //TODO: Q: Shall we use this? This even re-populates the models:
-    //      A: Yes, if we want to possibly save the selection.
-    //RefreshUIDataDisplay(false, RA_SaveSelAndFocus);
+    //Note: Instead of just `RefreshTVBookmarksModelView()` we use the full Refresh below.
+    //  It's more standard for this task; we want to save selection, and also update status labels.
+    //  We don't populate the data again though.
+    RefreshUIDataDisplay(false, RA_SaveSelAndFocus, -1, RA_SaveSelAndScrollAndCheck);
 }
 
 void MainWindow::LoadDatabaseAndUI()
@@ -206,6 +206,33 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
         dbm.PopulateModels();
 
     RefreshTagsDisplay();
+    //Now make sure those we want to check are checked.
+    //IMPORTANT: Must do it early, as the next function is immediately `RefreshTVBookmarksModelView`
+    //  which RELIES on the checks.
+    //Note: If `!mustCareAboutCheckStates` then the `checkedTIDs` list is already empty,
+    //  however the user supplied `newTIDsToCheck` contains items so we do need the
+    //  `mustCareAboutCheckStates` at the beginning to prevent checking additional items.
+    if ((tagsAction & RA_SaveCheckState) && mustCareAboutCheckStates)
+    {
+        //New TIDs are already added to `tagItems` as the tags are refreshed above.
+        foreach (long long checkTID, checkedTIDs)
+            tagItems[checkTID]->setCheckState(Qt::Checked);
+
+        //We check additional items ONLY IF RA_SaveCheckState is set.
+        foreach (long long checkTID, newTIDsToCheck)
+            tagItems[checkTID]->setCheckState(Qt::Checked);
+
+        //NOTE: And yet again we have to cache this.
+        //  `RefreshTVBookmarksModelView` RELIES on it.
+        TagCheckStateResult tagsCheckState = areAllTagsChecked();
+        if (tagsCheckState == TCSR_NoneChecked)
+            ui->lwTags->item(0)->setCheckState(Qt::Unchecked);
+        else if (tagsCheckState == TCSR_SomeChecked)
+            ui->lwTags->item(0)->setCheckState(Qt::PartiallyChecked);
+        else if (tagsCheckState == TCSR_AllChecked)
+            ui->lwTags->item(0)->setCheckState(Qt::Checked);
+    }
+
     RefreshTVBookmarksModelView();
     RefreshStatusLabels();
 
@@ -240,21 +267,6 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
         ui->tvBookmarks->setFocus();
     if (tagsAction & RA_Focus)
         ui->lwTags->setFocus();
-
-    //Now make sure those we want to check are checked.
-    //Note: If `!mustCareAboutCheckStates` then the `checkedTIDs` list is already empty,
-    //  however the user supplied `newTIDsToCheck` contains items so we do need the
-    //  `mustCareAboutCheckStates` at the beginning to prevent checking additional items.
-    if ((tagsAction & RA_SaveCheckState) && mustCareAboutCheckStates)
-    {
-        //New TIDs are already added to `tagItems` as the tags are refreshed above.
-        foreach (long long checkTID, checkedTIDs)
-            tagItems[checkTID]->setCheckState(Qt::Checked);
-
-        //We check additional items ONLY IF RA_SaveCheckState is set.
-        foreach (long long checkTID, newTIDsToCheck)
-            tagItems[checkTID]->setCheckState(Qt::Checked);
-    }
 
     //Connect the signal we disconnected.
     connect(ui->lwTags, SIGNAL(itemChanged(QListWidgetItem*)),
