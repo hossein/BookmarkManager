@@ -130,7 +130,8 @@ void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
     //Note: Instead of just `RefreshTVBookmarksModelView()` we use the full Refresh below.
     //  It's more standard for this task; we want to save selection, and also update status labels.
     //  We don't populate the data again though.
-    RefreshUIDataDisplay(false, RA_SaveSelAndFocus, -1, RA_SaveSelAndScrollAndCheck);
+    RefreshUIDataDisplay(false, RA_SaveSelAndFocus, -1,
+                         (RefreshAction)(RA_SaveSelAndScroll | RA_NoRefreshView));
 }
 
 void MainWindow::LoadDatabaseAndUI()
@@ -205,7 +206,9 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
     if (rePopulateModels)
         dbm.PopulateModels();
 
-    RefreshTagsDisplay();
+    if (!(tagsAction & RA_NoRefreshView))
+        RefreshTagsDisplay();
+
     //Now make sure those we want to check are checked.
     //IMPORTANT: Must do it early, as the next function is immediately `RefreshTVBookmarksModelView`
     //  which RELIES on the checks.
@@ -233,7 +236,10 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
             ui->lwTags->item(0)->setCheckState(Qt::Checked);
     }
 
-    RefreshTVBookmarksModelView();
+    if (!(bookmarksAction & RA_NoRefreshView))
+        RefreshTVBookmarksModelView();
+
+    //Refresh status labels.
     RefreshStatusLabels();
 
     //Pour out saved selections, scrolls, etc.

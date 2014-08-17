@@ -51,7 +51,8 @@ private:
         RA_SaveSelAndScrollAndFocus = RA_SaveSelAndScroll | RA_Focus,
         RA_CustomSelectAndFocus = RA_CustomSelect | RA_Focus,
         RA_SaveCheckState = 0x10, //Only for Tags
-        RA_SaveSelAndScrollAndCheck = RA_SaveSelAndScroll | RA_SaveCheckState
+        RA_SaveSelAndScrollAndCheck = RA_SaveSelAndScroll | RA_SaveCheckState,
+        RA_NoRefreshView = 0x20
     };
     void RefreshUIDataDisplay(bool rePopulateModels,
                               RefreshAction bookmarksAction = RA_None, long long selectBID = -1,
