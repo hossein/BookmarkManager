@@ -218,22 +218,9 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
     if ((tagsAction & RA_SaveCheckState) && mustCareAboutCheckStates)
     {
         //New TIDs are already added to `tagItems` as the tags are refreshed above.
-        foreach (long long checkTID, checkedTIDs)
-            tagItems[checkTID]->setCheckState(Qt::Checked);
-
-        //We check additional items ONLY IF RA_SaveCheckState is set.
-        foreach (long long checkTID, newTIDsToCheck)
-            tagItems[checkTID]->setCheckState(Qt::Checked);
-
-        //NOTE: And yet again we have to cache this.
-        //  `RefreshTVBookmarksModelView` RELIES on it.
-        TagCheckStateResult tagsCheckState = areAllTagsChecked();
-        if (tagsCheckState == TCSR_NoneChecked)
-            ui->lwTags->item(0)->setCheckState(Qt::Unchecked);
-        else if (tagsCheckState == TCSR_SomeChecked)
-            ui->lwTags->item(0)->setCheckState(Qt::PartiallyChecked);
-        else if (tagsCheckState == TCSR_AllChecked)
-            ui->lwTags->item(0)->setCheckState(Qt::Checked);
+        //  So it's safe that the following function references `tagItems[newCheckedTID]`.
+        //  Also we are checking additional items ONLY IF RA_SaveCheckState is set.
+        RestoreCheckedTIDs(checkedTIDs, newTIDsToCheck);
     }
 
     if (!(bookmarksAction & RA_NoRefreshView))
@@ -528,4 +515,24 @@ QList<long long> MainWindow::GetCheckedTIDs()
         if (it.value()->checkState() == Qt::Checked) //"All Items" does not appear in `tagItems`.
             checkedTIDs.append(it.key());
     return checkedTIDs;
+}
+
+void MainWindow::RestoreCheckedTIDs(const QList<long long>& checkedTIDs,
+                                    const QList<long long>& newTIDsToCheck)
+{
+    foreach (long long checkTID, checkedTIDs)
+        tagItems[checkTID]->setCheckState(Qt::Checked);
+
+    foreach (long long checkTID, newTIDsToCheck)
+        tagItems[checkTID]->setCheckState(Qt::Checked);
+
+    //NOTE: And yet again we have to cache this.
+    //  `RefreshTVBookmarksModelView` RELIES on it.
+    TagCheckStateResult tagsCheckState = areAllTagsChecked();
+    if (tagsCheckState == TCSR_NoneChecked)
+        ui->lwTags->item(0)->setCheckState(Qt::Unchecked);
+    else if (tagsCheckState == TCSR_SomeChecked)
+        ui->lwTags->item(0)->setCheckState(Qt::PartiallyChecked);
+    else if (tagsCheckState == TCSR_AllChecked)
+        ui->lwTags->item(0)->setCheckState(Qt::Checked);
 }

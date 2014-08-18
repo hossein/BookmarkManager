@@ -79,4 +79,6 @@ private:
     };
     TagCheckStateResult areAllTagsChecked();
     QList<long long> GetCheckedTIDs();
+    void RestoreCheckedTIDs(const QList<long long>& checkedTIDs,
+                            const QList<long long>& newTIDsToCheck);
 };
