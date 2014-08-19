@@ -16,3 +16,5 @@
 2014-08-24  17  Initial implementation of filtering Bookmarks by Tags.
 2014-08-25  19  Implemented RA_SaveCheckState and passing associated TIDs from TagManager::
                 SetBookmarkTags to MainWindow to check them.
+2014-08-26  22  Tag filtering done and working without bugs, RA_NoRefreshView implemented,
+                status labels working for tags now (but not for search filters, yet).
