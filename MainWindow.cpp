@@ -16,7 +16,6 @@ MainWindow::MainWindow(QWidget *parent) :
     filteredBookmarksModel(&dbm, this, &conf, this)
 {
     ui->setupUi(this);
-    //TODO: Hide my toolbar's context menu.
     //TODO: Tag something with `c++` and upon saving it's changed!
 
     // Set size and position
