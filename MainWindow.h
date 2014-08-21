@@ -71,13 +71,20 @@ private:
     void RefreshTagsDisplay();
     long long GetSelectedTagID();
     void SelectTagWithID(long long tagId);
+
     enum TagCheckStateResult
     {
         TCSR_NoneChecked = 0,
         TCSR_SomeChecked = 1,
         TCSR_AllChecked = 2,
     };
-    TagCheckStateResult areAllTagsChecked();
+    TagCheckStateResult m_allTagsChecked;
+    void QueryAllTagsChecked();
+    void UpdateAllTagsCheckBoxCheck();
+
+    //The following function automatically Queries and updates checkbox, too.
+    void CheckAllTags(Qt::CheckState checkState);
+
     QList<long long> GetCheckedTIDs();
     void RestoreCheckedTIDs(const QList<long long>& checkedTIDs,
                             const QList<long long>& newTIDsToCheck);
