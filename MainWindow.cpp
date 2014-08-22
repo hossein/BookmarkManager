@@ -16,7 +16,6 @@ MainWindow::MainWindow(QWidget *parent) :
     filteredBookmarksModel(&dbm, this, &conf, this), m_allTagsChecked(TCSR_NoneChecked)
 {
     ui->setupUi(this);
-    //TODO: Tag something with `c++` and upon saving it's changed!
 
     // Set size and position
     int dWidth = QApplication::desktop()->availableGeometry().width();

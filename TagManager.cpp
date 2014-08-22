@@ -103,7 +103,7 @@ long long TagManager::MaybeCreateTagAndReturnTID(const QString& tagName)
         return Error(setTagsError, query.lastError());
 
     if (query.first())
-        return query.record().value("TID").LongLong;
+        return query.record().value("TID").toLongLong();
 
     query.prepare("INSERT INTO Tag ( TagName ) VALUES ( ? )");
     query.addBindValue(tagName);
