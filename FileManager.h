@@ -30,6 +30,8 @@ public:
         ///     file. If attached file changes, they must change, too.
         /// THEY ARE important for `FileManager::UpdateFile` and `operator==(BookmarkFile,BookmarkFile)`
         ///     and these two functions must be updated if distinct properties change.
+        // Note: For unattached files, ArchiveURL is "" and Original URL is "C:\File.txt".
+        //   For already attached files, ArchiveURL is "F/F5AB32DA.txt" and Original URL is "File.txt".
         long long BFID;
         long long BID;
         long long FID;
@@ -116,7 +118,7 @@ private:
     ///       Also, remaining the file extension does NOT change the extension that is used with
     ///       the file in the FileArchive.
     QString CalculateFileArchiveURL(const QString& fileFullPathName);
-    QString GetFullArchiveFilePath(const QString& fileArchiveURL, const QString& archiveFolderName);
+    QString GetFullArchivePathForFile(const QString& fileArchiveURL, const QString& archiveFolderName);
     int FileNameHash(const QString& fileNameOnly);
 
 protected:

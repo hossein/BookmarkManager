@@ -18,3 +18,4 @@
                 SetBookmarkTags to MainWindow to check them.
 2014-08-26  22  Tag filtering done and working without bugs, RA_NoRefreshView implemented,
                 status labels working for tags now (but not for search filters, yet).
+2014-09-03  15  Removed Toolbar context menu, fixed tagging bug and tag selection saving.

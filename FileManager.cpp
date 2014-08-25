@@ -304,7 +304,7 @@ bool FileManager::AddFileToArchive(const QString& filePathName, bool removeOrigi
 
     //Decide where should the file be copied.
     fileArchiveURL = CalculateFileArchiveURL(filePathName);
-    QString targetFilePathName = GetFullArchiveFilePath(fileArchiveURL, conf->nominalFileArchiveDirName);
+    QString targetFilePathName = GetFullArchivePathForFile(fileArchiveURL, conf->nominalFileArchiveDirName);
 
     //Create its directory if doesn't exist.
     QString targetFileDir = QFileInfo(targetFilePathName).absolutePath();
@@ -414,8 +414,8 @@ bool FileManager::RemoveFileFromArchive(const QString& fileArchiveURL)
 {
     QString fileOperationError = "Unable to remove a file from the FileArchive.";
 
-    QString fullFilePathName = GetFullArchiveFilePath(fileArchiveURL, conf->nominalFileArchiveDirName);
-    QString fullTrashPathName = GetFullArchiveFilePath(fileArchiveURL, conf->nominalFileTrashDirName);
+    QString fullFilePathName = GetFullArchivePathForFile(fileArchiveURL, conf->nominalFileArchiveDirName);
+    QString fullTrashPathName = GetFullArchivePathForFile(fileArchiveURL, conf->nominalFileTrashDirName);
 
     QString fullTrashPath = QFileInfo(fullTrashPathName).absolutePath();
     if (!QDir::current().mkpath(fullTrashPath))
@@ -464,7 +464,7 @@ QString FileManager::CalculateFileArchiveURL(const QString& fileFullPathName)
     return fileArchiveURL;
 }
 
-QString FileManager::GetFullArchiveFilePath(const QString& fileArchiveURL,
+QString FileManager::GetFullArchivePathForFile(const QString& fileArchiveURL,
                                             const QString& archiveFolderName)
 {
     QString path = QDir::currentPath() + "/" + archiveFolderName + "/" + fileArchiveURL;
