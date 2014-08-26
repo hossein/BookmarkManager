@@ -56,6 +56,7 @@ public:
     //Files in file archive: Name convenience functions.
     bool IsInsideFileArchive(const QString& userReadablePath);
     QString GetUserReadableArchiveFilePath(const QString& originalName);
+    QString GetFullArchiveFilePath(const QString& fileArchiveURL);
     static QString GetFileNameOnlyFromOriginalNameField(const QString& originalName);
     static QString ChangeOriginalNameField(const QString& originalName, const QString& newName);
 

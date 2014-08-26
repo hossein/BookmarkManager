@@ -90,4 +90,5 @@ private slots:
     void af_rename();
     void af_remove();
     void af_properties();
+    QString GetAttachedFileFullPathName(int filesListIdx);
 };

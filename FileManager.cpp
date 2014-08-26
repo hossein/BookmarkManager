@@ -53,6 +53,11 @@ QString FileManager::GetUserReadableArchiveFilePath(const QString& originalName)
     return conf->fileArchivePrefix + "/" + originalName;
 }
 
+QString FileManager::GetFullArchiveFilePath(const QString& fileArchiveURL)
+{
+    return GetFullArchivePathForFile(fileArchiveURL, conf->nominalFileArchiveDirName);
+}
+
 QString FileManager::GetFileNameOnlyFromOriginalNameField(const QString& originalName)
 {
     //In the DB the original only-file-name of the file is stored without prefixes and suffixes

@@ -493,14 +493,14 @@ void BookmarkEditDialog::af_previewOrOpen()
 
 void BookmarkEditDialog::af_preview()
 {
-    //TODO
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    dbm->fview.Preview(GetAttachedFileFullPathName(filesListIdx));
 }
 
 void BookmarkEditDialog::af_open()
 {
-    //TODO
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    dbm->fview.Open(GetAttachedFileFullPathName(filesListIdx));
 }
 
 void BookmarkEditDialog::af_openWith()
@@ -580,4 +580,17 @@ void BookmarkEditDialog::af_remove()
 void BookmarkEditDialog::af_properties()
 {
     //TODO
+}
+
+QString BookmarkEditDialog::GetAttachedFileFullPathName(int filesListIdx)
+{
+    QString fullFilePathName;
+
+    if (editedFilesList[filesListIdx].BFID == -1)
+        fullFilePathName = editedFilesList[filesListIdx].OriginalName;
+    else
+        fullFilePathName = dbm->files.GetFullArchiveFilePath(
+                           editedFilesList[filesListIdx].ArchiveURL);
+
+    return fullFilePathName;
 }
