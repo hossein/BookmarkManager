@@ -18,8 +18,11 @@ public:
     /// Only file extension will be verified.
     bool HasPreviewHandler(const QString& fileName);
 
+    /// `filePathName` in the following group can be BOTH :archive: path and a real path.
     void Preview(const QString& filePathName);
-    void Open(const QString& filePathName);
+    void OpenReadOnly(const QString& filePathName);
+    void OpenEditable(const QString& filePathName);
+    void OpenWith(const QString& filePathName);
 
 protected:
     // ISubManager interface

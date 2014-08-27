@@ -52,7 +52,17 @@ void FileViewManager::Preview(const QString& filePathName)
 
 }
 
-void FileViewManager::Open(const QString& filePathName)
+void FileViewManager::OpenReadOnly(const QString& filePathName)
+{
+
+}
+
+void FileViewManager::OpenEditable(const QString& filePathName)
+{
+
+}
+
+void FileViewManager::OpenWith(const QString& filePathName)
 {
 
 }

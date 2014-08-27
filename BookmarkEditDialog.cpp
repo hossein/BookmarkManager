@@ -500,13 +500,13 @@ void BookmarkEditDialog::af_preview()
 void BookmarkEditDialog::af_open()
 {
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    dbm->fview.Open(GetAttachedFileFullPathName(filesListIdx));
+    dbm->fview.OpenReadOnly(GetAttachedFileFullPathName(filesListIdx));
 }
 
 void BookmarkEditDialog::af_openWith()
 {
-    //TODO
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    dbm->fview.OpenWith(GetAttachedFileFullPathName(filesListIdx));
 }
 
 void BookmarkEditDialog::af_setAsDefault()
