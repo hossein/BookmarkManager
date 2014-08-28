@@ -367,16 +367,18 @@ void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
     }
     else
     {
-        QAction* a_preview  = afMenu.addAction("&Preview",      this, SLOT(af_preview()),    QKS("Enter"));
-        QAction* a_open     = afMenu.addAction("&Open",         this, SLOT(af_open()),       QKS("Shift+Enter"));
-        QAction* a_openWith = afMenu.addAction("Open Wit&h...", this, SLOT(af_openWith()),   QKS("Ctrl+Enter"));
+        QAction* a_preview  = afMenu.addAction("&Preview"        , this, SLOT(af_preview()),    QKS("Enter"));
+        QAction* a_open     = afMenu.addAction("&Open"           , this, SLOT(af_open()),       QKS("Shift+Enter"));
+        QAction* a_edit     = afMenu.addAction("Open (&Editable)", this, SLOT(af_edit()));
+        QAction* a_openWith = afMenu.addAction("Open Wit&h..."   , this, SLOT(af_openWith()),   QKS("Ctrl+Enter"));
                               afMenu.addSeparator();
-        QAction* a_setDef   = afMenu.addAction("Set &As Default",this,SLOT(af_setAsDefault()));
-        QAction* a_rename   = afMenu.addAction("Rena&me",       this, SLOT(af_rename()));
-        QAction* a_remove   = afMenu.addAction("Remo&ve",       this, SLOT(af_remove()),     QKS("Del"));
+        QAction* a_setDef   = afMenu.addAction("Set &As Default" , this, SLOT(af_setAsDefault()));
+        QAction* a_rename   = afMenu.addAction("Rena&me"         , this, SLOT(af_rename()));
+        QAction* a_remove   = afMenu.addAction("Remo&ve"         , this, SLOT(af_remove()),     QKS("Del"));
                               afMenu.addSeparator();
-        QAction* a_props    = afMenu.addAction("P&roperties",   this, SLOT(af_properties()), QKS("Alt+Enter"));
+        QAction* a_props    = afMenu.addAction("P&roperties"     , this, SLOT(af_properties()), QKS("Alt+Enter"));
 
+        Q_UNUSED(a_edit);
         Q_UNUSED(a_openWith);
         Q_UNUSED(a_remove);
         Q_UNUSED(a_props);
@@ -501,6 +503,13 @@ void BookmarkEditDialog::af_open()
 {
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
     dbm->fview.OpenReadOnly(GetAttachedFileFullPathName(filesListIdx));
+}
+
+void BookmarkEditDialog::af_edit()
+{
+    //NOTE: We want to allow editing of yet-unattached files?
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    dbm->fview.OpenEditable(GetAttachedFileFullPathName(filesListIdx));
 }
 
 void BookmarkEditDialog::af_openWith()

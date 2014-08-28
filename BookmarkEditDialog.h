@@ -85,6 +85,7 @@ private slots:
     void af_previewOrOpen();
     void af_preview();
     void af_open();
+    void af_edit();
     void af_openWith();
     void af_setAsDefault();
     void af_rename();
