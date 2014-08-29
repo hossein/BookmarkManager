@@ -44,3 +44,6 @@ HEADERS  += MainWindow.h \
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui
+
+RESOURCES += \
+    BookmarkManager.qrc
