@@ -9,18 +9,18 @@
 //  nothing about it.
 
 /// TODO: Plan:
-///   - File Manager
-///   - Make the changes that we need to require multiple file attaching and do it.
-///   - Manage tag saving as comma separated integers/string or a separate table?
+///   x File Manager
+///   x Make the changes that we need to require multiple file attaching and do it.
+///   x Manage tag saving as comma separated integers/string or a separate table? (Done: the latter)
 ///   - Changes to Edit/Add UI for editing tags with mouse only
 ///   - Show files information on double click in BOTH add/edit and view bookmark dialogs.
-///   - Save the selection/scroll position on add/edit/delete.
+///   x Save the selection/scroll position on add/edit/delete.
 ///   - View bookmark dialog
 ///   - In MainWindow, sort BMs by their adding date.
 ///   - Context menu which shows a brief info and has options edit/view/show in browser, etc etc
 ///     (much like how Word 2010 allows changing font and formatting as well as context-menu via
 ///     right-click)
-///   - Filter by tags
+///   x Filter by tags
 ///   - "Delete" moves the bookmarks or archivefiles to a "Trash", never deletes them!
 ///   - Search
 ///   - Import Firefox bookmarks (by both browsing the json file and selecting profile!)
