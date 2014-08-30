@@ -1,1 +1,6 @@
-<RCC/>
+<RCC>
+    <qresource prefix="/">
+        <file>res/fivestars.png</file>
+        <file>res/fivestars_white.png</file>
+    </qresource>
+</RCC>
