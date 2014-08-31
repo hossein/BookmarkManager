@@ -25,6 +25,7 @@ SOURCES += main.cpp\
     TransactionalFileOperator.cpp \
     FileViewManager.cpp \
     BookmarksFilteredByTagsSortProxyModel.cpp \
+    BookmarkPreviewDialog.cpp \
     FiveStarRatingWidget.cpp
 
 HEADERS  += MainWindow.h \
@@ -42,10 +43,12 @@ HEADERS  += MainWindow.h \
     TransactionalFileOperator.h \
     FileViewManager.h \
     BookmarksFilteredByTagsSortProxyModel.h \
+    BookmarkPreviewDialog.h \
     FiveStarRatingWidget.h
 
 FORMS    += MainWindow.ui \
-    BookmarkEditDialog.ui
+    BookmarkEditDialog.ui \
+    BookmarkPreviewDialog.ui
 
 RESOURCES += \
     BookmarkManager.qrc
