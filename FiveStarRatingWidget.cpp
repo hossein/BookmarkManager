@@ -6,7 +6,7 @@
 FiveStarRatingWidget::FiveStarRatingWidget(QWidget *parent) :
     QWidget(parent)
 {
-    m_starSize = 48;
+    m_starSize = 48; //CONST
     m_minimum = 0;
     m_maximum = 100;
     m_value = 50;
@@ -34,39 +34,39 @@ void FiveStarRatingWidget::paintEvent(QPaintEvent* event)
 
 }
 
-void FiveStarRatingWidget::setStarSize(int arg)
+void FiveStarRatingWidget::setStarSize(int size)
 {
-    if (m_starSize != arg) {
-        m_starSize = arg;
+    if (m_starSize != size) {
+        m_starSize = size;
         update();
         updateGeometry();
-        emit starSizeChanged(arg);
+        emit starSizeChanged(size);
     }
 }
 
-void FiveStarRatingWidget::setMinimum(int arg)
+void FiveStarRatingWidget::setMinimum(int min)
 {
-    if (m_minimum != arg) {
-        m_minimum = arg;
+    if (m_minimum != min) {
+        m_minimum = min;
         update();
-        emit minimumChanged(arg);
+        emit minimumChanged(min);
     }
 }
 
-void FiveStarRatingWidget::setMaximum(int arg)
+void FiveStarRatingWidget::setMaximum(int max)
 {
-    if (m_maximum != arg) {
-        m_maximum = arg;
+    if (m_maximum != max) {
+        m_maximum = max;
         update();
-        emit maximumChanged(arg);
+        emit maximumChanged(max);
     }
 }
 
-void FiveStarRatingWidget::setValue(int arg)
+void FiveStarRatingWidget::setValue(int value)
 {
-    if (m_value != arg) {
-        m_value = arg;
+    if (m_value != value) {
+        m_value = value;
         update();
-        emit valueChanged(arg);
+        emit valueChanged(value);
     }
 }

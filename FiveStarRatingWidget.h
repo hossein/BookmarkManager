@@ -35,14 +35,14 @@ public:
     int value() const    { return m_value;    }
 
 signals:
-    void starSizeChanged(int arg);
-    void minimumChanged(int arg);
-    void maximumChanged(int arg);
-    void valueChanged(int arg);
+    void starSizeChanged(int size);
+    void minimumChanged(int min);
+    void maximumChanged(int max);
+    void valueChanged(int value);
 
 public slots:
-    void setStarSize(int arg);
-    void setMinimum(int arg);
-    void setMaximum(int arg);
-    void setValue(int arg);
+    void setStarSize(int size);
+    void setMinimum(int min);
+    void setMaximum(int max);
+    void setValue(int value);
 };

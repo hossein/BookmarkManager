@@ -46,6 +46,7 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId,
         if (!canShowTheDialog)
             return;
 
+        //[No-File-Model-Yet]
         //Note: We don't retrieve the files model and use custom QList's and QTableWidget instead.
         //canShowTheDialog = dbm->files.RetrieveBookmarkFilesModel(editBId, editOriginalBData.Ex_FilesModel);
         //if (!canShowTheDialog)
