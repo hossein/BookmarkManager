@@ -1,10 +1,10 @@
-#include "BookmarkPreviewDialog.h"
-#include "ui_BookmarkPreviewDialog.h"
+#include "BookmarkViewDialog.h"
+#include "ui_BookmarkViewDialog.h"
 
 #include "Util.h"
 
-BookmarkPreviewDialog::BookmarkPreviewDialog(DatabaseManager* dbm, long long viewBId, QWidget *parent) :
-    QDialog(parent), ui(new Ui::BookmarkPreviewDialog),
+BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, QWidget *parent) :
+    QDialog(parent), ui(new Ui::BookmarkViewDialog),
     dbm(dbm), canShowTheDialog(false)
 {
     ui->setupUi(this);
@@ -44,22 +44,22 @@ BookmarkPreviewDialog::BookmarkPreviewDialog(DatabaseManager* dbm, long long vie
 
 }
 
-BookmarkPreviewDialog::~BookmarkPreviewDialog()
+BookmarkViewDialog::~BookmarkViewDialog()
 {
     delete ui;
 }
 
-bool BookmarkPreviewDialog::canShow()
+bool BookmarkViewDialog::canShow()
 {
     return canShowTheDialog;
 }
 
-void BookmarkPreviewDialog::PopulateUITags()
+void BookmarkViewDialog::PopulateUITags()
 {
     ui->leTags->setText(viewBData.Ex_TagsList.join(" "));
 }
 
-void BookmarkPreviewDialog::InitializeFilesUI()
+void BookmarkViewDialog::InitializeFilesUI()
 {
     ui->twAttachedFiles->setColumnCount(2);
     ui->twAttachedFiles->setHorizontalHeaderLabels(QString("File Name,Size").split(','));
@@ -74,9 +74,9 @@ void BookmarkPreviewDialog::InitializeFilesUI()
     vh->setResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
 }
 
-void BookmarkPreviewDialog::PopulateUIFiles(bool saveSelection)
+void BookmarkViewDialog::PopulateUIFiles(bool saveSelection)
 {
-    //In BookmarkPreviewDialog, `saveSelection` might be useful in Refreshing the dialog, maybe.
+    //In BookmarkViewDialog, `saveSelection` might be useful in Refreshing the dialog, maybe.
 
     int selectedRow = -1;
     if (saveSelection)
@@ -126,7 +126,7 @@ void BookmarkPreviewDialog::PopulateUIFiles(bool saveSelection)
 
 }
 
-void BookmarkPreviewDialog::SetDefaultBFID(long long BFID)
+void BookmarkViewDialog::SetDefaultBFID(long long BFID)
 {
     //`false` values must also be set.
     for (int i = 0; i < viewBData.Ex_FilesList.size(); i++)

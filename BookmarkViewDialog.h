@@ -4,23 +4,23 @@
 #include "DatabaseManager.h"
 
 class QTableWidgetItem;
-namespace Ui { class BookmarkPreviewDialog; }
+namespace Ui { class BookmarkViewDialog; }
 
-class BookmarkPreviewDialog : public QDialog
+class BookmarkViewDialog : public QDialog
 {
     Q_OBJECT
 
 private:
-    Ui::BookmarkPreviewDialog *ui;
+    Ui::BookmarkViewDialog *ui;
     DatabaseManager* dbm;
     bool canShowTheDialog;
 
     BookmarkManager::BookmarkData viewBData;
 
 public:
-    explicit BookmarkPreviewDialog(DatabaseManager* dbm, long long viewBId = -1,
+    explicit BookmarkViewDialog(DatabaseManager* dbm, long long viewBId = -1,
                                    QWidget *parent = 0);
-    ~BookmarkPreviewDialog();
+    ~BookmarkViewDialog();
 
 public:
     bool canShow();
