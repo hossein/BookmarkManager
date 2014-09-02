@@ -2,6 +2,7 @@
 #include "ui_MainWindow.h"
 
 #include "BookmarkEditDialog.h"
+#include "BookmarkViewDialog.h"
 
 #include <QDebug>
 #include <QDir>
@@ -60,6 +61,11 @@ MainWindow::~MainWindow()
 void MainWindow::on_btnNew_clicked()
 {
     NewBookmark();
+}
+
+void MainWindow::on_btnView_clicked()
+{
+    ViewSelectedBookmark();
 }
 
 void MainWindow::on_btnEdit_clicked()
@@ -381,7 +387,14 @@ void MainWindow::SelectBookmarkWithID(long long bookmarkId)
 
 void MainWindow::ViewSelectedBookmark()
 {
-    //TODO; and where is this called from?!
+    BookmarkViewDialog* bmViewDialog = new BookmarkViewDialog(&dbm, GetSelectedBookmarkID(), this);
+
+    if (!bmViewDialog->canShow())
+        return; //In case of errors a message is already shown.
+
+    bmViewDialog->exec();
+
+    //No need to refresh UI display.
 }
 
 void MainWindow::EditSelectedBookmark()

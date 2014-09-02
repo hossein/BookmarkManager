@@ -29,6 +29,7 @@ public:
 
 private slots:
     void on_btnNew_clicked();
+    void on_btnView_clicked();
     void on_btnEdit_clicked();
     void on_btnDelete_clicked();
     void on_tvBookmarks_activated(const QModelIndex &index);

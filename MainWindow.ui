@@ -127,6 +127,13 @@
            </spacer>
           </item>
           <item>
+           <widget class="QPushButton" name="btnView">
+            <property name="text">
+             <string>&amp;View</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="btnEdit">
             <property name="enabled">
              <bool>false</bool>
