@@ -81,7 +81,7 @@ void MainWindow::on_btnDelete_clicked()
 void MainWindow::on_tvBookmarks_activated(const QModelIndex &index)
 {
     Q_UNUSED(index);
-    EditSelectedBookmark();
+    ViewSelectedBookmark();
 }
 
 void MainWindow::tvBookmarksCurrentRowChanged(const QModelIndex& current, const QModelIndex& previous)
