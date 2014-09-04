@@ -20,3 +20,4 @@
                 status labels working for tags now (but not for search filters, yet).
 2014-09-03  15  Removed Toolbar context menu, fixed tagging bug and tag selection saving.
 2014-09-04  13  Added Edit action and made Preview/Open/Edit/With actions ready to implement.
+2014-09-07  13  Added BookmarkViewDialog (as default double-click action), FiveStarRatingWidget.

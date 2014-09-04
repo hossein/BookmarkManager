@@ -6,7 +6,7 @@
 FiveStarRatingWidget::FiveStarRatingWidget(QWidget *parent) :
     QWidget(parent)
 {
-    m_starSize = 48; //CONST
+    m_starSize = fiveStarImageHeight; //CONST
     m_minimum = 0;
     m_maximum = 100;
     m_value = 50;
@@ -27,7 +27,7 @@ void FiveStarRatingWidget::paintEvent(QPaintEvent* event)
     p.drawPixmap(0, 0, m_starSize * 5, m_starSize, fiveStarsWhite);
 
     QPixmap fiveStarsGold(":/res/fivestars.png");
-    int realGoldWidth = (fiveStarsGold.width() * 5) * m_value / (m_maximum - m_minimum);
+    int realGoldWidth = (fiveStarsGold.width()) * m_value / (m_maximum - m_minimum);
     int starSizeGoldWidth = (m_starSize * 5) * m_value / (m_maximum - m_minimum);
     p.drawPixmap(0, 0, starSizeGoldWidth, m_starSize, fiveStarsGold,
                  0, 0, realGoldWidth, fiveStarsGold.height());

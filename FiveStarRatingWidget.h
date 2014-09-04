@@ -12,6 +12,8 @@ class FiveStarRatingWidget : public QWidget
     Q_PROPERTY(int maximum READ maximum WRITE setMaximum NOTIFY maximumChanged)
     Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged)
 
+    static const int fiveStarImageHeight = 48;
+
     int m_starSize;
     int m_minimum;
     int m_maximum;
