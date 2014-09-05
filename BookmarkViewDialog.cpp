@@ -11,7 +11,7 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
     ui->leTags->setModel(&dbm->tags.model);
     ui->leTags->setModelColumn(dbm->tags.tidx.TagName);
 
-    ui->fvsRating->setStarSize(48);
+    ui->fvsRating->setStarSize(ui->lblName->sizeHint().height());
 
     InitializeFilesUI();
 
@@ -37,6 +37,7 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
     ui->lblName   ->setText(viewBData.Name);
     ui->lblName   ->setToolTip(viewBData.Name);
     ui->fvsRating ->setValue(viewBData.Rating);
+    ui->fvsRating ->setToolTip(QString::number(viewBData.Rating / (double)10.0));
     ui->ptxDesc   ->setPlainText(viewBData.Desc);
     ui->leURL     ->setText(viewBData.URL);
     PopulateUITags();
