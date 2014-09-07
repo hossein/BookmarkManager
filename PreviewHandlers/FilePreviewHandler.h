@@ -14,6 +14,21 @@ public:
     virtual QString GetUniqueName() = 0;
     virtual QStringList GetSupportedExtensions() = 0;
 
+    enum FileCategory
+    {
+        FC_LocalHTML,
+        FC_Web,
+        FC_Text,
+        FC_Code,
+        FC_Document,
+        FC_Archive,
+        FC_Image,
+        FC_Music,
+        FC_Video,
+        FC_Software,
+    };
+    virtual FileCategory GetFilesCategory() = 0;
+
     /// The created widget must not be bound to this FilePreviewHandler; even if it is,
     /// it must be able to be deleted by the calling class/container.
     virtual QWidget* CreateAndFreeWidget(QWidget* parent) = 0;

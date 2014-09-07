@@ -15,6 +15,11 @@ QStringList LocalHTMLPreviewHandler::GetSupportedExtensions()
     return QStringList() << "htm" << "html" << "mht" << "mhtml";
 }
 
+FilePreviewHandler::FileCategory LocalHTMLPreviewHandler::GetFilesCategory()
+{
+    return FC_LocalHTML;
+}
+
 QWidget* LocalHTMLPreviewHandler::CreateAndFreeWidget(QWidget* parent)
 {
     QWebView* webViewWidget = new QWebView(parent);
