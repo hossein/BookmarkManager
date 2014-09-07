@@ -1,5 +1,7 @@
 #include "FileViewManager.h"
 
+#include "PreviewHandlers/FilePreviewHandler.h"
+
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -13,6 +15,19 @@ FileViewManager::FileViewManager(QWidget* dialogParent, Config* conf)
 
 }
 
+FileViewManager::~FileViewManager()
+{
+    foreach (FilePreviewHandler* fph, m_ownedPreviewHandlers)
+        delete fph;
+}
+
+void FileViewManager::AddPreviewHandler(FilePreviewHandler* fph)
+{
+    QStringList fphExtensions = fph->GetSupportedExtensions();
+    foreach (const QString& ext, fphExtensions)
+        m_extensionsPreviewHandlers[ext] = fph;
+}
+
 int FileViewManager::ChooseADefaultFileBasedOnExtension(const QStringList& filesList)
 {
     if (filesList.count() == 1)
@@ -20,6 +35,7 @@ int FileViewManager::ChooseADefaultFileBasedOnExtension(const QStringList& files
     else if (filesList.count() == 0)
         return -1;
 
+    //TODO: Sort by the FilePreviewHandler::FileCategory categories.
     QList<QStringList> extensionPriority;
     extensionPriority.append(QString("mht|mhtml|htm|html|maff"          ).split('|'));
     extensionPriority.append(QString("doc|docx|ppt|pptx|xls|xlsx|rtf"   ).split('|'));
