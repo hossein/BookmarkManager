@@ -11,7 +11,11 @@ public:
     FilePreviewHandler() { }
     virtual ~FilePreviewHandler() { }
 
+    /// Must return a name unique to all FilePreviewHandler's.
+    /// This is used to tie this handler to the widget it creates.
     virtual QString GetUniqueName() = 0;
+
+    /// Must return the LOWER-CASE list of extensions this supports.
     virtual QStringList GetSupportedExtensions() = 0;
 
     enum FileCategory
