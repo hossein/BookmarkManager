@@ -35,5 +35,9 @@ private:
     void InitializeFilesUI();
     void PopulateUIFiles(bool saveSelection);
     void SetDefaultBFID(long long BFID);
+    /// Returns -1 if no default file.
+    int DefaultFileIndex();
 
+    /// File Preview Section
+    void PreviewFile(int index);
 };

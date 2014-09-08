@@ -183,7 +183,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="widPreviewerContainer" native="true"/>
+    <widget class="FilePreviewerWidget" name="widPreviewer" native="true"/>
    </item>
   </layout>
  </widget>
@@ -197,6 +197,12 @@
    <class>FiveStarRatingWidget</class>
    <extends>QWidget</extends>
    <header>FiveStarRatingWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FilePreviewerWidget</class>
+   <extends>QWidget</extends>
+   <header>FilePreviewerWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

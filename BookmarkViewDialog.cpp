@@ -31,6 +31,9 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
 
     //Additional bookmark variables.
     SetDefaultBFID(viewBData.DefBFID); //Needed; retrieving functions don't set this.
+    int defFileIndex = DefaultFileIndex();
+    if (defFileIndex != -1)
+        PreviewFile(defFileIndex);
 
     //Show in the UI.
     setWindowTitle("View Bookmark: " + viewBData.Name);
@@ -41,7 +44,7 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
     ui->ptxDesc   ->setPlainText(viewBData.Desc);
     ui->leURL     ->setText(viewBData.URL);
     PopulateUITags();
-    PopulateUIFiles(false);
+    PopulateUIFiles(false); //TODO: Single-Click to show the file. Also i think DefFile must be selected too?
 
 }
 
@@ -133,4 +136,17 @@ void BookmarkViewDialog::SetDefaultBFID(long long BFID)
     for (int i = 0; i < viewBData.Ex_FilesList.size(); i++)
         viewBData.Ex_FilesList[i].Ex_IsDefaultFileForEditedBookmark =
                 (viewBData.Ex_FilesList[i].BFID == BFID);
+}
+
+int BookmarkViewDialog::DefaultFileIndex()
+{
+    for (int i = 0; i < viewBData.Ex_FilesList.size(); i++)
+        if (viewBData.Ex_FilesList[i].Ex_IsDefaultFileForEditedBookmark)
+            return i;
+    return -1;
+}
+
+void BookmarkViewDialog::PreviewFile(int index)
+{
+    dbm->fview.Preview(viewBData.Ex_FilesList[index].ArchiveURL, ui->widPreviewer);
 }
