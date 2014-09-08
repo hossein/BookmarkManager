@@ -28,7 +28,8 @@ SOURCES += main.cpp\
     FiveStarRatingWidget.cpp \
     BookmarkViewDialog.cpp \
     FilePreviewerWidget.cpp \
-    PreviewHandlers/LocalHTMLPreviewHandler.cpp
+    PreviewHandlers/LocalHTMLPreviewHandler.cpp \
+    PreviewHandlers/FilePreviewHandler.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \

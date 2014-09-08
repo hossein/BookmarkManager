@@ -13,7 +13,8 @@
 FileViewManager::FileViewManager(QWidget* dialogParent, Config* conf)
     : ISubManager(dialogParent, conf)
 {
-
+    //Add all file preview handlers to this.
+    FilePreviewHandler::InstantiateAllKnownFilePreviewHandlersInFileViewManager(this);
 }
 
 FileViewManager::~FileViewManager()

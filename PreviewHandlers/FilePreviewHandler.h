@@ -3,6 +3,8 @@
 #include <QString>
 #include <QStringList>
 
+class FileViewManager;
+
 /// Preview handler for files. This class associates itself with some extensions and is called
 /// by FileViewManager to fill in a QWidget* preview class that it has created.
 class FilePreviewHandler
@@ -10,6 +12,10 @@ class FilePreviewHandler
 public:
     FilePreviewHandler() { }
     virtual ~FilePreviewHandler() { }
+
+    /// This function must instantiates all subclasses of this interface and add them to the
+    /// given FileViewManager.
+    static void InstantiateAllKnownFilePreviewHandlersInFileViewManager(FileViewManager* fview);
 
     /// Must return a name unique to all FilePreviewHandler's.
     /// This is used to tie this handler to the widget it creates.
