@@ -45,6 +45,7 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
     ui->leURL     ->setText(viewBData.URL);
     PopulateUITags();
     PopulateUIFiles(false); //TODO: Single-Click to show the file. Also i think DefFile must be selected too?
+                            //TODO: Also context menu for these files.
 
 }
 
@@ -148,5 +149,7 @@ int BookmarkViewDialog::DefaultFileIndex()
 
 void BookmarkViewDialog::PreviewFile(int index)
 {
-    dbm->fview.Preview(viewBData.Ex_FilesList[index].ArchiveURL, ui->widPreviewer);
+    QString fileArchiveURL = viewBData.Ex_FilesList[index].ArchiveURL;
+    QString realFilePathName = dbm->files.GetFullArchiveFilePath(fileArchiveURL);
+    dbm->fview.Preview(realFilePathName, ui->widPreviewer);
 }

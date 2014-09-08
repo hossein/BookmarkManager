@@ -7,6 +7,10 @@ class FileViewManager;
 
 /// Preview handler for files. This class associates itself with some extensions and is called
 /// by FileViewManager to fill in a QWidget* preview class that it has created.
+///
+/// FilePreviewHandlers MUST NOT BE ABLE TO edit the file contents, as original files from the
+/// FileArchive/Trash are passed to them.
+
 class FilePreviewHandler
 {
 public:
