@@ -29,7 +29,9 @@ public:
     /// Only file extension will be verified.
     bool HasPreviewHandler(const QString& fileName);
 
-    /// `filePathName` in the following group can be BOTH :archive: path and a real path.
+    /// `filePathName` MUST BE ABSOLUTE file path! NOT :archive: path.
+    /// (as this class is an ISubManager itself and doesn't have access to FileManager to resolve
+    ///  the :archive: URL into an absolute path).
     void Preview(const QString& filePathName, FilePreviewerWidget* fpw);
     void OpenReadOnly(const QString& filePathName);
     void OpenEditable(const QString& filePathName);

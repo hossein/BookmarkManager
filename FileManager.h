@@ -55,6 +55,7 @@ public:
 
     //Files in file archive: Name convenience functions.
     bool IsInsideFileArchive(const QString& userReadablePath);
+    //NOTE: The following two functions can have equivalent 'TrashFile' sisters.
     QString GetUserReadableArchiveFilePath(const QString& originalName);
     QString GetFullArchiveFilePath(const QString& fileArchiveURL);
     static QString GetFileNameOnlyFromOriginalNameField(const QString& originalName);
