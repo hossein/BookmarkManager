@@ -6,6 +6,7 @@
 
 class DatabaseManager;
 class FilePreviewHandler;
+class FilePreviewerWidget;
 
 class FileViewManager : public ISubManager
 {
@@ -29,10 +30,15 @@ public:
     bool HasPreviewHandler(const QString& fileName);
 
     /// `filePathName` in the following group can be BOTH :archive: path and a real path.
-    void Preview(const QString& filePathName);
+    void Preview(const QString& filePathName, FilePreviewerWidget* fpw);
     void OpenReadOnly(const QString& filePathName);
     void OpenEditable(const QString& filePathName);
     void OpenWith(const QString& filePathName);
+
+private:
+    /// Only file extension will be verified.
+    /// Returns NULL if there isn't a preview handler for the extension.
+    FilePreviewHandler* GetPreviewHandler(const QString& fileName);
 
 protected:
     // ISubManager interface

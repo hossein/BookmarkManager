@@ -496,8 +496,9 @@ void BookmarkEditDialog::af_previewOrOpen()
 
 void BookmarkEditDialog::af_preview()
 {
+    //TODO: Use a preview handler;
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    dbm->fview.Preview(GetAttachedFileFullPathName(filesListIdx));
+    //dbm->fview.Preview(GetAttachedFileFullPathName(filesListIdx));
 }
 
 void BookmarkEditDialog::af_open()

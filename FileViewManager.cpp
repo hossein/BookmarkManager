@@ -1,6 +1,7 @@
 #include "FileViewManager.h"
 
 #include "PreviewHandlers/FilePreviewHandler.h"
+#include "FilePreviewerWidget.h"
 
 #include <QDir>
 #include <QFile>
@@ -58,14 +59,22 @@ int FileViewManager::ChooseADefaultFileBasedOnExtension(const QStringList& files
 
 bool FileViewManager::HasPreviewHandler(const QString& fileName)
 {
-    QStringList filesWithPreviewHandlers =
-            QString("mht|mhtml|htm|html|maff|txt|bmp|gif|png|jpg|jpeg").split('|');
-    return filesWithPreviewHandlers.contains(QFileInfo(fileName).suffix().toLower());
+    return (GetPreviewHandler(fileName) != NULL);
+    //NOTE: Make sure all the following extensions are implemented.
+    //QStringList filesWithPreviewHandlers =
+    //        QString("mht|mhtml|htm|html|maff|txt|bmp|gif|png|jpg|jpeg").split('|');
+    //return filesWithPreviewHandlers.contains(QFileInfo(fileName).suffix().toLower());
 }
 
-void FileViewManager::Preview(const QString& filePathName)
+void FileViewManager::Preview(const QString& filePathName, FilePreviewerWidget* fpw)
 {
+    //We just do an additional check, although user must be careful not to call this function
+    //  for files without preview handlers.
+    FilePreviewHandler* fph = GetPreviewHandler(filePathName);
+    if (fph == NULL)
+        return;
 
+    fpw->PreviewFileUsingPreviewHandler(filePathName, fph);
 }
 
 void FileViewManager::OpenReadOnly(const QString& filePathName)
@@ -81,6 +90,15 @@ void FileViewManager::OpenEditable(const QString& filePathName)
 void FileViewManager::OpenWith(const QString& filePathName)
 {
 
+}
+
+FilePreviewHandler* FileViewManager::GetPreviewHandler(const QString& fileName)
+{
+    QString extension = QFileInfo(fileName).suffix().toLower();
+    if (m_extensionsPreviewHandlers.contains(extension))
+        return m_extensionsPreviewHandlers[extension];
+    else
+        return NULL;
 }
 
 void FileViewManager::CreateTables()

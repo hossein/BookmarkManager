@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql
+QT       += core gui sql webkit
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -26,7 +26,9 @@ SOURCES += main.cpp\
     FileViewManager.cpp \
     BookmarksFilteredByTagsSortProxyModel.cpp \
     FiveStarRatingWidget.cpp \
-    BookmarkViewDialog.cpp
+    BookmarkViewDialog.cpp \
+    FilePreviewerWidget.cpp \
+    PreviewHandlers/LocalHTMLPreviewHandler.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -44,7 +46,10 @@ HEADERS  += MainWindow.h \
     FileViewManager.h \
     BookmarksFilteredByTagsSortProxyModel.h \
     FiveStarRatingWidget.h \
-    BookmarkViewDialog.h
+    BookmarkViewDialog.h \
+    FilePreviewerWidget.h \
+    PreviewHandlers/FilePreviewHandler.h \
+    PreviewHandlers/LocalHTMLPreviewHandler.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \
