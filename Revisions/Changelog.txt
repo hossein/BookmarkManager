@@ -21,3 +21,5 @@
 2014-09-03  15  Removed Toolbar context menu, fixed tagging bug and tag selection saving.
 2014-09-04  13  Added Edit action and made Preview/Open/Edit/With actions ready to implement.
 2014-09-07  13  Added BookmarkViewDialog (as default double-click action), FiveStarRatingWidget.
+2014-09-08  19  Fixed BMViewDlg bugs, initial implementation of FileViewHandler's/FileViewerWidget
+                to preview an HTML file.
