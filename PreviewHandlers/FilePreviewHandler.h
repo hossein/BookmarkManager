@@ -49,5 +49,8 @@ public:
 
     /// filePathName must be ABSOLUTE file path on file system and NOT :archive:.
     /// FileViewManager that uses this class knows this fact.
+    /// Must clear the widget before showing the new data for the sake of itself, unless encounters
+    /// error. If successful, must return true; otherwise must return false and doesn't have to
+    /// clear the widget too.
     virtual bool ClearAndSetDataToWidget(const QString& filePathName, QWidget* previewWidget) = 0;
 };
