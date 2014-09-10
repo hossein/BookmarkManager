@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     FilePreviewerWidget.cpp \
     PreviewHandlers/LocalHTMLPreviewHandler.cpp \
     PreviewHandlers/FilePreviewHandler.cpp \
-    PreviewHandlers/ImagePreviewHandler.cpp
+    PreviewHandlers/ImagePreviewHandler.cpp \
+    PreviewHandlers/TextPreviewHandler.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -52,7 +53,8 @@ HEADERS  += MainWindow.h \
     FilePreviewerWidget.h \
     PreviewHandlers/FilePreviewHandler.h \
     PreviewHandlers/LocalHTMLPreviewHandler.h \
-    PreviewHandlers/ImagePreviewHandler.h
+    PreviewHandlers/ImagePreviewHandler.h \
+    PreviewHandlers/TextPreviewHandler.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \

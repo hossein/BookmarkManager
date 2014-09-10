@@ -52,6 +52,8 @@
 ///                        file-from-recycle-bin?forum=csharpgeneral
 ///     (ANOTHER PROJECT) http://www.codeproject.com/Articles/2783/
 ///                       How-to-programmatically-use-the-Recycle-Bin
+///   - Zoom in/out, real size, fit size, rotate cw/ccw buttons for image viewer.
+///   - Encoding selector for text viewer.
 
 class Config
 {
