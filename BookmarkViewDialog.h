@@ -14,6 +14,7 @@ private:
     Ui::BookmarkViewDialog *ui;
     DatabaseManager* dbm;
     bool canShowTheDialog;
+    bool autoPreviewFileOnSelection;
 
     BookmarkManager::BookmarkData viewBData;
 
@@ -26,6 +27,7 @@ public:
     bool canShow();
 
 private slots:
+    void on_twAttachedFiles_itemSelectionChanged();
     void on_twAttachedFiles_customContextMenuRequested(const QPoint& pos);
 
     //The following functions were copied from BookmarkEditDialog. Maybe common-ize them?

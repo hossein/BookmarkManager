@@ -7,7 +7,7 @@
 
 BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkViewDialog),
-    dbm(dbm), canShowTheDialog(false)
+    dbm(dbm), canShowTheDialog(false), autoPreviewFileOnSelection(true)
 {
     ui->setupUi(this);
     ui->leTags->setModel(&dbm->tags.model);
@@ -33,9 +33,6 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
 
     //Additional bookmark variables.
     SetDefaultBFID(viewBData.DefBFID); //Needed; retrieving functions don't set this.
-    int defFileIndex = DefaultFileIndex();
-    if (defFileIndex != -1)
-        PreviewFile(defFileIndex);
 
     //Show in the UI.
     setWindowTitle("View Bookmark: " + viewBData.Name);
@@ -46,9 +43,17 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
     ui->ptxDesc   ->setPlainText(viewBData.Desc);
     ui->leURL     ->setText(viewBData.URL);
     PopulateUITags();
-    PopulateUIFiles(false); //TODO: Single-Click to show the file. Also i think DefFile must be selected too?
-                            //TODO: Also context menu for these files.
+    PopulateUIFiles(false);
 
+    //Select the default file, preview it.
+    //`DefaultFileIndex()` must be called AFTER the `SetDefaultBFID(...)` call above.
+    int defFileIndex = DefaultFileIndex();
+    if (defFileIndex != -1)
+    {
+        autoPreviewFileOnSelection = true;
+        ui->twAttachedFiles->selectRow(defFileIndex);
+        //The above line causes: PreviewFile(defFileIndex);
+    }
 }
 
 BookmarkViewDialog::~BookmarkViewDialog()
@@ -59,6 +64,12 @@ BookmarkViewDialog::~BookmarkViewDialog()
 bool BookmarkViewDialog::canShow()
 {
     return canShowTheDialog;
+}
+
+void BookmarkViewDialog::on_twAttachedFiles_itemSelectionChanged()
+{
+    if (autoPreviewFileOnSelection && !ui->twAttachedFiles->selectedItems().isEmpty())
+        af_preview();
 }
 
 void BookmarkViewDialog::on_twAttachedFiles_customContextMenuRequested(const QPoint& pos)
@@ -228,6 +239,7 @@ QString BookmarkViewDialog::GetAttachedFileFullPathName(int filesListIdx)
 
 void BookmarkViewDialog::PreviewFile(int index)
 {
+    qDebug() << "P";
     //TODO: Check to see if we can preview or not at all!
     QString fileArchiveURL = viewBData.Ex_FilesList[index].ArchiveURL;
     QString realFilePathName = dbm->files.GetFullArchiveFilePath(fileArchiveURL);
