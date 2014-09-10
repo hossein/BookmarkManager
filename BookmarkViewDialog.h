@@ -41,7 +41,6 @@ private slots:
     int DefaultFileIndex();
 
     //Attached files actions.
-    void af_preview();
     void af_open();
     void af_edit();
     void af_openWith();

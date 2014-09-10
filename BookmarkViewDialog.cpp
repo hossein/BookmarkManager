@@ -70,7 +70,7 @@ void BookmarkViewDialog::on_twAttachedFiles_itemSelectionChanged()
     //This [ignores empty selections], so if all items are unselected (e.g because of the
     //  context menu) the preview is still there.
     if (!ui->twAttachedFiles->selectedItems().isEmpty())
-        af_preview();
+        PreviewFile(ui->twAttachedFiles->selectedItems()[0]->row());
 }
 
 void BookmarkViewDialog::on_twAttachedFiles_customContextMenuRequested(const QPoint& pos)
@@ -93,7 +93,6 @@ void BookmarkViewDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
 
     if (fileSelected)
     {
-        QAction* a_preview  = afMenu.addAction("&Preview"        , this, SLOT(af_preview()));
         QAction* a_open     = afMenu.addAction("&Open"           , this, SLOT(af_open()),       QKS("Enter"));
         QAction* a_edit     = afMenu.addAction("Open (&Editable)", this, SLOT(af_edit()));
         QAction* a_openWith = afMenu.addAction("Open Wit&h..."   , this, SLOT(af_openWith()),   QKS("Ctrl+Enter"));
@@ -104,9 +103,6 @@ void BookmarkViewDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
         Q_UNUSED(a_openWith);
         Q_UNUSED(a_props);
 
-        bool canPreview = dbm->fview.HasPreviewHandler(viewBData.Ex_FilesList[filesListIdx]
-                                                       .OriginalName);
-        a_preview->setEnabled(canPreview);
         afMenu.setDefaultAction(a_open); //Always Open is the default double-click action.
 
         QPoint menuPos = ui->twAttachedFiles->viewport()->mapToGlobal(pos);
@@ -200,12 +196,6 @@ int BookmarkViewDialog::DefaultFileIndex()
         if (viewBData.Ex_FilesList[i].Ex_IsDefaultFileForEditedBookmark)
             return i;
     return -1;
-}
-
-void BookmarkViewDialog::af_preview()
-{
-    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    PreviewFile(filesListIdx);
 }
 
 void BookmarkViewDialog::af_open()
