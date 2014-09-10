@@ -3,6 +3,7 @@
 
 #include "Util.h"
 
+#include <QApplication>
 #include <QMenu>
 
 BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, QWidget *parent) :
@@ -81,10 +82,8 @@ void BookmarkViewDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
         ui->twAttachedFiles->clearSelection();
 
     //Now  check for selection.
-    int filesListIdx;
-    if (ui->twAttachedFiles->selectedItems().empty())
-        filesListIdx = -1;
-    else
+    int filesListIdx = -1;
+    if (!ui->twAttachedFiles->selectedItems().empty())
         filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
     bool fileSelected = (filesListIdx != -1);
 
@@ -233,7 +232,12 @@ void BookmarkViewDialog::PreviewFile(int index)
 {
     qDebug() << "P";
     //TODO: Check to see if we can preview or not at all!
-    QString fileArchiveURL = viewBData.Ex_FilesList[index].ArchiveURL;
-    QString realFilePathName = dbm->files.GetFullArchiveFilePath(fileArchiveURL);
-    dbm->fview.Preview(realFilePathName, ui->widPreviewer);
+    //TODO: The override cursor must show for the rendering of the webkit contents too!
+    QApplication::setOverrideCursor(Qt::BusyCursor);
+    {
+        QString fileArchiveURL = viewBData.Ex_FilesList[index].ArchiveURL;
+        QString realFilePathName = dbm->files.GetFullArchiveFilePath(fileArchiveURL);
+        dbm->fview.Preview(realFilePathName, ui->widPreviewer);
+    }
+    QApplication::restoreOverrideCursor();
 }
