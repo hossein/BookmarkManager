@@ -14,7 +14,6 @@ private:
     Ui::BookmarkViewDialog *ui;
     DatabaseManager* dbm;
     bool canShowTheDialog;
-    bool autoPreviewFileOnSelection;
 
     BookmarkManager::BookmarkData viewBData;
 

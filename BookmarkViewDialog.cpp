@@ -7,7 +7,7 @@
 
 BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkViewDialog),
-    dbm(dbm), canShowTheDialog(false), autoPreviewFileOnSelection(true)
+    dbm(dbm), canShowTheDialog(false)
 {
     ui->setupUi(this);
     ui->leTags->setModel(&dbm->tags.model);
@@ -50,7 +50,6 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
     int defFileIndex = DefaultFileIndex();
     if (defFileIndex != -1)
     {
-        autoPreviewFileOnSelection = true;
         ui->twAttachedFiles->selectRow(defFileIndex);
         //The above line causes: PreviewFile(defFileIndex);
     }
@@ -69,29 +68,23 @@ bool BookmarkViewDialog::canShow()
 void BookmarkViewDialog::on_twAttachedFiles_itemSelectionChanged()
 {
     //This [ignores empty selections], so if all items are unselected (e.g because of the
-    //  context menu out-of-range right-clicking or cancelling it) the preview is still there.
-    if (autoPreviewFileOnSelection && !ui->twAttachedFiles->selectedItems().isEmpty())
+    //  context menu) the preview is still there.
+    if (!ui->twAttachedFiles->selectedItems().isEmpty())
         af_preview();
 }
 
 void BookmarkViewDialog::on_twAttachedFiles_customContextMenuRequested(const QPoint& pos)
 {
-    //Don't use RETURN in this function:
-    //We manage it by ourselves:
-    autoPreviewFileOnSelection = false;
-
-    int previousSelectedRow = -1;
-    if (!ui->twAttachedFiles->selectedItems().isEmpty())
-        previousSelectedRow = ui->twAttachedFiles->selectedItems()[0]->row();
-
     //[Clear selection on useless right-click]
     if (ui->twAttachedFiles->itemAt(pos) == NULL)
         //This does NOT clear the Preview pane, due to it [ignores empty selections].
         ui->twAttachedFiles->clearSelection();
 
     //Now  check for selection.
-    int filesListIdx = -1;
-    if (!ui->twAttachedFiles->selectedItems().empty())
+    int filesListIdx;
+    if (ui->twAttachedFiles->selectedItems().empty())
+        filesListIdx = -1;
+    else
         filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
     bool fileSelected = (filesListIdx != -1);
 
@@ -117,28 +110,8 @@ void BookmarkViewDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
         afMenu.setDefaultAction(a_open); //Always Open is the default double-click action.
 
         QPoint menuPos = ui->twAttachedFiles->viewport()->mapToGlobal(pos);
-        QAction* execedAction = afMenu.exec(menuPos);
-
-        if (execedAction == NULL)
-        {
-            //Restore the previous selection.
-            if (previousSelectedRow != -1)
-                ui->twAttachedFiles->selectRow(previousSelectedRow);
-            //No need to af_preview, the preview hasn't changed!
-        }
-        else
-        {
-            //Exchange and preview the NEW selection, IF AND ONLY IF it's not the already
-            //  selected file from before!
-            if (previousSelectedRow != filesListIdx/*a.k.a newlySelectedRow*/)
-            {
-                ui->twAttachedFiles->selectRow(filesListIdx);
-                af_preview();
-            }
-        }
+        afMenu.exec(menuPos);
     }
-
-    autoPreviewFileOnSelection = true;
 }
 
 void BookmarkViewDialog::PopulateUITags()
