@@ -3,6 +3,8 @@
 
 #include "Util.h"
 
+#include <QMenu>
+
 BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkViewDialog),
     dbm(dbm), canShowTheDialog(false)
@@ -57,6 +59,46 @@ BookmarkViewDialog::~BookmarkViewDialog()
 bool BookmarkViewDialog::canShow()
 {
     return canShowTheDialog;
+}
+
+void BookmarkViewDialog::on_twAttachedFiles_customContextMenuRequested(const QPoint& pos)
+{
+    //[Clear selection on useless right-click]
+    if (ui->twAttachedFiles->itemAt(pos) == NULL)
+        ui->twAttachedFiles->clearSelection();
+
+    //Now  check for selection.
+    int filesListIdx;
+    if (ui->twAttachedFiles->selectedItems().empty())
+        filesListIdx = -1;
+    else
+        filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    bool fileSelected = (filesListIdx != -1);
+
+    typedef QKeySequence QKS;
+    QMenu afMenu("Attached File Menu");
+
+    if (fileSelected)
+    {
+        QAction* a_preview  = afMenu.addAction("&Preview"        , this, SLOT(af_preview()));
+        QAction* a_open     = afMenu.addAction("&Open"           , this, SLOT(af_open()),       QKS("Enter"));
+        QAction* a_edit     = afMenu.addAction("Open (&Editable)", this, SLOT(af_edit()));
+        QAction* a_openWith = afMenu.addAction("Open Wit&h..."   , this, SLOT(af_openWith()),   QKS("Ctrl+Enter"));
+                              afMenu.addSeparator();
+        QAction* a_props    = afMenu.addAction("P&roperties"     , this, SLOT(af_properties()), QKS("Alt+Enter"));
+
+        Q_UNUSED(a_edit);
+        Q_UNUSED(a_openWith);
+        Q_UNUSED(a_props);
+
+        bool canPreview = dbm->fview.HasPreviewHandler(viewBData.Ex_FilesList[filesListIdx]
+                                                       .OriginalName);
+        a_preview->setEnabled(canPreview);
+        afMenu.setDefaultAction(a_open); //Always Open is the default double-click action.
+
+        QPoint menuPos = ui->twAttachedFiles->viewport()->mapToGlobal(pos);
+        afMenu.exec(menuPos);
+    }
 }
 
 void BookmarkViewDialog::PopulateUITags()
@@ -147,8 +189,46 @@ int BookmarkViewDialog::DefaultFileIndex()
     return -1;
 }
 
+void BookmarkViewDialog::af_preview()
+{
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    PreviewFile(filesListIdx);
+}
+
+void BookmarkViewDialog::af_open()
+{
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    dbm->fview.OpenReadOnly(GetAttachedFileFullPathName(filesListIdx));
+}
+
+void BookmarkViewDialog::af_edit()
+{
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    dbm->fview.OpenEditable(GetAttachedFileFullPathName(filesListIdx));
+}
+
+void BookmarkViewDialog::af_openWith()
+{
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    dbm->fview.OpenWith(GetAttachedFileFullPathName(filesListIdx));
+}
+
+void BookmarkViewDialog::af_properties()
+{
+    //TODO
+}
+
+QString BookmarkViewDialog::GetAttachedFileFullPathName(int filesListIdx)
+{
+    //Unlike BookmarkEditDialog, we know all files are attached and are in FileArchive.
+    QString fullFilePathName = dbm->files.GetFullArchiveFilePath(
+                               viewBData.Ex_FilesList[filesListIdx].ArchiveURL);
+    return fullFilePathName;
+}
+
 void BookmarkViewDialog::PreviewFile(int index)
 {
+    //TODO: Check to see if we can preview or not at all!
     QString fileArchiveURL = viewBData.Ex_FilesList[index].ArchiveURL;
     QString realFilePathName = dbm->files.GetFullArchiveFilePath(fileArchiveURL);
     dbm->fview.Preview(realFilePathName, ui->widPreviewer);

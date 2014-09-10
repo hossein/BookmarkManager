@@ -25,9 +25,10 @@ public:
 public:
     bool canShow();
 
-private:
-    //The following functions were copied from BookmarkEditDialog. Maybe common-ize them?
+private slots:
+    void on_twAttachedFiles_customContextMenuRequested(const QPoint& pos);
 
+    //The following functions were copied from BookmarkEditDialog. Maybe common-ize them?
     /// Tags Section //////////////////////////////////////////////////////////////////////////////
     void PopulateUITags();
 
@@ -38,6 +39,14 @@ private:
     /// Returns -1 if no default file.
     int DefaultFileIndex();
 
-    /// File Preview Section
+    //Attached files actions.
+    void af_preview();
+    void af_open();
+    void af_edit();
+    void af_openWith();
+    void af_properties();
+    QString GetAttachedFileFullPathName(int filesListIdx);
+
+    /// File Preview Section //////////////////////////////////////////////////////////////////////
     void PreviewFile(int index);
 };
