@@ -69,44 +69,41 @@ bool BookmarkViewDialog::canShow()
 void BookmarkViewDialog::on_twAttachedFiles_itemSelectionChanged()
 {
     //This [ignores empty selections], so if all items are unselected (e.g because of the
-    //  context menu) the preview is still there.
+    //  context menu) the preview is still there. Note: The selection is no more cleared
+    //  on any kind of right-click or context menu showin.
     if (!ui->twAttachedFiles->selectedItems().isEmpty())
         PreviewFile(ui->twAttachedFiles->selectedItems()[0]->row());
 }
 
 void BookmarkViewDialog::on_twAttachedFiles_customContextMenuRequested(const QPoint& pos)
 {
-    //[Clear selection on useless right-click]
-    if (ui->twAttachedFiles->itemAt(pos) == NULL)
-        //This does NOT clear the Preview pane, due to it [ignores empty selections].
-        ui->twAttachedFiles->clearSelection();
-
-    //Now  check for selection.
-    int filesListIdx = -1;
-    if (!ui->twAttachedFiles->selectedItems().empty())
-        filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    bool fileSelected = (filesListIdx != -1);
+    //NO [Clear selection on useless right-click], i.e we don't clear the selection,
+    //  as we do NOT want to show a menu for the cases when NO file is selected.
+    //  We just return.
+    //I also think the first condition of the following `if` implies the second (so second not needed)
+    //  because if there is any item under the mouse when right-clicking it will already be selected
+    //  by the time slot is called.
+    if (ui->twAttachedFiles->itemAt(pos) == NULL ||
+        ui->twAttachedFiles->selectedItems().empty())
+        return;
 
     typedef QKeySequence QKS;
     QMenu afMenu("Attached File Menu");
 
-    if (fileSelected)
-    {
-        QAction* a_open     = afMenu.addAction("&Open"           , this, SLOT(af_open()),       QKS("Enter"));
-        QAction* a_edit     = afMenu.addAction("Open (&Editable)", this, SLOT(af_edit()));
-        QAction* a_openWith = afMenu.addAction("Open Wit&h..."   , this, SLOT(af_openWith()),   QKS("Ctrl+Enter"));
-                              afMenu.addSeparator();
-        QAction* a_props    = afMenu.addAction("P&roperties"     , this, SLOT(af_properties()), QKS("Alt+Enter"));
+    QAction* a_open     = afMenu.addAction("&Open"           , this, SLOT(af_open()),       QKS("Enter"));
+    QAction* a_edit     = afMenu.addAction("Open (&Editable)", this, SLOT(af_edit()));
+    QAction* a_openWith = afMenu.addAction("Open Wit&h..."   , this, SLOT(af_openWith()),   QKS("Ctrl+Enter"));
+                          afMenu.addSeparator();
+    QAction* a_props    = afMenu.addAction("P&roperties"     , this, SLOT(af_properties()), QKS("Alt+Enter"));
 
-        Q_UNUSED(a_edit);
-        Q_UNUSED(a_openWith);
-        Q_UNUSED(a_props);
+    Q_UNUSED(a_edit);
+    Q_UNUSED(a_openWith);
+    Q_UNUSED(a_props);
 
-        afMenu.setDefaultAction(a_open); //Always Open is the default double-click action.
+    afMenu.setDefaultAction(a_open); //Always Open is the default double-click action.
 
-        QPoint menuPos = ui->twAttachedFiles->viewport()->mapToGlobal(pos);
-        afMenu.exec(menuPos);
-    }
+    QPoint menuPos = ui->twAttachedFiles->viewport()->mapToGlobal(pos);
+    afMenu.exec(menuPos);
 }
 
 void BookmarkViewDialog::PopulateUITags()
