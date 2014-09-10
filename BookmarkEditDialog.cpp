@@ -590,7 +590,8 @@ void BookmarkEditDialog::af_remove()
 
 void BookmarkEditDialog::af_properties()
 {
-    //TODO
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    dbm->fview.ShowProperties(GetAttachedFileFullPathName(filesListIdx));
 }
 
 QString BookmarkEditDialog::GetAttachedFileFullPathName(int filesListIdx)

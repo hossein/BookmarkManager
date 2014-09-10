@@ -36,6 +36,7 @@ public:
     void OpenReadOnly(const QString& filePathName);
     void OpenEditable(const QString& filePathName);
     void OpenWith(const QString& filePathName);
+    void ShowProperties(const QString& filePathName);
 
 private:
     /// Only file extension will be verified.

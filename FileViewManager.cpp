@@ -93,6 +93,11 @@ void FileViewManager::OpenWith(const QString& filePathName)
 
 }
 
+void FileViewManager::ShowProperties(const QString& filePathName)
+{
+    //NOTE: This needs to show REAL file name and attaching date also.
+}
+
 FilePreviewHandler* FileViewManager::GetPreviewHandler(const QString& fileName)
 {
     QString extension = QFileInfo(fileName).suffix().toLower();
