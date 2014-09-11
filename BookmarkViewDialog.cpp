@@ -11,6 +11,13 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
     dbm(dbm), canShowTheDialog(false)
 {
     ui->setupUi(this);
+
+    //Maximize button would be more useful than a Help button on this dialog, e.g to view big pictures.
+    Qt::WindowFlags flags = this->windowFlags();
+    flags &= ~Qt::WindowContextHelpButtonHint;
+    flags |= Qt::WindowMaximizeButtonHint;
+    this->setWindowFlags(flags);
+
     ui->leTags->setModel(&dbm->tags.model);
     ui->leTags->setModelColumn(dbm->tags.tidx.TagName);
 
