@@ -235,14 +235,20 @@ QString BookmarkViewDialog::GetAttachedFileFullPathName(int filesListIdx)
 
 void BookmarkViewDialog::PreviewFile(int index)
 {
-    qDebug() << "P";
-    //TODO: Check to see if we can preview or not at all!
     //TODO: The override cursor must show for the rendering of the webkit contents too!
-    QApplication::setOverrideCursor(Qt::BusyCursor);
+    if (dbm->fview.HasPreviewHandler(viewBData.Ex_FilesList[index].OriginalName))
     {
-        QString fileArchiveURL = viewBData.Ex_FilesList[index].ArchiveURL;
-        QString realFilePathName = dbm->files.GetFullArchiveFilePath(fileArchiveURL);
-        dbm->fview.Preview(realFilePathName, ui->widPreviewer);
+        QApplication::setOverrideCursor(Qt::BusyCursor);
+        {
+            QString fileArchiveURL = viewBData.Ex_FilesList[index].ArchiveURL;
+            QString realFilePathName = dbm->files.GetFullArchiveFilePath(fileArchiveURL);
+            dbm->fview.Preview(realFilePathName, ui->widPreviewer);
+        }
+        QApplication::restoreOverrideCursor();
     }
-    QApplication::restoreOverrideCursor();
+    else
+    {
+        //Don't show the preview of the previous files when the selected file can't be previewed.
+        ui->widPreviewer->ClearPreview();
+    }
 }

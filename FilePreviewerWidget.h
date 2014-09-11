@@ -4,6 +4,7 @@
 #include <QHash>
 #include <QString>
 
+class QLabel;
 class QStackedLayout;
 class FilePreviewHandler;
 
@@ -16,11 +17,14 @@ class FilePreviewerWidget : public QWidget
 
 private:
     QStackedLayout* m_layout;
-    QWidget* m_emptyFilePreview;
+    QLabel* m_emptyFilePreviewLbl;
     QHash<QString,QWidget*> m_widgetsCreatedByPreviewHandlers;
 
 public:
     explicit FilePreviewerWidget(QWidget *parent = 0);
+
+    /// Clears any previews of the previous files.
+    void ClearPreview();
 
     /// filePathName must be absolute, as it is passed to the FilePreviewHandler.
     void PreviewFileUsingPreviewHandler(const QString& filePathName, FilePreviewHandler* fph);

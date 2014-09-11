@@ -2,6 +2,7 @@
 
 #include "PreviewHandlers/FilePreviewHandler.h"
 
+#include <QLabel>
 #include <QStackedLayout>
 
 FilePreviewerWidget::FilePreviewerWidget(QWidget *parent) :
@@ -10,8 +11,17 @@ FilePreviewerWidget::FilePreviewerWidget(QWidget *parent) :
     m_layout = new QStackedLayout();
     this->setLayout(m_layout);
 
-    m_emptyFilePreview = new QWidget(this);
-    m_layout->addWidget(m_emptyFilePreview);
+    m_emptyFilePreviewLbl = new QLabel(this);
+    m_emptyFilePreviewLbl->setAlignment(Qt::AlignCenter); //Both H & V
+    m_emptyFilePreviewLbl->setText("Cannot Preview File.");
+    m_emptyFilePreviewLbl->setStyleSheet("QLabel { color: red; }");
+    m_emptyFilePreviewLbl->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+    m_layout->addWidget(m_emptyFilePreviewLbl);
+}
+
+void FilePreviewerWidget::ClearPreview()
+{
+     m_layout->setCurrentWidget(m_emptyFilePreviewLbl);
 }
 
 void FilePreviewerWidget::PreviewFileUsingPreviewHandler(const QString& filePathName,
@@ -36,5 +46,5 @@ void FilePreviewerWidget::PreviewFileUsingPreviewHandler(const QString& filePath
 
     //In case of failing, show an empty preview.
     if (!success)
-        m_layout->setCurrentWidget(m_emptyFilePreview);
+        m_layout->setCurrentWidget(m_emptyFilePreviewLbl);
 }
