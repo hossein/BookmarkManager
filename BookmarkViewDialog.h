@@ -26,6 +26,7 @@ public:
     bool canShow();
 
 private slots:
+    void on_twAttachedFiles_itemActivated(QTableWidgetItem *item);
     void on_twAttachedFiles_itemSelectionChanged();
     void on_twAttachedFiles_customContextMenuRequested(const QPoint& pos);
 

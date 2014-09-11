@@ -92,6 +92,12 @@ bool BookmarkViewDialog::canShow()
     return canShowTheDialog;
 }
 
+void BookmarkViewDialog::on_twAttachedFiles_itemActivated(QTableWidgetItem* item)
+{
+    Q_UNUSED(item);
+    af_open();
+}
+
 void BookmarkViewDialog::on_twAttachedFiles_itemSelectionChanged()
 {
     //This [ignores empty selections], so if all items are unselected (e.g because of the
