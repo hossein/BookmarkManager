@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>View Bookmark</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,1">
+  <layout class="QVBoxLayout" name="mainVerticalLayout" stretch="0,1">
    <item>
     <widget class="QWidget" name="widTopPane" native="true">
      <property name="minimumSize">

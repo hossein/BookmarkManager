@@ -39,6 +39,25 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
     if (!canShowTheDialog)
         return;
 
+    if (viewBData.Ex_FilesList.size() == 0)
+    {
+        //No files: Remove the files group.
+        ui->grpFiles->close();
+
+        //We remove widPreviewer and try to reclaim the space it frees.
+        ui->widPreviewer->close();
+
+        //Doesn't work:
+        //this->resize(this->width(), this->height() - ui->widPreviewer->height());
+
+        //With the assumption that ui->widTopPane has fixed height, we set fixed height for
+        //  our dialog too:
+        int thisMargins = this->contentsMargins().top() + this->contentsMargins().bottom();
+        int layoutMargins = ui->mainVerticalLayout->contentsMargins().top()
+                          + ui->mainVerticalLayout->contentsMargins().bottom();
+        this->setFixedHeight(ui->widTopPane->height() + thisMargins + layoutMargins);
+    }
+
     //Additional bookmark variables.
     SetDefaultBFID(viewBData.DefBFID); //Needed; retrieving functions don't set this.
 
