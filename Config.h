@@ -69,6 +69,8 @@ public:
 
         nominalFileTrashDirName = "FileTrash";
         fileTrashPrefix = ":trash:";
+
+        nominalFileSandBoxDirName = "FileSandBox";
     }
     ~Config() { }
 
@@ -80,4 +82,6 @@ public:
 
     QString nominalFileTrashDirName;
     QString fileTrashPrefix;
+
+    QString nominalFileSandBoxDirName;
 };

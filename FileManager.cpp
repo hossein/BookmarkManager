@@ -22,20 +22,11 @@ FileManager::~FileManager()
 
 bool FileManager::InitializeFilesDirectory()
 {
-    QString faDirPath = QDir::currentPath() + "/" + conf->nominalFileArchiveDirName;
-    QFileInfo faDirInfo(faDirPath);
-
-    if (!faDirInfo.exists())
-    {
-        if (!QDir::current().mkpath(faDirPath))
-            return Error("FileArchive directory could not be created!");
-    }
-    else if (!faDirInfo.isDir())
-    {
-        return Error("FileArchive is not a directory!");
-    }
-
-    return true;
+    bool success = true;
+    success &= CreateLocalFileDirectory(conf->nominalFileArchiveDirName);
+    success &= CreateLocalFileDirectory(conf->nominalFileTrashDirName);
+    success &= CreateLocalFileDirectory(conf->nominalFileSandBoxDirName);
+    return success;
 }
 
 bool FileManager::IsInsideFileArchive(const QString& userReadablePath)
@@ -486,6 +477,24 @@ int FileManager::FileNameHash(const QString& fileNameOnly)
         sum += utf8[i];
 
     return sum;
+}
+
+bool FileManager::CreateLocalFileDirectory(const QString& archiveFolderName)
+{
+    QString faDirPath = QDir::currentPath() + "/" + archiveFolderName;
+    QFileInfo faDirInfo(faDirPath);
+
+    if (!faDirInfo.exists())
+    {
+        if (!QDir::current().mkpath(faDirPath))
+            return Error(QString("'%1' directory could not be created!").arg(archiveFolderName));
+    }
+    else if (!faDirInfo.isDir())
+    {
+        return Error(QString("'%1' is not a directory!").arg(archiveFolderName));
+    }
+
+    return true;
 }
 
 void FileManager::CreateTables()

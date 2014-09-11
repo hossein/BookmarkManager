@@ -123,6 +123,9 @@ private:
     QString GetFullArchivePathForFile(const QString& fileArchiveURL, const QString& archiveFolderName);
     int FileNameHash(const QString& fileNameOnly);
 
+private:
+    bool CreateLocalFileDirectory(const QString& archiveFolderName);
+
 protected:
     // ISubManager interface
     void CreateTables();
