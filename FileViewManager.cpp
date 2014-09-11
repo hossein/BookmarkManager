@@ -1,5 +1,7 @@
 #include "FileViewManager.h"
 
+#include "FileManager.h"
+
 #include "PreviewHandlers/FilePreviewHandler.h"
 #include "FilePreviewerWidget.h"
 
@@ -9,6 +11,9 @@
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
 #include <QtSql/QSqlResult>
+
+#include <QUrl>
+#include <QDesktopServices>
 
 FileViewManager::FileViewManager(QWidget* dialogParent, Config* conf)
     : ISubManager(dialogParent, conf)
@@ -78,17 +83,22 @@ void FileViewManager::Preview(const QString& filePathName, FilePreviewerWidget* 
     fpw->PreviewFileUsingPreviewHandler(filePathName, fph);
 }
 
-void FileViewManager::OpenReadOnly(const QString& filePathName)
+void FileViewManager::OpenReadOnly(const QString& filePathName, FileManager* files)
+{
+    QString sandBoxFilePathName = files->CopyFileToSandBoxAndGetAddress(filePathName);
+
+    if (sandBoxFilePathName.isEmpty()) //Error on copying, etc
+        return;
+
+    QDesktopServices::openUrl(QUrl(sandBoxFilePathName));
+}
+
+void FileViewManager::OpenEditable(const QString& filePathName, FileManager* files)
 {
 
 }
 
-void FileViewManager::OpenEditable(const QString& filePathName)
-{
-
-}
-
-void FileViewManager::OpenWith(const QString& filePathName)
+void FileViewManager::OpenWith(const QString& filePathName, FileManager* files)
 {
 
 }

@@ -223,19 +223,19 @@ int BookmarkViewDialog::DefaultFileIndex()
 void BookmarkViewDialog::af_open()
 {
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    dbm->fview.OpenReadOnly(GetAttachedFileFullPathName(filesListIdx));
+    dbm->fview.OpenReadOnly(GetAttachedFileFullPathName(filesListIdx), &dbm->files);
 }
 
 void BookmarkViewDialog::af_edit()
 {
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    dbm->fview.OpenEditable(GetAttachedFileFullPathName(filesListIdx));
+    dbm->fview.OpenEditable(GetAttachedFileFullPathName(filesListIdx), &dbm->files);
 }
 
 void BookmarkViewDialog::af_openWith()
 {
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    dbm->fview.OpenWith(GetAttachedFileFullPathName(filesListIdx));
+    dbm->fview.OpenWith(GetAttachedFileFullPathName(filesListIdx), &dbm->files);
 }
 
 void BookmarkViewDialog::af_properties()

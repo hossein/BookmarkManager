@@ -57,6 +57,8 @@ public:
     bool IsInsideFileArchive(const QString& userReadablePath);
     //NOTE: The following two functions can have equivalent 'TrashFile' sisters.
     QString GetUserReadableArchiveFilePath(const QString& originalName);
+    //NOTE: Maybe save :archive:, etc in the file too? Then we can have :archive1: on disk,
+    //  :archive2: on shared network, etc!
     QString GetFullArchiveFilePath(const QString& fileArchiveURL);
     static QString GetFileNameOnlyFromOriginalNameField(const QString& originalName);
     static QString ChangeOriginalNameField(const QString& originalName, const QString& newName);
@@ -85,6 +87,10 @@ public:
                              const QList<BookmarkFile>& originalBookmarkFiles,
                              const QList<BookmarkFile>& editedBookmarkFiles,
                              QList<long long>& editedBFIDs);
+
+    /// This function gets and returns ABSOLUTE path names, NOT ArchiveURLs. This can change though!
+    /// Returns empty QString on error.
+    QString CopyFileToSandBoxAndGetAddress(const QString& filePathName);
 
 private:
     //Adding bookmarks
@@ -122,6 +128,8 @@ private:
     QString CalculateFileArchiveURL(const QString& fileFullPathName);
     QString GetFullArchivePathForFile(const QString& fileArchiveURL, const QString& archiveFolderName);
     int FileNameHash(const QString& fileNameOnly);
+
+    bool RemoveDirectoryRecursively(const QString& dirPathName);
 
 private:
     bool CreateLocalFileDirectory(const QString& archiveFolderName);

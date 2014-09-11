@@ -504,20 +504,20 @@ void BookmarkEditDialog::af_preview()
 void BookmarkEditDialog::af_open()
 {
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    dbm->fview.OpenReadOnly(GetAttachedFileFullPathName(filesListIdx));
+    dbm->fview.OpenReadOnly(GetAttachedFileFullPathName(filesListIdx), &dbm->files);
 }
 
 void BookmarkEditDialog::af_edit()
 {
     //NOTE: We want to allow editing of yet-unattached files?
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    dbm->fview.OpenEditable(GetAttachedFileFullPathName(filesListIdx));
+    dbm->fview.OpenEditable(GetAttachedFileFullPathName(filesListIdx), &dbm->files);
 }
 
 void BookmarkEditDialog::af_openWith()
 {
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    dbm->fview.OpenWith(GetAttachedFileFullPathName(filesListIdx));
+    dbm->fview.OpenWith(GetAttachedFileFullPathName(filesListIdx), &dbm->files);
 }
 
 void BookmarkEditDialog::af_setAsDefault()

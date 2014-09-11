@@ -5,6 +5,7 @@
 #include <QStringList>
 
 class DatabaseManager;
+class FileManager;
 class FilePreviewHandler;
 class FilePreviewerWidget;
 
@@ -33,9 +34,9 @@ public:
     /// (as this class is an ISubManager itself and doesn't have access to FileManager to resolve
     ///  the :archive: URL into an absolute path).
     void Preview(const QString& filePathName, FilePreviewerWidget* fpw);
-    void OpenReadOnly(const QString& filePathName);
-    void OpenEditable(const QString& filePathName);
-    void OpenWith(const QString& filePathName);
+    void OpenReadOnly(const QString& filePathName, FileManager* files);
+    void OpenEditable(const QString& filePathName, FileManager* files);
+    void OpenWith(const QString& filePathName, FileManager* files);
     void ShowProperties(const QString& filePathName);
 
 private:

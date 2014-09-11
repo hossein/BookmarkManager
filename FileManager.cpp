@@ -215,6 +215,49 @@ bool FileManager::UpdateBookmarkFiles(long long BID,
     return true;
 }
 
+QString FileManager::CopyFileToSandBoxAndGetAddress(const QString& filePathName)
+{
+    QFileInfo originalfi(filePathName);
+    QString sandBoxFilePathName = QDir::currentPath() + "/" + conf->nominalFileSandBoxDirName
+            + "/" + originalfi.fileName();
+
+    //Try
+    QFileInfo sbfi(sandBoxFilePathName);
+    if (sbfi.isDir())
+    {
+        bool deleteSuccess = RemoveDirectoryRecursively(sandBoxFilePathName);
+        if (!deleteSuccess)
+        {
+            Error("The target for creating sandboxed file '" + sandBoxFilePathName +
+                  "' is a directory and cannot be deleted!");
+            return QString();
+        }
+    }
+    else if (sbfi.exists()) //and is a file
+    {
+        bool deleteSuccess = QFile::remove(sandBoxFilePathName);
+        if (!deleteSuccess)
+        {
+            Error("A file already exists at the target for creating sandboxed file '"
+                  + sandBoxFilePathName + "' and cannot be deleted!");
+            return QString();
+        }
+    }
+    //else if (sbfi not exists)
+    //  fine;
+
+    bool copySuccess = QFile::copy(filePathName, sandBoxFilePathName);
+    if (!copySuccess)
+    {
+        Error(QString("Could not create a temporary, sandboxed file for read-only opening!\n"
+                      "Can not continue\nSource File: %1\nDestination File: %2")
+              .arg(filePathName, sandBoxFilePathName));
+        return QString();
+    }
+
+    return sandBoxFilePathName;
+}
+
 bool FileManager::AddBookmarkFile(long long BID, long long FID, long long& addedBFID)
 {
     QString attachError = "Could not set attached files information for the bookmark in the database.";
@@ -477,6 +520,30 @@ int FileManager::FileNameHash(const QString& fileNameOnly)
         sum += utf8[i];
 
     return sum;
+}
+
+bool FileManager::RemoveDirectoryRecursively(const QString& dirPathName)
+{
+    // http://john.nachtimwald.com/2010/06/08/qt-remove-directory-and-its-contents/
+
+    bool success = true;
+    QDir dir(dirPathName);
+    QFileInfoList entriesInfo = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System |
+                                                  QDir::Hidden | QDir::AllDirs | QDir::Files);
+
+    foreach (const QFileInfo& ei, entriesInfo)
+    {
+        if (ei.isDir())
+            success = RemoveDirectoryRecursively(ei.absoluteFilePath());
+        else
+            success = QFile::remove(ei.absoluteFilePath());
+
+        if (!success)
+            return success;
+    }
+    success = dir.rmdir(dirPathName);
+
+    return success;
 }
 
 bool FileManager::CreateLocalFileDirectory(const QString& archiveFolderName)
