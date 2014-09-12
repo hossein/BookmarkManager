@@ -95,7 +95,8 @@ void FileViewManager::OpenReadOnly(const QString& filePathName, FileManager* fil
 
 void FileViewManager::OpenEditable(const QString& filePathName, FileManager* files)
 {
-
+    Q_UNUSED(files)
+    QDesktopServices::openUrl(QUrl(filePathName));
 }
 
 void FileViewManager::OpenWith(const QString& filePathName, FileManager* files)
