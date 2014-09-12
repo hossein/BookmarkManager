@@ -66,15 +66,11 @@ int FileViewManager::ChooseADefaultFileBasedOnExtension(const QStringList& files
 bool FileViewManager::HasPreviewHandler(const QString& fileName)
 {
     return (GetPreviewHandler(fileName) != NULL);
-    //NOTE: Make sure all the following extensions are implemented.
-    //QStringList filesWithPreviewHandlers =
-    //        QString("mht|mhtml|htm|html|maff|txt|bmp|gif|png|jpg|jpeg").split('|');
-    //return filesWithPreviewHandlers.contains(QFileInfo(fileName).suffix().toLower());
 }
 
 void FileViewManager::Preview(const QString& filePathName, FilePreviewerWidget* fpw)
 {
-    //We just do an additional check, although user must be careful not to call this function
+    //We just do an additional check, although user should be careful not to call this function
     //  for files without preview handlers.
     FilePreviewHandler* fph = GetPreviewHandler(filePathName);
     if (fph == NULL)

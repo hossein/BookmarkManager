@@ -89,6 +89,7 @@ void MainWindow::tvBookmarksCurrentRowChanged(const QModelIndex& current, const 
 {
     Q_UNUSED(previous);
     register bool valid = current.isValid();
+    ui->btnView->setEnabled(valid);
     ui->btnEdit->setEnabled(valid);
     ui->btnDelete->setEnabled(valid);
 }

@@ -58,8 +58,8 @@ public:
     bool IsInsideFileArchive(const QString& userReadablePath);
     //NOTE: The following two functions can have equivalent 'TrashFile' sisters.
     QString GetUserReadableArchiveFilePath(const QString& originalName);
-    //NOTE: Maybe save :archive:, etc in the file too? Then we can have :archive1: on disk,
-    //  :archive2: on shared network, etc!
+    //TODO: Save :archive:, etc in the file too? Then we can have :archive1: on disk,
+    //  :archive2: on shared network, :sanbox:, :trash:, etc and unify many functions here!
     QString GetFullArchiveFilePath(const QString& fileArchiveURL);
     static QString GetFileNameOnlyFromOriginalNameField(const QString& originalName);
     static QString ChangeOriginalNameField(const QString& originalName, const QString& newName);
