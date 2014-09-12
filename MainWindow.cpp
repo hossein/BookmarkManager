@@ -49,6 +49,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Additional sub-parts initialization
     dbm.files.InitializeFilesDirectory();
+    dbm.files.ClearSandBox();
 
     qApp->postEvent(this, new QResizeEvent(this->size(), this->size()));
 }

@@ -29,6 +29,18 @@ bool FileManager::InitializeFilesDirectory()
     return success;
 }
 
+bool FileManager::ClearSandBox()
+{
+    bool success;
+    QString sandboxDirPath = QDir::currentPath() + "/" + conf->nominalFileSandBoxDirName;
+    success = RemoveDirectoryRecursively(sandboxDirPath, false); //Don't remove the SandBox itself.
+
+    if (!success)
+        return Error("Can not remove the contents of File SandBox!)");
+
+    return success;
+}
+
 bool FileManager::IsInsideFileArchive(const QString& userReadablePath)
 {
     int faPrefixLength = conf->fileArchivePrefix.length();
@@ -522,12 +534,15 @@ int FileManager::FileNameHash(const QString& fileNameOnly)
     return sum;
 }
 
-bool FileManager::RemoveDirectoryRecursively(const QString& dirPathName)
+bool FileManager::RemoveDirectoryRecursively(const QString& dirPathName, bool removeParentDir)
 {
     // http://john.nachtimwald.com/2010/06/08/qt-remove-directory-and-its-contents/
 
     bool success = true;
     QDir dir(dirPathName);
+    if (!dir.exists())
+        return true; //We wanted it deleted; it's already deleted, success!
+
     QFileInfoList entriesInfo = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System |
                                                   QDir::Hidden | QDir::AllDirs | QDir::Files);
 
@@ -541,8 +556,9 @@ bool FileManager::RemoveDirectoryRecursively(const QString& dirPathName)
         if (!success)
             return success;
     }
-    success = dir.rmdir(dirPathName);
 
+    if (removeParentDir)
+        success = dir.rmdir(dirPathName);
     return success;
 }
 
