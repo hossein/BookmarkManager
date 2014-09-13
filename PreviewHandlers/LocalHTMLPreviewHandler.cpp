@@ -33,6 +33,33 @@ bool LocalHTMLPreviewHandler::ClearAndSetDataToWidget(const QString& filePathNam
     if (webViewWidget == NULL)
         return false;
 
-    webViewWidget->setUrl(QUrl(filePathName));
+    //None of these were solutions:
+    //  Reading from file and setting content with custom mime type "multipart/related".
+    //  Setting the URL in `webViewWidget->page()->mainFrame()->load` which is a QWebFrame.
+    /*
+    QFileInfo fi(filePathName);
+    QString lowerSuffix = fi.suffix().toLower();
+    if (lowerSuffix == "mht" || lowerSuffix == "mhtml")
+    {
+        //We don't do file error handling here, we're lazy!
+        QFile f(filePathName);
+        f.open(QIODevice::ReadOnly);
+        QByteArray fileData = f.readAll();
+        f.close();
+
+        //QWebPage p;
+        //QMessageBox::information(NULL, "hi", p.supportedContentTypes().join("\n"));
+        webViewWidget->page()->mainFrame()->load(QUrl::fromLocalFile(filePathName));
+        //webViewWidget->setContent(fileData, "multipart/x-mixed-replace");
+    }
+    else //HTML, etc
+    {
+        webViewWidget->setUrl(QUrl(filePathName));
+    }
+    */
+
+    //The solution was:
+    webViewWidget->setUrl(QUrl::fromLocalFile(filePathName));
+
     return true;
 }
