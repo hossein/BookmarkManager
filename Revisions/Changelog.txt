@@ -25,3 +25,4 @@
                 to preview an HTML file.
 2014-09-10  19  Created simple Image and Text preview handlers, BMViewDlg files context menu.
 2014-09-11  19  Preview enhancements. Support sandboxed file opening everywhere.
+2014-09-13  18  Decision on ExecuteShellEx opening (we don't do it), delete sandbox on start-up

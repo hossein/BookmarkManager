@@ -1,4 +1,7 @@
 #include "LocalHTMLPreviewHandler.h"
+
+#include <QDebug>
+#include <QFileInfo>
 #include <QWebView>
 
 LocalHTMLPreviewHandler::LocalHTMLPreviewHandler()
@@ -58,8 +61,19 @@ bool LocalHTMLPreviewHandler::ClearAndSetDataToWidget(const QString& filePathNam
     }
     */
 
-    //The solution was:
-    webViewWidget->setUrl(QUrl::fromLocalFile(filePathName));
+    //The solution is finally this. This is how it works anyway; so I enclose it in Qt version checks.
+    //qDebug() << filePathName << QUrl(filePathName).toString() << QUrl::fromLocalFile(filePathName).toString();
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    QFileInfo fi(filePathName);
+    QString lowerSuffix = fi.suffix().toLower();
+    if (lowerSuffix == "mht" || lowerSuffix == "mhtml")
+        webViewWidget->setUrl(QUrl::fromLocalFile(filePathName));
+    else
+        webViewWidget->setUrl(QUrl(filePathName));
+#else
+#   error Implement logic for Qt5
+#endif
 
     return true;
 }
