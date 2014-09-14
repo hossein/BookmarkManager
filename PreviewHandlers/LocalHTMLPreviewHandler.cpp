@@ -2,6 +2,9 @@
 
 #include <QDebug>
 #include <QFileInfo>
+
+#include <QFrame>
+#include <QHBoxLayout>
 #include <QWebView>
 
 LocalHTMLPreviewHandler::LocalHTMLPreviewHandler()
@@ -25,14 +28,27 @@ FilePreviewHandler::FileCategory LocalHTMLPreviewHandler::GetFilesCategory()
 
 QWidget* LocalHTMLPreviewHandler::CreateAndFreeWidget(QWidget* parent)
 {
-    QWebView* webViewWidget = new QWebView(parent);
-    return webViewWidget;
+    QFrame* webViewFrame = new QFrame(parent);
+    webViewFrame->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+
+    QHBoxLayout* frameLayout = new QHBoxLayout(webViewFrame);
+    frameLayout->setContentsMargins(0, 0, 0, 0);
+    webViewFrame->setLayout(frameLayout);
+
+    QWebView* webViewWidget = new QWebView(webViewFrame);
+    frameLayout->addWidget(webViewWidget, 1);
+
+    return webViewFrame;
 }
 
 bool LocalHTMLPreviewHandler::ClearAndSetDataToWidget(const QString& filePathName,
                                                       QWidget* previewWidget)
 {
-    QWebView* webViewWidget = qobject_cast<QWebView*>(previewWidget);
+    QFrame* webViewFrame = qobject_cast<QFrame*>(previewWidget);
+    if (webViewFrame == NULL || webViewFrame->children().size() == 0)
+        return false;
+
+    QWebView* webViewWidget = webViewFrame->findChild<QWebView*>();
     if (webViewWidget == NULL)
         return false;
 
