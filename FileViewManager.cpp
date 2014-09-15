@@ -4,6 +4,7 @@
 
 #include "PreviewHandlers/FilePreviewHandler.h"
 #include "FilePreviewerWidget.h"
+#include "OpenWithDialog.h"
 
 #include <QDir>
 #include <QFile>
@@ -95,9 +96,14 @@ void FileViewManager::OpenEditable(const QString& filePathName, FileManager* fil
     QDesktopServices::openUrl(QUrl(filePathName));
 }
 
-void FileViewManager::OpenWith(const QString& filePathName, FileManager* files)
+void FileViewManager::OpenWith(const QString& filePathName, DatabaseManager* dbm)
 {
+    //TODO: Incomplete
+    OpenWithDialog openWithDlg(dbm);
+    if (!openWithDlg.canShow())
+        return; //In case of errors a message is already shown.
 
+    openWithDlg.exec();
 }
 
 void FileViewManager::ShowProperties(const QString& filePathName)

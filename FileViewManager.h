@@ -36,7 +36,7 @@ public:
     void Preview(const QString& filePathName, FilePreviewerWidget* fpw);
     void OpenReadOnly(const QString& filePathName, FileManager* files);
     void OpenEditable(const QString& filePathName, FileManager* files);
-    void OpenWith(const QString& filePathName, FileManager* files);
+    void OpenWith(const QString& filePathName, DatabaseManager* dbm);
     void ShowProperties(const QString& filePathName);
 
 private:

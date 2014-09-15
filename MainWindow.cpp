@@ -351,6 +351,7 @@ void MainWindow::RefreshTVBookmarksModelView()
 
 void MainWindow::NewBookmark()
 {
+    //TODO: Make all these modal dialogs non-pointer, if it's okay with message loops.
     BookmarkEditDialog::OutParams outParams;
     BookmarkEditDialog* bmEditDialog = new BookmarkEditDialog(&dbm, -1, &outParams, this);
 

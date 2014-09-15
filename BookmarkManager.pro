@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     PreviewHandlers/LocalHTMLPreviewHandler.cpp \
     PreviewHandlers/FilePreviewHandler.cpp \
     PreviewHandlers/ImagePreviewHandler.cpp \
-    PreviewHandlers/TextPreviewHandler.cpp
+    PreviewHandlers/TextPreviewHandler.cpp \
+    OpenWithDialog.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -54,11 +55,13 @@ HEADERS  += MainWindow.h \
     PreviewHandlers/FilePreviewHandler.h \
     PreviewHandlers/LocalHTMLPreviewHandler.h \
     PreviewHandlers/ImagePreviewHandler.h \
-    PreviewHandlers/TextPreviewHandler.h
+    PreviewHandlers/TextPreviewHandler.h \
+    OpenWithDialog.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \
-    BookmarkViewDialog.ui
+    BookmarkViewDialog.ui \
+    OpenWithDialog.ui
 
 RESOURCES += \
     BookmarkManager.qrc

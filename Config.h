@@ -16,7 +16,9 @@
 //  on Windows we can't always understand when the application is really closed or whether it has
 //  spawned another app.
 //  As a CONSEQUENCE, we can't show the 'File X was modified. Apply the modifications in FileArchive
-//  too?' messages which may make the program more usable.
+//  too?' messages which may make the program more usable, and use the
+//  'Optionally Editable Open/Direct Open' terminology (and logic) instead of
+//  'Sandboxed Open/Editable Open' idea.
 //So we delete the files later:
 //- Deleting on closing BookmarkManager: Maybe best option, but user may lose modified sanboxed
 //  files so we don't do it.

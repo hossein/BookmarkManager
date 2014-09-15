@@ -241,7 +241,7 @@ void BookmarkViewDialog::af_edit()
 void BookmarkViewDialog::af_openWith()
 {
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    dbm->fview.OpenWith(GetAttachedFileFullPathName(filesListIdx), &dbm->files);
+    dbm->fview.OpenWith(GetAttachedFileFullPathName(filesListIdx), dbm);
 }
 
 void BookmarkViewDialog::af_properties()
