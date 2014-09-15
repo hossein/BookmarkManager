@@ -10,7 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = BookmarkManager
 TEMPLATE = app
-LIBS += Shell32.lib
+LIBS += Shell32.lib User32.lib
 
 SOURCES += main.cpp\
         MainWindow.cpp \
