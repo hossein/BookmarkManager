@@ -11,7 +11,8 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, QWidget *parent) :
     ui->setupUi(this);
 
     //Add a tool button with 'Rename/Delete' menus.
-    QMenu* optionsMenu = new QMenu(this);
+    typedef QKeySequence QKS;
+    QMenu* optionsMenu = new QMenu("Program Menu", this);
     optionsMenu->addAction("&Rename", this, SLOT(pact_rename()), QKeySequence("F2"));
     optionsMenu->addAction("&Remove From List", this, SLOT(pact_remove()), QKeySequence("Del"));
 
@@ -21,6 +22,8 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, QWidget *parent) :
     m_optionsButton->setPopupMode(QToolButton::InstantPopup);
     m_optionsButton->setMenu(optionsMenu);
     m_optionsButton->setEnabled(false);
+    //Although this doesn't exactly set the width to that...
+    m_optionsButton->setFixedWidth(ui->buttonBox->button(QDialogButtonBox::Ok)->width());
 
     //A "Reset" button appears at the LEFT side on all platforms on Qt4!
     ui->buttonBox->addButton(m_optionsButton, QDialogButtonBox::ResetRole);
