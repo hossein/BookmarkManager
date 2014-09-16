@@ -3,6 +3,7 @@
 #include <cstdlib> //rand, srand
 #include <ctime> //time
 
+#include <QBuffer>
 #include <QCryptographicHash>
 #include <QDir>
 #include <QFile>
@@ -226,4 +227,21 @@ void Util::SeedRandomWithTime()
 int Util::Random()
 {
     return rand();
+}
+
+QByteArray Util::SerializeQPixmap(const QPixmap& pixmap)
+{
+    QByteArray data;
+    QBuffer buffer(&data);
+    buffer.open(QIODevice::WriteOnly);
+    pixmap.save(&buffer, "PNG");
+    buffer.close();
+    return data;
+}
+
+QPixmap Util::DeSerializeQPixmap(const QByteArray& data)
+{
+    QPixmap pixmap;
+    pixmap.loadFromData(data, "PNG");
+    return pixmap;
 }

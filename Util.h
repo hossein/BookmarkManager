@@ -1,5 +1,7 @@
 #pragma once
 #include <QDebug>
+#include <QByteArray>
+#include <QPixmap>
 #include <QString>
 #include <QStringList>
 
@@ -31,4 +33,7 @@ public:
     static void SeedRandomWithTime();
     static int Random();
 
+    // Database Serialization/Deserialization /////////////////////////////////////////////////////
+    static QByteArray SerializeQPixmap(const QPixmap& pixmap);
+    static QPixmap DeSerializeQPixmap(const QByteArray& data);
 };
