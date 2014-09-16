@@ -135,11 +135,12 @@ void FileViewManager::CreateTables()
     QSqlQuery query(db);
 
     query.exec("CREATE TABLE SystemApp"
-               "( SAID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, PATH TEXT )");
+               "( SAID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Path TEXT, "
+               "  SmallIcon BLOB, LargeIcon BLOB )");
 
     //Extension Association Table
     query.exec("CREATE TABLE ExtAssoc"
-               "( EAID INTEGER PRIMARY KEY AUTOINCREMENT, Extension TEXT, SAID INTEGER )");
+               "( EAID INTEGER PRIMARY KEY AUTOINCREMENT, LExtension TEXT, SAID INTEGER )");
 }
 
 void FileViewManager::PopulateModels()

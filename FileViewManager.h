@@ -20,6 +20,8 @@ public:
     FileViewManager(QWidget* dialogParent, Config* conf);
     ~FileViewManager();
 
+    // Non-DB Functions ///////////////////////////////////////////////////////////////////////////
+public:
     /// Determines the extensions automatically.
     /// This class will OWN the preview handlers added here and removes them in destructor.
     void AddPreviewHandler(FilePreviewHandler* fph);
@@ -43,6 +45,11 @@ private:
     /// Only file extension will be verified.
     /// Returns NULL if there isn't a preview handler for the extension.
     FilePreviewHandler* GetPreviewHandler(const QString& fileName);
+
+    // Database Functions /////////////////////////////////////////////////////////////////////////
+public:
+
+
 
 protected:
     // ISubManager interface
