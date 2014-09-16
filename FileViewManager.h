@@ -61,6 +61,8 @@ public:
 
     QHash<long long, SystemAppData> systemApps;
 
+    void PopulateSystemAppsList();
+
 protected:
     // ISubManager interface
     void CreateTables();

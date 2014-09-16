@@ -19,10 +19,7 @@ protected:
 
     }
 
-    //Must create the tables used by the manager.
     virtual void CreateTables() = 0;
-
-    //In FileViewManager, this populates the internal lists instead of any models.
     virtual void PopulateModels() = 0;
 
     void setSqlDatabase(QSqlDatabase& db_)

@@ -121,6 +121,39 @@ FilePreviewHandler* FileViewManager::GetPreviewHandler(const QString& fileName)
         return NULL;
 }
 
+void FileViewManager::PopulateSystemAppsList()
+{
+    //Instead we populate the internal fast-access lists.
+    //Note: We do NOT do this at `FileViewManager::PopulateModels()` as it is called multiple times
+    //      and upon Bookmark/Tag/File/etc add or edit and is expensive.
+    //So we do it at this function ONLY ONCE and then the database functions directly modify
+    //      `this->systemApps` instead of re-retrieval from DB each time.
+
+    QString retrieveError = "Could not get programs information from the database.";
+    QSqlQuery query(db);
+    query.prepare("SELECT * FROM SystemApp");
+
+    if (!query.exec())
+    {
+        Error(retrieveError, query.lastError());
+        return;
+    }
+
+    systemApps.clear();
+    while (query.next())
+    {
+        SystemAppData sa;
+        QSqlRecord record = query.record();
+        sa.SAID      = record.value("SAID").toLongLong();
+        sa.Name      = record.value("Name").toString();
+        sa.Path      = record.value("Path").toString();
+        sa.SmallIcon = Util::DeSerializeQPixmap(record.value("SmallIcon").toByteArray());
+        sa.LargeIcon = Util::DeSerializeQPixmap(record.value("LargeIcon").toByteArray());
+
+        systemApps[sa.SAID] = sa;
+    }
+}
+
 void FileViewManager::CreateTables()
 {
     //IMPORTANT:
@@ -146,28 +179,5 @@ void FileViewManager::CreateTables()
 
 void FileViewManager::PopulateModels()
 {
-    //FileViewManager does not have any models; instead we populate the internal fast-access lists.
-    QString retrieveError = "Could not get programs information from the database.";
-    QSqlQuery query(db);
-    query.prepare("SELECT * FROM SystemApp");
-
-    if (!query.exec())
-    {
-        Error(retrieveError, query.lastError());
-        return;
-    }
-
-    systemApps.clear();
-    while (query.next())
-    {
-        SystemAppData sa;
-        QSqlRecord record = query.record();
-        sa.SAID      = record.value("SAID").toLongLong();
-        sa.Name      = record.value("Name").toString();
-        sa.Path      = record.value("Path").toString();
-        sa.SmallIcon = Util::DeSerializeQPixmap(record.value("SmallIcon").toByteArray());
-        sa.LargeIcon = Util::DeSerializeQPixmap(record.value("LargeIcon").toByteArray());
-
-        systemApps[sa.SAID] = sa;
-    }
+    //FileViewManager does not have any models.
 }
