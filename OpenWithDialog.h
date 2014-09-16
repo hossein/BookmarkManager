@@ -43,8 +43,9 @@ private slots:
     void on_lwProgs_itemActivated(QListWidgetItem *item);
     void on_lwProgs_customContextMenuRequested(const QPoint& pos);
 
-    void browse();
     void filter();
+
+    void pact_browse();
     void pact_rename();
     void pact_remove();
 };
