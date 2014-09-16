@@ -24,6 +24,7 @@ private:
     bool canShowTheDialog;
 
     QToolButton* m_optionsButton;
+    QListWidgetItem* m_browsedProgramItem;
 
 public:
     explicit OpenWithDialog(DatabaseManager* dbm, QWidget *parent = 0);
@@ -42,6 +43,9 @@ private slots:
     void on_lwProgs_itemSelectionChanged();
     void on_lwProgs_itemActivated(QListWidgetItem *item);
     void on_lwProgs_customContextMenuRequested(const QPoint& pos);
+
+    void lwProgsShowAllNonBrowsedItems();
+    void lwProgsShowOnlyBrowsedItem();
 
     void filter();
 

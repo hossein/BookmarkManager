@@ -1,6 +1,9 @@
 #include "OpenWithDialog.h"
 #include "ui_OpenWithDialog.h"
 
+#include "WinFunctions.h"
+
+#include <QFileInfo>
 #include <QFileDialog>
 #include <QFontMetrics>
 #include <QMenu>
@@ -37,8 +40,15 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, QWidget *parent) :
     foreach (const FileViewManager::SystemAppData& sa, dbm->fview.systemApps)
     {
         QString saText = QString("<b>%1</b><br/>%2").arg(sa.Name, sa.Path);
-        QListWidgetItem* item = new QListWidgetItem(QIcon(sa.LargeIcon), saText, ui->lwProgs);
+        QListWidgetItem* item = new QListWidgetItem(QIcon(sa.LargeIcon), saText);
+        item->setData(Qt::UserRole, sa.SAID);
+        ui->lwProgs->addItem(item);
     }
+
+    m_browsedProgramItem = new QListWidgetItem();
+    m_browsedProgramItem->setData(Qt::UserRole, -1);
+    m_browsedProgramItem->setHidden(true);
+    ui->lwProgs->addItem(m_browsedProgramItem);
 
     canShowTheDialog = true;
 }
@@ -66,7 +76,7 @@ void OpenWithDialog::on_leFilterBrowse_textEdited(const QString &text)
 
 void OpenWithDialog::on_btnBrowse_clicked()
 {
-    browse();
+    pact_browse();
 }
 
 void OpenWithDialog::on_lwProgs_itemSelectionChanged()
@@ -76,6 +86,7 @@ void OpenWithDialog::on_lwProgs_itemSelectionChanged()
 
 void OpenWithDialog::on_lwProgs_itemActivated(QListWidgetItem* item)
 {
+    Q_UNUSED(item)
     accept();
 }
 
@@ -87,11 +98,11 @@ void OpenWithDialog::on_lwProgs_customContextMenuRequested(const QPoint& pos)
 
     //Now  check for selection.
     long long SAID;
-    if (ui->lwProgs->selectedItems().empty())
+    bool programSelected = (!ui->lwProgs->selectedItems().empty());
+    if (!programSelected)
         SAID = -1;
     else
         SAID = ui->lwProgs->selectedItems()[0]->data(Qt::UserRole).toLongLong();
-    bool programSelected = (SAID != -1);
 
     typedef QKeySequence QKS;
     QMenu optionsMenu("Program Menu");
@@ -110,14 +121,85 @@ void OpenWithDialog::on_lwProgs_customContextMenuRequested(const QPoint& pos)
     optionsMenu.exec(menuPos);
 }
 
+void OpenWithDialog::lwProgsShowAllNonBrowsedItems()
+{
+    for (int row = 0; row < ui->lwProgs->count(); row++)
+        ui->lwProgs->item(row)->setHidden(true);
+    m_browsedProgramItem->setHidden(false);
+}
+
+void OpenWithDialog::lwProgsShowOnlyBrowsedItem()
+{
+    for (int row = 0; row < ui->lwProgs->count(); row++)
+        ui->lwProgs->item(row)->setHidden(false);
+    m_browsedProgramItem->setHidden(true);
+}
+
 void OpenWithDialog::filter()
 {
+    QString text = ui->leFilterBrowse->text();
 
+    //Process all items first
+    int numFound = 0;
+    for (int row = 0; row < ui->lwProgs->count(); row++)
+    {
+        QListWidgetItem* item = ui->lwProgs->item(row);
+        bool containsText = item->text().contains(text, Qt::CaseInsensitive);
+        item->setHidden(!containsText);
+        if (containsText && item != m_browsedProgramItem)
+            numFound++;
+    }
+
+    //In case of found results, hide the browsed item (we must do it as it may contain text from
+    //  previous browsings).
+    if (numFound > 0)
+    {
+        m_browsedProgramItem->setHidden(true);
+        return;
+    }
+
+    //If no results were found, all other items are hiddren, we try to see if the entered path
+    //  is a path, and if it's an EXE file.
+    bool programFound = false;
+    QFileInfo fi(text);
+    if (fi.isFile())
+    {
+#if defined(Q_OS_WIN32)
+        if (fi.suffix().toLower() == "exe")
+        {
+            programFound = true;
+
+            //We can't rely on displayName or largeIcon being empty for error handling.
+            //  If the program hasn't set a name in its resources, GetProgramDisplayName returns
+            //  the program name. Similarly the program simply may not have a large icon in it.
+            //  The above two are valid mostly for command-line programs.
+            //Note that we don't reach here if the program path is already in DB; in that case the
+            //  existing record is already found and user's custom display name is already used.
+            QString absoluteFilePath = QDir::toNativeSeparators(fi.absoluteFilePath());
+            QString displayName = WinFunctions::GetProgramDisplayName(absoluteFilePath);
+            QPixmap largeIcon = WinFunctions::GetProgramLargeIcon(absoluteFilePath);
+
+            QString saText = QString("<b>%1</b><br/>%2").arg(displayName, absoluteFilePath);
+            m_browsedProgramItem->setIcon(QIcon(largeIcon));
+            m_browsedProgramItem->setText(saText);
+        }
+#else
+#   error On unix etc must check if the file is executable by other means
+#endif
+    }
+
+    m_browsedProgramItem->setHidden(!programFound);
+
+    if (!programFound)
+    {
+        //NOTE: Showing a 'no program found' is more beautiful!
+    }
 }
 
 void OpenWithDialog::pact_browse()
 {
-
+    //TODO
+    //QString exeFileName = QFileDialog::getOpenFileName();
 }
 
 void OpenWithDialog::pact_rename()
