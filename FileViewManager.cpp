@@ -5,6 +5,7 @@
 #include "PreviewHandlers/FilePreviewHandler.h"
 #include "FilePreviewerWidget.h"
 #include "OpenWithDialog.h"
+#include "Util.h"
 
 #include <QDir>
 #include <QFile>
@@ -145,5 +146,28 @@ void FileViewManager::CreateTables()
 
 void FileViewManager::PopulateModels()
 {
-    //FileViewManager does not have any models.
+    //FileViewManager does not have any models; instead we populate the internal fast-access lists.
+    QString retrieveError = "Could not get programs information from the database.";
+    QSqlQuery query(db);
+    query.prepare("SELECT * FROM SystemApp");
+
+    if (!query.exec())
+    {
+        Error(retrieveError, query.lastError());
+        return;
+    }
+
+    systemApps.clear();
+    while (query.next())
+    {
+        SystemAppData sa;
+        QSqlRecord record = query.record();
+        sa.SAID      = record.value("SAID").toLongLong();
+        sa.Name      = record.value("Name").toString();
+        sa.Path      = record.value("Path").toString();
+        sa.SmallIcon = Util::DeSerializeQPixmap(record.value("SmallIcon").toByteArray());
+        sa.LargeIcon = Util::DeSerializeQPixmap(record.value("LargeIcon").toByteArray());
+
+        systemApps[sa.SAID] = sa;
+    }
 }

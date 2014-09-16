@@ -3,6 +3,7 @@
 #include <QHash>
 #include <QString>
 #include <QStringList>
+#include <QPixmap>
 
 class DatabaseManager;
 class FileManager;
@@ -13,6 +14,7 @@ class FileViewManager : public ISubManager
 {
     friend class DatabaseManager;
 
+private:
     QList<FilePreviewHandler*> m_ownedPreviewHandlers;
     QHash<QString,FilePreviewHandler*> m_extensionsPreviewHandlers;
 
@@ -48,8 +50,16 @@ private:
 
     // Database Functions /////////////////////////////////////////////////////////////////////////
 public:
+    struct SystemAppData
+    {
+        long long SAID;
+        QString Name;
+        QString Path;
+        QPixmap SmallIcon;
+        QPixmap LargeIcon;
+    };
 
-
+    QHash<long long, SystemAppData> systemApps;
 
 protected:
     // ISubManager interface
