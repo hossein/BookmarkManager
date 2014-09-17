@@ -74,18 +74,44 @@ void OpenWithDialog::accept()
 {
     //If there is no selection, OK button is disabled and we don't reach here.
     //  OK button is enabled on selection or available browsing selected.
-    if (outParams != NULL)
+    bool success = true;
+
+    QListWidgetItem* selItem = ui->lwProgs->selectedItems()[0];
+    long long SAID = selItem->data(Qt::UserRole+0).toLongLong();
+    if (SAID != -1)
     {
-        QListWidgetItem* selItem = ui->lwProgs->selectedItems()[0];
-        outParams->selectedSAID = selItem->data(Qt::UserRole+0).toLongLong();
+        //Program already exists. Proceed
+    }
+    else //if (SAID == -1)
+    {
+        //Must add the program to DB. We do it here at OpenWithDialog to show the user any
+        //  errors that might happen while adding the program to database.
+
         //Do Not use `ui->leFilterBrowse->text()` for path because it may be relative, etc.
         //  Also we do not rely on the path being converted to native separators in other places,
         //  we convert it to native separators here anyway.
-        outParams->browsedSystemAppPath =
+        QString browsedSystemAppPath =
                 QDir::toNativeSeparators(selItem->data(Qt::UserRole+1).toString());
+
+        FileViewManager::SystemAppData sadata;
+        sadata.SAID = SAID; //Not important.
+        sadata.Name = selItem->data(Qt::DisplayRole).toString();
+        sadata.Path = browsedSystemAppPath;
+        //Small icon: Get it fresh!
+        sadata.SmallIcon = WinFunctions::GetProgramSmallIcon(browsedSystemAppPath);
+        //Large icon: Already have it!
+        sadata.LargeIcon = qvariant_cast<QPixmap>(selItem->data(Qt::DecorationRole));
+
+        //This sets the SAID too.
+        success = dbm->fview.AddOrEditSystemApp(SAID, sadata);
     }
 
-    QDialog::accept();
+    if (outParams != NULL)
+        outParams->selectedSAID = SAID;
+
+    //Don't close the dialog if adding the systemapp encountered error.
+    if (success)
+        QDialog::accept();
 }
 
 void OpenWithDialog::on_leFilterBrowse_textChanged(const QString& text)
@@ -153,6 +179,8 @@ void OpenWithDialog::setProgItemData(QListWidgetItem* item, long long SAID,
     item->setIcon(QIcon(pixmap));
     item->setText(text + "\n" + path);
 
+    //IMPORTANT: Upon changing any of these, many places in OpenWithDialog and AppListItemDelegate
+    //           must be changed, too.
     item->setData(Qt::DecorationRole, pixmap);
     item->setData(Qt::DisplayRole, text);
     item->setData(Qt::UserRole+0, SAID);

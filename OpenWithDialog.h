@@ -21,10 +21,7 @@ class OpenWithDialog : public QDialog
 public:
     struct OutParams
     {
-        //If `selectedSAID == -1` then `browsedSystemAppPath` is also set,
-        //  otherwise this path cannot be trusted and used.
         long long selectedSAID;
-        QString browsedSystemAppPath;
     };
 
 private:
