@@ -201,6 +201,22 @@ void OpenWithDialog::lwProgsShowOnlyBrowsedItem()
     m_browsedProgramItem->setHidden(true);
 }
 
+int OpenWithDialog::filterItemsRoleAndSelectFirst(int role, const QString& str)
+{
+    int numFound = 0;
+    for (int row = 0; row < ui->lwProgs->count(); row++)
+    {
+        QListWidgetItem* item = ui->lwProgs->item(row);
+        bool containsStr = item->data(role).toString().contains(str, Qt::CaseInsensitive);
+        item->setHidden(!containsStr);
+        if (containsStr && item != m_browsedProgramItem)
+            numFound++;
+        if (containsStr && numFound == 1) //First found item
+            ui->lwProgs->setCurrentItem(item);
+    }
+    return numFound;
+}
+
 void OpenWithDialog::filter()
 {
     //We need to control unselecting/selecting the only (browsed) item ourselves to prevent
@@ -212,18 +228,8 @@ void OpenWithDialog::filter()
 
     QString text = ui->leFilterBrowse->text();
 
-    //Process all items first
-    int numFound = 0;
-    for (int row = 0; row < ui->lwProgs->count(); row++)
-    {
-        QListWidgetItem* item = ui->lwProgs->item(row);
-        bool containsText = item->text().contains(text, Qt::CaseInsensitive);
-        item->setHidden(!containsText);
-        if (containsText && item != m_browsedProgramItem)
-            numFound++;
-        if (containsText && numFound == 1) //First found item
-            ui->lwProgs->setCurrentItem(item);
-    }
+    //Process all items' texts first.
+    int numFound = filterItemsRoleAndSelectFirst(Qt::DisplayRole, text);
 
     //In case of found results, hide the browsed item (we must do it as it may contain text from
     //  previous browsings).
@@ -235,15 +241,14 @@ void OpenWithDialog::filter()
 
     //If no results were found, all other items are hiddren, we try to see if the entered path
     //  is a path, and if it's an EXE file.
-    bool programFound = false;
+    bool systemAppFound = false;
+    bool newAppFound = false;
     QFileInfo fi(text);
     if (fi.isFile())
     {
 #if defined(Q_OS_WIN32)
         if (fi.suffix().toLower() == "exe")
         {
-            programFound = true;
-
             //We can't rely on displayName or largeIcon being empty for error handling.
             //  If the program hasn't set a name in its resources, GetProgramDisplayName returns
             //  the program name. Similarly the program simply may not have a large icon in it.
@@ -251,23 +256,37 @@ void OpenWithDialog::filter()
             //Note that we don't reach here if the program path is already in DB; in that case the
             //  existing record is already found and user's custom display name is already used.
             QString absoluteFilePath = QDir::toNativeSeparators(fi.absoluteFilePath());
-            QString displayName = WinFunctions::GetProgramDisplayName(absoluteFilePath);
-            QPixmap largeIcon = WinFunctions::GetProgramLargeIcon(absoluteFilePath);
 
-            setProgItemData(m_browsedProgramItem, -1, largeIcon, displayName, absoluteFilePath);
+            //Search to make sure we don't have that program PATH already.
+            int progPathFound = filterItemsRoleAndSelectFirst(Qt::UserRole+1, absoluteFilePath);
+            if (progPathFound == 0)
+            {
+                newAppFound = true;
+
+                //New program, get its display name and icon and display it.
+                QString displayName = WinFunctions::GetProgramDisplayName(absoluteFilePath);
+                QPixmap largeIcon = WinFunctions::GetProgramLargeIcon(absoluteFilePath);
+                setProgItemData(m_browsedProgramItem, -1, largeIcon, displayName, absoluteFilePath);
+            }
+            else
+            {
+                systemAppFound = true;
+                //The above filter function already displays and selects the found app.
+            }
+
         }
 #else
 #   error On unix etc must check if the file is executable by other means
 #endif
     }
 
-    m_browsedProgramItem->setHidden(!programFound);
+    m_browsedProgramItem->setHidden(!newAppFound);
 
-    if (programFound)
+    if (newAppFound)
     {
         ui->lwProgs->setCurrentItem(m_browsedProgramItem);
     }
-    else
+    else if (!systemAppFound)
     {
         //NOTE: Showing a 'no program found' is more beautiful!
     }

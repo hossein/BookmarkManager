@@ -56,6 +56,8 @@ private slots:
     void lwProgsShowAllNonBrowsedItems();
     void lwProgsShowOnlyBrowsedItem();
 
+    int filterItemsRoleAndSelectFirst(int role, const QString& str);
+
     void filter();
 
     void pact_browse();
