@@ -4,6 +4,7 @@
 #include "AppListItemDelegate.h"
 #include "WinFunctions.h"
 
+#include <QDir>
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QFontMetrics>
@@ -16,6 +17,9 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, OutParams* outParams, QWidg
 {
     ui->setupUi(this);
     ui->lwProgs->setItemDelegate(new AppListItemDelegate(ui->lwProgs));
+
+    //Don't enable until user selects something.
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 
 //TODO: These QAction shortcuts WORK NOWHERE!
 
@@ -67,8 +71,8 @@ bool OpenWithDialog::canShow()
 
 void OpenWithDialog::accept()
 {
-    //TODO: If there is no selection, OK button disabled. OK button must be enabled on selection
-    //      or available browsing selected.
+    //If there is no selection, OK button is disabled and we don't reach here.
+    //  OK button is enabled on selection or available browsing selected.
     if (outParams != NULL)
     {
         QListWidgetItem* selItem = ui->lwProgs->selectedItems()[0];
@@ -96,7 +100,13 @@ void OpenWithDialog::on_btnBrowse_clicked()
 
 void OpenWithDialog::on_lwProgs_itemSelectionChanged()
 {
-    m_optionsButton->setEnabled(!ui->lwProgs->selectedItems().isEmpty());
+    bool hasSelected = !ui->lwProgs->selectedItems().isEmpty();
+    bool isBrowsed = (hasSelected
+                      ? ui->lwProgs->selectedItems()[0]->data(Qt::UserRole+0).toLongLong() == -1
+                      : false);
+
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(hasSelected);
+    m_optionsButton->setEnabled(hasSelected && !isBrowsed);
 }
 
 void OpenWithDialog::on_lwProgs_itemActivated(QListWidgetItem* item)
@@ -164,6 +174,8 @@ void OpenWithDialog::lwProgsShowOnlyBrowsedItem()
 
 void OpenWithDialog::filter()
 {
+    //TODO: Need to control unselecting/selecting the only (browsed) item ourselves?
+
     QString text = ui->leFilterBrowse->text();
 
     //Process all items first
