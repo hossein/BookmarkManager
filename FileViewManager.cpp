@@ -200,6 +200,9 @@ bool FileViewManager::AddOrEditSystemApp(long long& SAID, FileViewManager::Syste
         sadata.SAID = addedSAID;
     }
 
+    //We are RESPONSIBLE for updating the internal tables, too! Both on Add and Edit.
+    systemApps[SAID] = sadata;
+
     return true;
 }
 
