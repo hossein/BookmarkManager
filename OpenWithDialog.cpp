@@ -177,12 +177,12 @@ void OpenWithDialog::setProgItemData(QListWidgetItem* item, long long SAID,
                                      const QPixmap& pixmap, const QString& text, const QString& path)
 {
     item->setIcon(QIcon(pixmap));
-    item->setText(text + "\n" + path);
+    item->setText(text);
 
     //IMPORTANT: Upon changing any of these, many places in OpenWithDialog and AppListItemDelegate
     //           must be changed, too.
-    item->setData(Qt::DecorationRole, pixmap);
-    item->setData(Qt::DisplayRole, text);
+    item->setData(Qt::DecorationRole, pixmap); //`item->setIcon` is NOT enough.
+    item->setData(Qt::DisplayRole, text); //same as `item->setText(text);`
     item->setData(Qt::UserRole+0, SAID);
     item->setData(Qt::UserRole+1, path);
 }

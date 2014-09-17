@@ -184,8 +184,8 @@ bool FileViewManager::AddOrEditSystemApp(long long& SAID, FileViewManager::Syste
 
     query.addBindValue(sadata.Name);
     query.addBindValue(sadata.Path);
-    query.addBindValue(sadata.SmallIcon);
-    query.addBindValue(sadata.LargeIcon);
+    query.addBindValue(Util::SerializeQPixmap(sadata.SmallIcon));
+    query.addBindValue(Util::SerializeQPixmap(sadata.LargeIcon));
 
     if (SAID != -1)
         query.addBindValue(SAID); //Edit
