@@ -10,7 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = BookmarkManager
 TEMPLATE = app
-LIBS += Shell32.lib User32.lib
+LIBS += Shell32.lib User32.lib Version.lib
 
 SOURCES += main.cpp\
         MainWindow.cpp \
@@ -32,7 +32,8 @@ SOURCES += main.cpp\
     PreviewHandlers/FilePreviewHandler.cpp \
     PreviewHandlers/ImagePreviewHandler.cpp \
     PreviewHandlers/TextPreviewHandler.cpp \
-    OpenWithDialog.cpp
+    OpenWithDialog.cpp \
+    AppListItemDelegate.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -56,7 +57,8 @@ HEADERS  += MainWindow.h \
     PreviewHandlers/LocalHTMLPreviewHandler.h \
     PreviewHandlers/ImagePreviewHandler.h \
     PreviewHandlers/TextPreviewHandler.h \
-    OpenWithDialog.h
+    OpenWithDialog.h \
+    AppListItemDelegate.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \
