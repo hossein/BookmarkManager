@@ -42,9 +42,9 @@ void AppListItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
     QFontMetrics fm(boldFont);
     const int fontHeightPx = fm.height();
     const int topPos = (SizeHintHeight - 2 * fontHeightPx) / 2;
-    const int text1Top = topPos;
+    const int text1Top = rect.top() + topPos;
     const int text2Top = text1Top + fontHeightPx;
-    const int textLeft = SizeHintHeight;
+    const int textLeft = rect.left() + SizeHintHeight;
 
     painter->setFont(boldFont);
     painter->setPen(QPen(isSelected ? palette.highlightedText() : palette.text(), 1));
