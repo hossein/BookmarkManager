@@ -100,11 +100,15 @@ void FileViewManager::OpenEditable(const QString& filePathName, FileManager* fil
 void FileViewManager::OpenWith(const QString& filePathName, DatabaseManager* dbm)
 {
     //TODO: Incomplete
-    OpenWithDialog openWithDlg(dbm);
+    OpenWithDialog::OutParams outParams;
+    OpenWithDialog openWithDlg(dbm, &outParams, NULL /* We don't have a parent to pass */);
+
     if (!openWithDlg.canShow())
         return; //In case of errors a message is already shown.
 
-    openWithDlg.exec();
+    int result = openWithDlg.exec();
+    if (result != QDialog::Accepted)
+        return;
 }
 
 void FileViewManager::ShowProperties(const QString& filePathName)

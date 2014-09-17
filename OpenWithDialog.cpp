@@ -10,8 +10,9 @@
 #include <QMenu>
 #include <QToolButton>
 
-OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, QWidget *parent) :
-    QDialog(parent), ui(new Ui::OpenWithDialog), dbm(dbm), canShowTheDialog(false)
+OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, OutParams* outParams, QWidget *parent) :
+    QDialog(parent), ui(new Ui::OpenWithDialog), dbm(dbm),
+    canShowTheDialog(false), outParams(outParams)
 {
     ui->setupUi(this);
     ui->lwProgs->setItemDelegate(new AppListItemDelegate(ui->lwProgs));
@@ -66,6 +67,19 @@ bool OpenWithDialog::canShow()
 
 void OpenWithDialog::accept()
 {
+    //TODO: If there is no selection, OK button disabled. OK button must be enabled on selection
+    //      or available browsing selected.
+    if (outParams != NULL)
+    {
+        QListWidgetItem* selItem = ui->lwProgs->selectedItems()[0];
+        outParams->selectedSAID = selItem->data(Qt::UserRole+0).toLongLong();
+        //Do Not use `ui->leFilterBrowse->text()` for path because it may be relative, etc.
+        //  Also we do not rely on the path being converted to native separators in other places,
+        //  we convert it to native separators here anyway.
+        outParams->browsedSystemAppPath =
+                QDir::toNativeSeparators(selItem->data(Qt::UserRole+1).toString());
+    }
+
     QDialog::accept();
 }
 

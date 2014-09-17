@@ -18,16 +18,26 @@ class OpenWithDialog : public QDialog
 {
     Q_OBJECT
 
+public:
+    struct OutParams
+    {
+        //If `selectedSAID == -1` then `browsedSystemAppPath` is also set,
+        //  otherwise this path cannot be trusted and used.
+        long long selectedSAID;
+        QString browsedSystemAppPath;
+    };
+
 private:
     Ui::OpenWithDialog *ui;
     DatabaseManager* dbm;
     bool canShowTheDialog;
+    OutParams* outParams;
 
     QToolButton* m_optionsButton;
     QListWidgetItem* m_browsedProgramItem;
 
 public:
-    explicit OpenWithDialog(DatabaseManager* dbm, QWidget *parent = 0);
+    explicit OpenWithDialog(DatabaseManager* dbm, OutParams* outParams = NULL, QWidget *parent = 0);
     ~OpenWithDialog();
 
 public:
