@@ -24,12 +24,17 @@ void AppListItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
 
     bool isSelected = (option.state & QStyle::State_Selected);
     if (isSelected)
+    {
         painter->fillRect(rect, palette.highlight());
+    }
     else
-        painter->fillRect(rect, index.row() % 2 ? palette.base() : palette.alternateBase());
+    {
+        int odd_even_index = index.data(Qt::UserRole+2).toInt();
+        painter->fillRect(rect, odd_even_index % 2 ? palette.base() : palette.alternateBase());
+    }
 
     QString progName = index.data(Qt::DisplayRole).toString();
-    QString progPath = index.data(Qt::UserRole + 1).toString();
+    QString progPath = index.data(Qt::UserRole+1).toString();
     QPixmap progIcon = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
 
     painter->drawPixmap(QRect(rect.x() + 4, rect.y() + 4, 32, 32),

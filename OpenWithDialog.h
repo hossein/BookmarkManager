@@ -51,7 +51,7 @@ private slots:
     void on_lwProgs_itemActivated(QListWidgetItem *item);
     void on_lwProgs_customContextMenuRequested(const QPoint& pos);
 
-    void setProgItemData(QListWidgetItem* item, long long SAID,
+    void setProgItemData(QListWidgetItem* item, long long SAID, int index,
                          const QPixmap& pixmap, const QString& text, const QString& path);
     void lwProgsShowAllNonBrowsedItems();
     void lwProgsShowOnlyBrowsedItem();

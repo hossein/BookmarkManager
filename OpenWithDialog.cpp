@@ -45,15 +45,17 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, OutParams* outParams, QWidg
     //Make the browse ("...") button small.
     ui->btnBrowse->setFixedWidth(20 + QFontMetrics(this->font()).width("..."));
 
+    int index = 0;
     foreach (const FileViewManager::SystemAppData& sa, dbm->fview.systemApps)
     {
         QListWidgetItem* item = new QListWidgetItem();
-        setProgItemData(item, sa.SAID, sa.LargeIcon, sa.Name, sa.Path);
+        setProgItemData(item, sa.SAID, index++, sa.LargeIcon, sa.Name, sa.Path);
         ui->lwProgs->addItem(item);
     }
 
     m_browsedProgramItem = new QListWidgetItem();
-    m_browsedProgramItem->setData(Qt::UserRole, -1);
+    m_browsedProgramItem->setData(Qt::UserRole+0, -1);
+    m_browsedProgramItem->setData(Qt::UserRole+2, 0);
     ui->lwProgs->addItem(m_browsedProgramItem);
     m_browsedProgramItem->setHidden(true); //Must hide AFTER adding.
 
@@ -173,7 +175,7 @@ void OpenWithDialog::on_lwProgs_customContextMenuRequested(const QPoint& pos)
     optionsMenu.exec(menuPos);
 }
 
-void OpenWithDialog::setProgItemData(QListWidgetItem* item, long long SAID,
+void OpenWithDialog::setProgItemData(QListWidgetItem* item, long long SAID, int index,
                                      const QPixmap& pixmap, const QString& text, const QString& path)
 {
     item->setIcon(QIcon(pixmap));
@@ -185,6 +187,7 @@ void OpenWithDialog::setProgItemData(QListWidgetItem* item, long long SAID,
     item->setData(Qt::DisplayRole, text); //same as `item->setText(text);`
     item->setData(Qt::UserRole+0, SAID);
     item->setData(Qt::UserRole+1, path);
+    item->setData(Qt::UserRole+2, index); //Used for alternating colorizing by AppListItemDelegate.
 }
 
 void OpenWithDialog::lwProgsShowAllNonBrowsedItems()
@@ -210,7 +213,10 @@ int OpenWithDialog::filterItemsRoleAndSelectFirst(int role, const QString& str)
         bool containsStr = item->data(role).toString().contains(str, Qt::CaseInsensitive);
         item->setHidden(!containsStr);
         if (containsStr && item != m_browsedProgramItem)
+        {
+            item->setData(Qt::UserRole+2, numFound);
             numFound++;
+        }
         if (containsStr && numFound == 1) //First found item
             ui->lwProgs->setCurrentItem(item);
     }
@@ -266,7 +272,7 @@ void OpenWithDialog::filter()
                 //New program, get its display name and icon and display it.
                 QString displayName = WinFunctions::GetProgramDisplayName(absoluteFilePath);
                 QPixmap largeIcon = WinFunctions::GetProgramLargeIcon(absoluteFilePath);
-                setProgItemData(m_browsedProgramItem, -1, largeIcon, displayName, absoluteFilePath);
+                setProgItemData(m_browsedProgramItem, -1, 0, largeIcon, displayName, absoluteFilePath);
             }
             else
             {
