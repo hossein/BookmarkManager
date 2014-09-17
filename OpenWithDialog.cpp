@@ -203,7 +203,12 @@ void OpenWithDialog::lwProgsShowOnlyBrowsedItem()
 
 void OpenWithDialog::filter()
 {
-    //TODO: Need to control unselecting/selecting the only (browsed) item ourselves?
+    //We need to control unselecting/selecting the only (browsed) item ourselves to prevent
+    //  buttons remaining enabled for hidden items, so we deselect everything, AND:
+    //BEFORE returnING from this function always choose the first filtered item.
+    ui->lwProgs->clearSelection(); //is NOT enoguh to clear the `current` index; We aren't using it
+                                   //  here, but anyway we set it to an invalid index to prevent bugs.
+    ui->lwProgs->setCurrentIndex(QModelIndex());
 
     QString text = ui->leFilterBrowse->text();
 
@@ -216,6 +221,8 @@ void OpenWithDialog::filter()
         item->setHidden(!containsText);
         if (containsText && item != m_browsedProgramItem)
             numFound++;
+        if (containsText && numFound == 1) //First found item
+            ui->lwProgs->setCurrentItem(item);
     }
 
     //In case of found results, hide the browsed item (we must do it as it may contain text from
@@ -256,7 +263,11 @@ void OpenWithDialog::filter()
 
     m_browsedProgramItem->setHidden(!programFound);
 
-    if (!programFound)
+    if (programFound)
+    {
+        ui->lwProgs->setCurrentItem(m_browsedProgramItem);
+    }
+    else
     {
         //NOTE: Showing a 'no program found' is more beautiful!
     }
