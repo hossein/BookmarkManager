@@ -158,6 +158,51 @@ void FileViewManager::PopulateSystemAppsList()
     }
 }
 
+bool FileViewManager::AddOrEditSystemApp(long long& SAID, FileViewManager::SystemAppData& sadata)
+{
+    QString updateError = (SAID == -1
+                           ? "Could not add program information to database."
+                           : "Could not edit program information.");
+
+    QString querystr;
+    if (SAID == -1)
+    {
+        querystr =
+                "INSERT INTO SystemApp (Name, Path, SmallIcon, LargeIcon) "
+                "VALUES (?, ?, ?, ?)";
+    }
+    else
+    {
+        querystr =
+                "UPDATE SystemApp "
+                "SET Name = ?, Path = ?, SmallIcon = ?, LargeIcon = ? "
+                "WHERE SAID = ?";
+    }
+
+    QSqlQuery query(db);
+    query.prepare(querystr);
+
+    query.addBindValue(sadata.Name);
+    query.addBindValue(sadata.Path);
+    query.addBindValue(sadata.SmallIcon);
+    query.addBindValue(sadata.LargeIcon);
+
+    if (SAID != -1)
+        query.addBindValue(SAID); //Edit
+
+    if (!query.exec())
+        return Error(updateError, query.lastError());
+
+    if (SAID == -1)
+    {
+        long long addedSAID = query.lastInsertId().toLongLong();
+        SAID = addedSAID;
+        sadata.SAID = addedSAID;
+    }
+
+    return true;
+}
+
 void FileViewManager::CreateTables()
 {
     //IMPORTANT:

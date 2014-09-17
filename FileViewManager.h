@@ -62,6 +62,7 @@ public:
     QHash<long long, SystemAppData> systemApps;
 
     void PopulateSystemAppsList();
+    bool AddOrEditSystemApp(long long& SAID, SystemAppData& sadata);
 
 protected:
     // ISubManager interface
