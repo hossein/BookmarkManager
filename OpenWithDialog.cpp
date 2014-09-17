@@ -1,6 +1,7 @@
 #include "OpenWithDialog.h"
 #include "ui_OpenWithDialog.h"
 
+#include "AppListItemDelegate.h"
 #include "WinFunctions.h"
 
 #include <QFileInfo>
@@ -13,6 +14,7 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, QWidget *parent) :
     QDialog(parent), ui(new Ui::OpenWithDialog), dbm(dbm), canShowTheDialog(false)
 {
     ui->setupUi(this);
+    ui->lwProgs->setItemDelegate(new AppListItemDelegate(ui->lwProgs));
 
 //TODO: These QAction shortcuts WORK NOWHERE!
 
@@ -39,16 +41,15 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, QWidget *parent) :
 
     foreach (const FileViewManager::SystemAppData& sa, dbm->fview.systemApps)
     {
-        QString saText = QString("<b>%1</b><br/>%2").arg(sa.Name, sa.Path);
-        QListWidgetItem* item = new QListWidgetItem(QIcon(sa.LargeIcon), saText);
-        item->setData(Qt::UserRole, sa.SAID);
+        QListWidgetItem* item = new QListWidgetItem();
+        setProgItemData(item, sa.SAID, sa.LargeIcon, sa.Name, sa.Path);
         ui->lwProgs->addItem(item);
     }
 
     m_browsedProgramItem = new QListWidgetItem();
     m_browsedProgramItem->setData(Qt::UserRole, -1);
-    m_browsedProgramItem->setHidden(true);
     ui->lwProgs->addItem(m_browsedProgramItem);
+    m_browsedProgramItem->setHidden(true); //Must hide AFTER adding.
 
     canShowTheDialog = true;
 }
@@ -121,6 +122,18 @@ void OpenWithDialog::on_lwProgs_customContextMenuRequested(const QPoint& pos)
     optionsMenu.exec(menuPos);
 }
 
+void OpenWithDialog::setProgItemData(QListWidgetItem* item, long long SAID,
+                                     const QPixmap& pixmap, const QString& text, const QString& path)
+{
+    item->setIcon(QIcon(pixmap));
+    item->setText(text + "\n" + path);
+
+    item->setData(Qt::DecorationRole, pixmap);
+    item->setData(Qt::DisplayRole, text);
+    item->setData(Qt::UserRole+0, SAID);
+    item->setData(Qt::UserRole+1, path);
+}
+
 void OpenWithDialog::lwProgsShowAllNonBrowsedItems()
 {
     for (int row = 0; row < ui->lwProgs->count(); row++)
@@ -179,9 +192,7 @@ void OpenWithDialog::filter()
             QString displayName = WinFunctions::GetProgramDisplayName(absoluteFilePath);
             QPixmap largeIcon = WinFunctions::GetProgramLargeIcon(absoluteFilePath);
 
-            QString saText = QString("<b>%1</b><br/>%2").arg(displayName, absoluteFilePath);
-            m_browsedProgramItem->setIcon(QIcon(largeIcon));
-            m_browsedProgramItem->setText(saText);
+            setProgItemData(m_browsedProgramItem, -1, largeIcon, displayName, absoluteFilePath);
         }
 #else
 #   error On unix etc must check if the file is executable by other means
