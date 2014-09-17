@@ -4,6 +4,7 @@
 #include "AppListItemDelegate.h"
 #include "WinFunctions.h"
 
+#include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
 #include <QFileDialog>
@@ -87,7 +88,7 @@ void OpenWithDialog::accept()
     QDialog::accept();
 }
 
-void OpenWithDialog::on_leFilterBrowse_textEdited(const QString &text)
+void OpenWithDialog::on_leFilterBrowse_textChanged(const QString& text)
 {
     Q_UNUSED(text)
     filter();
@@ -235,8 +236,18 @@ void OpenWithDialog::filter()
 
 void OpenWithDialog::pact_browse()
 {
-    //TODO
-    //QString exeFileName = QFileDialog::getOpenFileName();
+#if defined(Q_OS_WIN32)
+    //NOTE: BAT files don't have icon, etc. They are a more general idea than supporting arbitrary
+    //      parameters for executables. However we should also set the *.lnk extension as Start Menu
+    //      programs (the default directory) are all shortcuts.
+    QString programsDir = QDesktopServices::storageLocation(QDesktopServices::ApplicationsLocation);
+    QString exeFileName = QFileDialog::getOpenFileName(this, "Select Program", programsDir,
+                                                       "Executables (*.exe *.com *.bat)");
+    if (exeFileName.length() > 0)
+        ui->leFilterBrowse->setText(exeFileName);
+#else
+#   error On unix etc how should we browse for executables? i mean, most use Desktop files!
+#endif
 }
 
 void OpenWithDialog::pact_rename()

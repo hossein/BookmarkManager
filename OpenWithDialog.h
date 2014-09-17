@@ -47,7 +47,7 @@ public slots:
     void accept();
 
 private slots:
-    void on_leFilterBrowse_textEdited(const QString& text);
+    void on_leFilterBrowse_textChanged(const QString& text);
     void on_btnBrowse_clicked();
 
     void on_lwProgs_itemSelectionChanged();
