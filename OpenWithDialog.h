@@ -21,6 +21,8 @@ class OpenWithDialog : public QDialog
 public:
     struct OutParams
     {
+        /// `selectedSAID` will be set to the following if user chose to open with default system app.
+        static const long long NoSAID_DefaultSystemHandler = -1;
         long long selectedSAID;
     };
 
@@ -32,6 +34,12 @@ private:
 
     QToolButton* m_optionsButton;
     QListWidgetItem* m_browsedProgramItem;
+
+    enum SpecialItemSAIDs
+    {
+        SISAID_SystemDefaultItem = -1,
+        SISAID_BrowsedItem       = -2
+    };
 
 public:
     explicit OpenWithDialog(DatabaseManager* dbm, OutParams* outParams = NULL, QWidget *parent = 0);
@@ -51,6 +59,7 @@ private slots:
     void on_lwProgs_itemActivated(QListWidgetItem *item);
     void on_lwProgs_customContextMenuRequested(const QPoint& pos);
 
+    bool isSpecialItem(QListWidgetItem* item);
     void setProgItemData(QListWidgetItem* item, long long SAID, int index,
                          const QPixmap& pixmap, const QString& text, const QString& path);
     void lwProgsShowAllNonBrowsedItems();

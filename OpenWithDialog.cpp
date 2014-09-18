@@ -54,7 +54,7 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, OutParams* outParams, QWidg
     }
 
     m_browsedProgramItem = new QListWidgetItem();
-    m_browsedProgramItem->setData(AppItemRole::SAID, -1);
+    m_browsedProgramItem->setData(AppItemRole::SAID, SISAID_BrowsedItem);
     m_browsedProgramItem->setData(AppItemRole::Index, 0);
     ui->lwProgs->addItem(m_browsedProgramItem);
     m_browsedProgramItem->setHidden(true); //Must hide AFTER adding.
@@ -75,16 +75,22 @@ bool OpenWithDialog::canShow()
 void OpenWithDialog::accept()
 {
     //If there is no selection, OK button is disabled and we don't reach here.
-    //  OK button is enabled on selection or available browsing selected.
+    //  OK button is enabled on selection or sepcial item selected.
     bool success = true;
 
     QListWidgetItem* selItem = ui->lwProgs->selectedItems()[0];
     long long SAID = selItem->data(AppItemRole::SAID).toLongLong();
-    if (SAID != -1)
+    if (SAID == SISAID_SystemDefaultItem)
+    {
+        //Open with default system app?
+        //Set to `NoSAID_DefaultSystemHandler` as per contract of OpenWithDialog::OutParams.
+        SAID = OutParams::NoSAID_DefaultSystemHandler;
+    }
+    else if (SAID != SISAID_BrowsedItem)
     {
         //Program already exists. Proceed
     }
-    else //if (SAID == -1)
+    else //if (SAID == SISAID_BrowsedItem)
     {
         //Must add the program to DB. We do it here at OpenWithDialog to show the user any
         //  errors that might happen while adding the program to database.
@@ -130,9 +136,7 @@ void OpenWithDialog::on_btnBrowse_clicked()
 void OpenWithDialog::on_lwProgs_itemSelectionChanged()
 {
     bool hasSelected = !ui->lwProgs->selectedItems().isEmpty();
-    bool isBrowsed = (hasSelected
-                      ? ui->lwProgs->selectedItems()[0]->data(AppItemRole::SAID).toLongLong() == -1
-                      : false);
+    bool isSpecial = (hasSelected ? isSpecialItem(ui->lwProgs->selectedItems()[0]) : false);
 
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(hasSelected);
     m_optionsButton->setEnabled(hasSelected && !isBrowsed);
@@ -152,8 +156,8 @@ void OpenWithDialog::on_lwProgs_customContextMenuRequested(const QPoint& pos)
 
     //Now  check for selection.
     bool programSelected = (!ui->lwProgs->selectedItems().empty());
-    if (programSelected && ui->lwProgs->selectedItems()[0]->data(AppItemRole::SAID).toLongLong() == -1)
-        return; //Do not show menu for the browsed item.
+    if (programSelected && isSpecialItem(ui->lwProgs->selectedItems()[0]))
+        return; //Do not show menu for special items.
 
     typedef QKeySequence QKS;
     QMenu optionsMenu("Program Menu");
@@ -170,6 +174,11 @@ void OpenWithDialog::on_lwProgs_customContextMenuRequested(const QPoint& pos)
 
     QPoint menuPos = ui->lwProgs->viewport()->mapToGlobal(pos);
     optionsMenu.exec(menuPos);
+}
+
+bool OpenWithDialog::isSpecialItem(QListWidgetItem* item)
+{
+    return (item->data(AppItemRole::SAID).toLongLong() < 0);
 }
 
 void OpenWithDialog::setProgItemData(QListWidgetItem* item, long long SAID, int index,
@@ -201,6 +210,8 @@ void OpenWithDialog::lwProgsShowOnlyBrowsedItem()
 
 int OpenWithDialog::filterItemsRoleAndSelectFirst(int role, const QString& str)
 {
+    //TODO: Change these when Default System App is also added.
+
     int numFound = 0;
     for (int row = 0; row < ui->lwProgs->count(); row++)
     {
@@ -220,6 +231,8 @@ int OpenWithDialog::filterItemsRoleAndSelectFirst(int role, const QString& str)
 
 void OpenWithDialog::filter()
 {
+    //TODO: Change these when Default System App is also added.
+
     //We need to control unselecting/selecting the only (browsed) item ourselves to prevent
     //  buttons remaining enabled for hidden items, so we deselect everything, AND:
     //BEFORE returnING from this function always choose the first filtered item.
@@ -267,7 +280,8 @@ void OpenWithDialog::filter()
                 //New program, get its display name and icon and display it.
                 QString displayName = WinFunctions::GetProgramDisplayName(absoluteFilePath);
                 QPixmap largeIcon = WinFunctions::GetProgramLargeIcon(absoluteFilePath);
-                setProgItemData(m_browsedProgramItem, -1, 0, largeIcon, displayName, absoluteFilePath);
+                setProgItemData(m_browsedProgramItem, SISAID_BrowsedItem, 0,
+                                largeIcon, displayName, absoluteFilePath);
             }
             else
             {
