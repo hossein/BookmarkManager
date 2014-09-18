@@ -151,12 +151,9 @@ void OpenWithDialog::on_lwProgs_customContextMenuRequested(const QPoint& pos)
         ui->lwProgs->clearSelection();
 
     //Now  check for selection.
-    long long SAID;
     bool programSelected = (!ui->lwProgs->selectedItems().empty());
-    if (!programSelected)
-        SAID = -1;
-    else
-        SAID = ui->lwProgs->selectedItems()[0]->data(Qt::UserRole).toLongLong();
+    if (programSelected && ui->lwProgs->selectedItems()[0]->data(Qt::UserRole).toLongLong() == -1)
+        return; //Do not show menu for the browsed item.
 
     typedef QKeySequence QKS;
     QMenu optionsMenu("Program Menu");

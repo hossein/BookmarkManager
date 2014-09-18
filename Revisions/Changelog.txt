@@ -28,3 +28,4 @@
 2014-09-13  18  Decision on ExecuteShellEx opening (we don't do it), delete sandbox on start-up
 2014-09-15  22  Fixed both htm and mht file vieweing, HTMLViewer has frame, Initial OpenWithDialog
 2014-09-16  25  OpenWidthDlg: list apps with beautiful ItemDelegate, filtering and getting EXE info
+2014-09-17  25  App list browsing, adding systemApps to database, bugfixes.
