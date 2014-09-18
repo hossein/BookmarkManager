@@ -1,6 +1,18 @@
 #pragma once
 #include <QAbstractItemDelegate>
 
+struct AppItemRole
+{
+    enum AppItemRoleEnum
+    {
+        Icon = Qt::DecorationRole,
+        Name = Qt::DisplayRole,
+        SAID = Qt::UserRole + 0,
+        Path = Qt::UserRole + 1,
+        Index= Qt::UserRole + 2
+    };
+};
+
 class AppListItemDelegate : public QAbstractItemDelegate
 {
     Q_OBJECT

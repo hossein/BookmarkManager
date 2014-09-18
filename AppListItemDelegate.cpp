@@ -29,13 +29,13 @@ void AppListItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
     }
     else
     {
-        int odd_even_index = index.data(Qt::UserRole+2).toInt();
+        int odd_even_index = index.data(AppItemRole::Index).toInt();
         painter->fillRect(rect, odd_even_index % 2 ? palette.base() : palette.alternateBase());
     }
 
-    QString progName = index.data(Qt::DisplayRole).toString();
-    QString progPath = index.data(Qt::UserRole+1).toString();
-    QPixmap progIcon = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
+    QString progName = index.data(AppItemRole::Name).toString();
+    QString progPath = index.data(AppItemRole::Path).toString();
+    QPixmap progIcon = qvariant_cast<QPixmap>(index.data(AppItemRole::Icon));
 
     painter->drawPixmap(QRect(rect.x() + 4, rect.y() + 4, 32, 32),
                         progIcon, progIcon.rect());

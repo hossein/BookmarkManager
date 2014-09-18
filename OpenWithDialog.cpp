@@ -54,8 +54,8 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, OutParams* outParams, QWidg
     }
 
     m_browsedProgramItem = new QListWidgetItem();
-    m_browsedProgramItem->setData(Qt::UserRole+0, -1);
-    m_browsedProgramItem->setData(Qt::UserRole+2, 0);
+    m_browsedProgramItem->setData(AppItemRole::SAID, -1);
+    m_browsedProgramItem->setData(AppItemRole::Index, 0);
     ui->lwProgs->addItem(m_browsedProgramItem);
     m_browsedProgramItem->setHidden(true); //Must hide AFTER adding.
 
@@ -79,7 +79,7 @@ void OpenWithDialog::accept()
     bool success = true;
 
     QListWidgetItem* selItem = ui->lwProgs->selectedItems()[0];
-    long long SAID = selItem->data(Qt::UserRole+0).toLongLong();
+    long long SAID = selItem->data(AppItemRole::SAID).toLongLong();
     if (SAID != -1)
     {
         //Program already exists. Proceed
@@ -93,16 +93,16 @@ void OpenWithDialog::accept()
         //  Also we do not rely on the path being converted to native separators in other places,
         //  we convert it to native separators here anyway.
         QString browsedSystemAppPath =
-                QDir::toNativeSeparators(selItem->data(Qt::UserRole+1).toString());
+                QDir::toNativeSeparators(selItem->data(AppItemRole::Path).toString());
 
         FileViewManager::SystemAppData sadata;
         sadata.SAID = SAID; //Not important.
-        sadata.Name = selItem->data(Qt::DisplayRole).toString();
+        sadata.Name = selItem->data(AppItemRole::Name).toString();
         sadata.Path = browsedSystemAppPath;
         //Small icon: Get it fresh!
         sadata.SmallIcon = WinFunctions::GetProgramSmallIcon(browsedSystemAppPath);
         //Large icon: Already have it!
-        sadata.LargeIcon = qvariant_cast<QPixmap>(selItem->data(Qt::DecorationRole));
+        sadata.LargeIcon = qvariant_cast<QPixmap>(selItem->data(AppItemRole::Icon));
 
         //This sets the SAID too.
         success = dbm->fview.AddOrEditSystemApp(SAID, sadata);
@@ -131,7 +131,7 @@ void OpenWithDialog::on_lwProgs_itemSelectionChanged()
 {
     bool hasSelected = !ui->lwProgs->selectedItems().isEmpty();
     bool isBrowsed = (hasSelected
-                      ? ui->lwProgs->selectedItems()[0]->data(Qt::UserRole+0).toLongLong() == -1
+                      ? ui->lwProgs->selectedItems()[0]->data(AppItemRole::SAID).toLongLong() == -1
                       : false);
 
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(hasSelected);
@@ -152,7 +152,7 @@ void OpenWithDialog::on_lwProgs_customContextMenuRequested(const QPoint& pos)
 
     //Now  check for selection.
     bool programSelected = (!ui->lwProgs->selectedItems().empty());
-    if (programSelected && ui->lwProgs->selectedItems()[0]->data(Qt::UserRole).toLongLong() == -1)
+    if (programSelected && ui->lwProgs->selectedItems()[0]->data(AppItemRole::SAID).toLongLong() == -1)
         return; //Do not show menu for the browsed item.
 
     typedef QKeySequence QKS;
@@ -178,13 +178,11 @@ void OpenWithDialog::setProgItemData(QListWidgetItem* item, long long SAID, int 
     item->setIcon(QIcon(pixmap));
     item->setText(text);
 
-    //IMPORTANT: Upon changing any of these, many places in OpenWithDialog and AppListItemDelegate
-    //           must be changed, too.
-    item->setData(Qt::DecorationRole, pixmap); //`item->setIcon` is NOT enough.
-    item->setData(Qt::DisplayRole, text); //same as `item->setText(text);`
-    item->setData(Qt::UserRole+0, SAID);
-    item->setData(Qt::UserRole+1, path);
-    item->setData(Qt::UserRole+2, index); //Used for alternating colorizing by AppListItemDelegate.
+    item->setData(AppItemRole::Icon, pixmap); //`item->setIcon` is NOT enough.
+    item->setData(AppItemRole::Name, text); //same as `item->setText(text);`
+    item->setData(AppItemRole::SAID, SAID);
+    item->setData(AppItemRole::Path, path);
+    item->setData(AppItemRole::Index, index); //Used for alternating colorizing by AppListItemDelegate.
 }
 
 void OpenWithDialog::lwProgsShowAllNonBrowsedItems()
@@ -211,7 +209,7 @@ int OpenWithDialog::filterItemsRoleAndSelectFirst(int role, const QString& str)
         item->setHidden(!containsStr);
         if (containsStr && item != m_browsedProgramItem)
         {
-            item->setData(Qt::UserRole+2, numFound);
+            item->setData(AppItemRole::Index, numFound);
             numFound++;
         }
         if (containsStr && numFound == 1) //First found item
@@ -232,7 +230,7 @@ void OpenWithDialog::filter()
     QString text = ui->leFilterBrowse->text();
 
     //Process all items' texts first.
-    int numFound = filterItemsRoleAndSelectFirst(Qt::DisplayRole, text);
+    int numFound = filterItemsRoleAndSelectFirst(AppItemRole::Name, text);
 
     //In case of found results, hide the browsed item (we must do it as it may contain text from
     //  previous browsings).
@@ -261,7 +259,7 @@ void OpenWithDialog::filter()
             QString absoluteFilePath = QDir::toNativeSeparators(fi.absoluteFilePath());
 
             //Search to make sure we don't have that program PATH already.
-            int progPathFound = filterItemsRoleAndSelectFirst(Qt::UserRole+1, absoluteFilePath);
+            int progPathFound = filterItemsRoleAndSelectFirst(AppItemRole::Path, absoluteFilePath);
             if (progPathFound == 0)
             {
                 newAppFound = true;
