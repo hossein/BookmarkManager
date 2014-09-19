@@ -45,7 +45,12 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, OutParams* outParams, QWidg
     //Make the browse ("...") button small.
     ui->btnBrowse->setFixedWidth(20 + QFontMetrics(this->font()).width("..."));
 
-    int index = 0;
+    m_defaultProgramItem = new QListWidgetItem();
+    setProgItemData(m_defaultProgramItem, SISAID_SystemDefaultItem, 0,
+                    QPixmap(":/res/exec.png"), "Default System Application", QString());
+    ui->lwProgs->addItem(m_defaultProgramItem);
+
+    int index = 1; //index 0 was the system default item.
     foreach (const FileViewManager::SystemAppData& sa, dbm->fview.systemApps)
     {
         QListWidgetItem* item = new QListWidgetItem();
@@ -139,7 +144,7 @@ void OpenWithDialog::on_lwProgs_itemSelectionChanged()
     bool isSpecial = (hasSelected ? isSpecialItem(ui->lwProgs->selectedItems()[0]) : false);
 
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(hasSelected);
-    m_optionsButton->setEnabled(hasSelected && !isBrowsed);
+    m_optionsButton->setEnabled(hasSelected && !isSpecial);
 }
 
 void OpenWithDialog::on_lwProgs_itemActivated(QListWidgetItem* item)
@@ -193,7 +198,7 @@ void OpenWithDialog::setProgItemData(QListWidgetItem* item, long long SAID, int 
     item->setData(AppItemRole::Path, path);
     item->setData(AppItemRole::Index, index); //Used for alternating colorizing by AppListItemDelegate.
 }
-
+/*
 void OpenWithDialog::lwProgsShowAllNonBrowsedItems()
 {
     for (int row = 0; row < ui->lwProgs->count(); row++)
@@ -207,24 +212,28 @@ void OpenWithDialog::lwProgsShowOnlyBrowsedItem()
         ui->lwProgs->item(row)->setHidden(false);
     m_browsedProgramItem->setHidden(true);
 }
-
+*/
 int OpenWithDialog::filterItemsRoleAndSelectFirst(int role, const QString& str)
 {
-    //TODO: Change these when Default System App is also added.
-
     int numFound = 0;
     for (int row = 0; row < ui->lwProgs->count(); row++)
     {
         QListWidgetItem* item = ui->lwProgs->item(row);
+        if (isSpecialItem(item))
+        {
+            item->setHidden(true);
+            continue;
+        }
+
         bool containsStr = item->data(role).toString().contains(str, Qt::CaseInsensitive);
         item->setHidden(!containsStr);
-        if (containsStr && item != m_browsedProgramItem)
+        if (containsStr)
         {
             item->setData(AppItemRole::Index, numFound);
             numFound++;
+            if (numFound == 1) //First found item
+                ui->lwProgs->setCurrentItem(item);
         }
-        if (containsStr && numFound == 1) //First found item
-            ui->lwProgs->setCurrentItem(item);
     }
     return numFound;
 }
@@ -233,7 +242,7 @@ void OpenWithDialog::filter()
 {
     //TODO: Change these when Default System App is also added.
 
-    //We need to control unselecting/selecting the only (browsed) item ourselves to prevent
+    //We need to control unselecting/selecting the only (maybe browsed) item ourselves to prevent
     //  buttons remaining enabled for hidden items, so we deselect everything, AND:
     //BEFORE returnING from this function always choose the first filtered item.
     ui->lwProgs->clearSelection(); //is NOT enoguh to clear the `current` index; We aren't using it
@@ -242,16 +251,24 @@ void OpenWithDialog::filter()
 
     QString text = ui->leFilterBrowse->text();
 
-    //Process all items' texts first.
-    int numFound = filterItemsRoleAndSelectFirst(AppItemRole::Name, text);
-
-    //In case of found results, hide the browsed item (we must do it as it may contain text from
-    //  previous browsings).
-    if (numFound > 0)
+    if (text == "")
     {
+        //On empty filter, show SystemDefault and other items but not the browsed item.
+        for (int row = 0; row < ui->lwProgs->count(); row++)
+        {
+            ui->lwProgs->item(row)->setData(AppItemRole::Index, row);
+            ui->lwProgs->item(row)->setHidden(false);
+        }
         m_browsedProgramItem->setHidden(true);
+        ui->lwProgs->setCurrentItem(ui->lwProgs->item(0)); //i.e the m_defaultProgramItem
         return;
     }
+
+    //Process all items' texts first. Function will hide special items.
+    //  If found, first item is automatically selected.
+    int numFound = filterItemsRoleAndSelectFirst(AppItemRole::Name, text);
+    if (numFound > 0)
+        return;
 
     //If no results were found, all other items are hiddren, we try to see if the entered path
     //  is a path, and if it's an EXE file.

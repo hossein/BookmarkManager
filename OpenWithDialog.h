@@ -33,6 +33,7 @@ private:
     OutParams* outParams;
 
     QToolButton* m_optionsButton;
+    QListWidgetItem* m_defaultProgramItem;
     QListWidgetItem* m_browsedProgramItem;
 
     enum SpecialItemSAIDs
@@ -62,8 +63,8 @@ private slots:
     bool isSpecialItem(QListWidgetItem* item);
     void setProgItemData(QListWidgetItem* item, long long SAID, int index,
                          const QPixmap& pixmap, const QString& text, const QString& path);
-    void lwProgsShowAllNonBrowsedItems();
-    void lwProgsShowOnlyBrowsedItem();
+    //void lwProgsShowAllNonBrowsedItems();
+    //void lwProgsShowOnlyBrowsedItem();
 
     int filterItemsRoleAndSelectFirst(int role, const QString& str);
 

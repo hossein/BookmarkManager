@@ -29,3 +29,4 @@
 2014-09-15  22  Fixed both htm and mht file vieweing, HTMLViewer has frame, Initial OpenWithDialog
 2014-09-16  25  OpenWidthDlg: list apps with beautiful ItemDelegate, filtering and getting EXE info
 2014-09-17  25  App list browsing, adding systemApps to database, bugfixes.
+2014-09-18  27  Coding improvements
