@@ -64,6 +64,15 @@ public:
     void PopulateSystemAppsList();
     bool AddOrEditSystemApp(long long& SAID, SystemAppData& sadata);
 
+    /// Only file extension will be verified.
+    /// Sets `preferredSAID` to -1 if either there isn't a preferred application or the user has
+    /// explicitly preferred to open with default system application. In both cases we should open
+    /// with the default system app.
+    bool GetPreferredOpenApplication(const QString& fileName, long long& preferredSAID);
+
+    /// Setting to -1 doesn't remove the database entry or anything (as if it should, to save space).
+    bool SetPreferredOpenApplication(const QString& fileName, long long preferredSAID);
+
 protected:
     // ISubManager interface
     void CreateTables();

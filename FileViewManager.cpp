@@ -101,7 +101,7 @@ void FileViewManager::OpenWith(const QString& filePathName, DatabaseManager* dbm
 {
     //TODO: Incomplete
     OpenWithDialog::OutParams outParams;
-    OpenWithDialog openWithDlg(dbm, &outParams, NULL /* We don't have a parent to pass */);
+    OpenWithDialog openWithDlg(dbm, &outParams, NULL /* TODO: We don't have a parent to pass */);
 
     if (!openWithDlg.canShow())
         return; //In case of errors a message is already shown.
@@ -118,9 +118,9 @@ void FileViewManager::ShowProperties(const QString& filePathName)
 
 FilePreviewHandler* FileViewManager::GetPreviewHandler(const QString& fileName)
 {
-    QString extension = QFileInfo(fileName).suffix().toLower();
-    if (m_extensionsPreviewHandlers.contains(extension))
-        return m_extensionsPreviewHandlers[extension];
+    QString lowerSuffix = QFileInfo(fileName).suffix().toLower();
+    if (m_extensionsPreviewHandlers.contains(lowerSuffix))
+        return m_extensionsPreviewHandlers[lowerSuffix];
     else
         return NULL;
 }
@@ -206,6 +206,44 @@ bool FileViewManager::AddOrEditSystemApp(long long& SAID, FileViewManager::Syste
     return true;
 }
 
+bool FileViewManager::GetPreferredOpenApplication(const QString& fileName, long long& preferredSAID)
+{
+    QString lowerSuffix = QFileInfo(fileName).suffix().toLower();
+
+    QString retrieveError = "Could not get preferred program information from database.";
+    QSqlQuery query(db);
+    query.prepare("SELECT * FROM ExtOpenWith WHERE LExtension = ?");
+    query.addBindValue(lowerSuffix);
+
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    if (query.first())
+        preferredSAID = query.record().value("SAID").toLongLong(); //Might be -1, when user has set it.
+    else //Simply no results where returned.
+        preferredSAID = -1;
+
+    return true;
+}
+
+bool FileViewManager::SetPreferredOpenApplication(const QString& fileName, long long preferredSAID)
+{
+    QString lowerSuffix = QFileInfo(fileName).suffix().toLower();
+
+    QString setPreferredSAIDError =
+            "Could not alter preferred program information for file in the database.";
+
+    QSqlQuery query(db);
+    query.prepare("UPDATE ExtOpenWith SET SAID = ? WHERE LExtension = ?");
+    query.addBindValue(preferredSAID);
+    query.addBindValue(lowerSuffix);
+
+    if (!query.exec())
+        return Error(setPreferredSAIDError, query.lastError());
+
+    return true;
+}
+
 void FileViewManager::CreateTables()
 {
     //IMPORTANT:
@@ -224,9 +262,13 @@ void FileViewManager::CreateTables()
                "( SAID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Path TEXT, "
                "  SmallIcon BLOB, LargeIcon BLOB )");
 
-    //Extension Association Table
+    //Extension Association Table: programs that were recently used to open that extension.
     query.exec("CREATE TABLE ExtAssoc"
                "( EAID INTEGER PRIMARY KEY AUTOINCREMENT, LExtension TEXT, SAID INTEGER )");
+
+    //Extension Open With Table: User prefers to open an extension with System Default or an app.
+    query.exec("CREATE TABLE ExtOpenWith"
+               "( EOWID INTEGER PRIMARY KEY AUTOINCREMENT, LExtension TEXT, SAID INTEGER )");
 }
 
 void FileViewManager::PopulateModels()

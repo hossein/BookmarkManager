@@ -22,6 +22,7 @@ bool BookmarkManager::RetrieveBookmark(long long BID, BookmarkManager::BookmarkD
     if (!query.first()) //Simply no results where returned.
         return Error(retrieveError + "\nThe selected bookmark was not found.");
 
+    //NOTE: These consecutive `.record()`s must be assigned to one var.
     bdata.BID      = query.record().value("BID"     ).toLongLong();
     bdata.Name     = query.record().value("Name"    ).toString();
     bdata.URL      = query.record().value("URL"     ).toString();
