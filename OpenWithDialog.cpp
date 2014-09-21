@@ -14,13 +14,13 @@
 
 OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
                                OutParams* outParams, QWidget *parent) :
-    QDialog(parent), ui(new Ui::OpenWithDialog), dbm(dbm),
+    QDialog(parent), ui(new Ui::OpenWithDialog), dbm(dbm), m_fileName(fileName),
     canShowTheDialog(false), outParams(outParams)
 {
     ui->setupUi(this);
     ui->lwProgs->setItemDelegate(new AppListItemDelegate(ui->lwProgs));
 
-    QFileInfo fileInfo(fileName);
+    QFileInfo fileInfo(m_fileName);
     setWindowTitle(QString("Open File '%1'").arg(fileInfo.fileName()));
 
     //Don't enable until user selects something.
@@ -50,7 +50,7 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
     ui->btnBrowse->setFixedWidth(20 + QFontMetrics(this->font()).width("..."));
 
     //Get default app SAID
-    long long preferredSAID = dbm->fview.GetPreferredOpenApplication(fileName);
+    long long preferredSAID = dbm->fview.GetPreferredOpenApplication(m_fileName);
 
     //Add the program items
     m_defaultProgramItem = new QListWidgetItem();
@@ -132,8 +132,18 @@ void OpenWithDialog::accept()
         success = dbm->fview.AddOrEditSystemApp(SAID, sadata);
     }
 
+    if (!success)
+        return;
+
+    long long oldPreferredSAID = dbm->fview.GetPreferredOpenApplication(m_fileName);
+    if (ui->chkPreferProgram->isChecked() && SAID != oldPreferredSAID)
+        success = dbm->fview.SetPreferredOpenApplication(m_fileName, SAID);
+
     if (outParams != NULL)
+    {
         outParams->selectedSAID = SAID;
+        outParams->openSandboxed = ui->chkOpenSandboxed->isChecked();
+    }
 
     //Don't close the dialog if adding the systemapp encountered error.
     if (success)

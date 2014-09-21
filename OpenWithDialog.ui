@@ -43,6 +43,26 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="chkPreferProgram">
+     <property name="text">
+      <string>&amp;Always use this program to ppen this file type</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chkOpenSandboxed">
+     <property name="text">
+      <string>Open Sandbo&amp;xed</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -54,6 +74,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leFilterBrowse</tabstop>
+  <tabstop>btnBrowse</tabstop>
+  <tabstop>lwProgs</tabstop>
+  <tabstop>chkPreferProgram</tabstop>
+  <tabstop>chkOpenSandboxed</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

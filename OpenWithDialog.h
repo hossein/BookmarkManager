@@ -24,11 +24,13 @@ public:
         /// `selectedSAID` will be set to the following if user chose to open with default system app.
         static const long long NoSAID_DefaultSystemHandler = -1;
         long long selectedSAID;
+        bool openSandboxed;
     };
 
 private:
     Ui::OpenWithDialog *ui;
     DatabaseManager* dbm;
+    QString m_fileName;
     bool canShowTheDialog;
     OutParams* outParams;
 
