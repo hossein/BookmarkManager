@@ -12,12 +12,16 @@
 #include <QMenu>
 #include <QToolButton>
 
-OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, OutParams* outParams, QWidget *parent) :
+OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
+                               OutParams* outParams, QWidget *parent) :
     QDialog(parent), ui(new Ui::OpenWithDialog), dbm(dbm),
     canShowTheDialog(false), outParams(outParams)
 {
     ui->setupUi(this);
     ui->lwProgs->setItemDelegate(new AppListItemDelegate(ui->lwProgs));
+
+    QFileInfo fileInfo(fileName);
+    setWindowTitle(QString("Open File '%1'").arg(fileInfo.fileName()));
 
     //Don't enable until user selects something.
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
@@ -45,10 +49,19 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, OutParams* outParams, QWidg
     //Make the browse ("...") button small.
     ui->btnBrowse->setFixedWidth(20 + QFontMetrics(this->font()).width("..."));
 
+    //Get default app SAID
+    long long preferredSAID;
+    bool getPreferredSAIDSuccess = dbm->fview.GetPreferredOpenApplication(fileName, preferredSAID);
+    if (!getPreferredSAIDSuccess)
+        return; //`canShowTheDialog` is still false.
+
+    //Add the program items
     m_defaultProgramItem = new QListWidgetItem();
     setProgItemData(m_defaultProgramItem, SISAID_SystemDefaultItem, 0,
                     QPixmap(":/res/exec.png"), "Default System Application", QString());
     ui->lwProgs->addItem(m_defaultProgramItem);
+    if (preferredSAID == -1)
+        ui->lwProgs->setCurrentItem(m_defaultProgramItem);
 
     int index = 1; //index 0 was the system default item.
     foreach (const FileViewManager::SystemAppData& sa, dbm->fview.systemApps)
@@ -56,6 +69,9 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, OutParams* outParams, QWidg
         QListWidgetItem* item = new QListWidgetItem();
         setProgItemData(item, sa.SAID, index++, sa.LargeIcon, sa.Name, sa.Path);
         ui->lwProgs->addItem(item);
+
+        if (sa.SAID == preferredSAID)
+            ui->lwProgs->setCurrentItem(item);
     }
 
     m_browsedProgramItem = new QListWidgetItem();

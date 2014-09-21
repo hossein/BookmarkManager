@@ -43,7 +43,8 @@ private:
     };
 
 public:
-    explicit OpenWithDialog(DatabaseManager* dbm, OutParams* outParams = NULL, QWidget *parent = 0);
+    explicit OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
+                            OutParams* outParams = NULL, QWidget *parent = 0);
     ~OpenWithDialog();
 
 public:

@@ -101,7 +101,8 @@ void FileViewManager::OpenWith(const QString& filePathName, DatabaseManager* dbm
 {
     //TODO: Incomplete
     OpenWithDialog::OutParams outParams;
-    OpenWithDialog openWithDlg(dbm, &outParams, NULL /* TODO: We don't have a parent to pass */);
+    OpenWithDialog openWithDlg(dbm, filePathName, &outParams,
+                               NULL /* TODO: We don't have a parent to pass */);
 
     if (!openWithDlg.canShow())
         return; //In case of errors a message is already shown.
