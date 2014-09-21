@@ -368,6 +368,7 @@ void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
     }
     else
     {
+        //TODO: Both in here and BMViewDlg: Use a MENU for open with.
         QAction* a_preview  = afMenu.addAction("&Preview"        , this, SLOT(af_preview()),    QKS("Enter"));
         QAction* a_open     = afMenu.addAction("&Open"           , this, SLOT(af_open()),       QKS("Shift+Enter"));
         QAction* a_edit     = afMenu.addAction("Open (&Editable)", this, SLOT(af_edit()));
@@ -517,7 +518,7 @@ void BookmarkEditDialog::af_edit()
 void BookmarkEditDialog::af_openWith()
 {
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    dbm->fview.OpenWith(GetAttachedFileFullPathName(filesListIdx), dbm);
+    dbm->fview.OpenWith(GetAttachedFileFullPathName(filesListIdx), dbm, this);
 }
 
 void BookmarkEditDialog::af_setAsDefault()

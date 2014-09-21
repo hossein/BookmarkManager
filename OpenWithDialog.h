@@ -22,7 +22,10 @@ public:
     struct OutParams
     {
         /// `selectedSAID` will be set to the following if user chose to open with default system app.
+        /// `FileViewManager::OpenWith` relies on `NoSAID_DefaultSystemHandler` value being `-1` so
+        ///     do NOT change it.
         static const long long NoSAID_DefaultSystemHandler = -1;
+
         long long selectedSAID;
         bool openSandboxed;
     };

@@ -16,6 +16,7 @@
 
 #include <QUrl>
 #include <QDesktopServices>
+#include <QProcess>
 
 FileViewManager::FileViewManager(QWidget* dialogParent, Config* conf)
     : ISubManager(dialogParent, conf)
@@ -84,25 +85,26 @@ void FileViewManager::Preview(const QString& filePathName, FilePreviewerWidget* 
 void FileViewManager::OpenReadOnly(const QString& filePathName, FileManager* files)
 {
     QString sandBoxFilePathName = files->CopyFileToSandBoxAndGetAddress(filePathName);
-
     if (sandBoxFilePathName.isEmpty()) //Error on copying, etc
         return;
 
-    QDesktopServices::openUrl(QUrl(sandBoxFilePathName));
+    RealOpenFile(sandBoxFilePathName, GetPreferredOpenApplication(sandBoxFilePathName));
 }
 
 void FileViewManager::OpenEditable(const QString& filePathName, FileManager* files)
 {
     Q_UNUSED(files)
-    QDesktopServices::openUrl(QUrl(filePathName));
+    RealOpenFile(filePathName, GetPreferredOpenApplication(filePathName));
 }
 
-void FileViewManager::OpenWith(const QString& filePathName, DatabaseManager* dbm)
+void FileViewManager::OpenWith(const QString& filePathName, DatabaseManager* dbm,
+                               QWidget* dialogParent)
 {
+    //Note that we do NOT use the dbm's dialogParent; as we need to make the parent of the
+    //  OpenWithDialog the previous dialog which was open, NOT the MainWindow.
     //TODO: Incomplete
     OpenWithDialog::OutParams outParams;
-    OpenWithDialog openWithDlg(dbm, filePathName, &outParams,
-                               NULL /* TODO: We don't have a parent to pass */);
+    OpenWithDialog openWithDlg(dbm, filePathName, &outParams, dialogParent);
 
     if (!openWithDlg.canShow())
         return; //In case of errors a message is already shown.
@@ -110,6 +112,16 @@ void FileViewManager::OpenWith(const QString& filePathName, DatabaseManager* dbm
     int result = openWithDlg.exec();
     if (result != QDialog::Accepted)
         return;
+
+    QString filePathNameToOpen = filePathName;
+    if (outParams.openSandboxed)
+    {
+        filePathNameToOpen = dbm->files.CopyFileToSandBoxAndGetAddress(filePathName);
+        if (filePathNameToOpen.isEmpty()) //Error on copying, etc
+            return;
+    }
+
+    RealOpenFile(filePathNameToOpen, outParams.selectedSAID);
 }
 
 void FileViewManager::ShowProperties(const QString& filePathName)
@@ -124,6 +136,28 @@ FilePreviewHandler* FileViewManager::GetPreviewHandler(const QString& fileName)
         return m_extensionsPreviewHandlers[lowerSuffix];
     else
         return NULL;
+}
+
+void FileViewManager::RealOpenFile(const QString& filePathName, long long programSAID)
+{
+    bool success;
+    if (programSAID == -1)
+    {
+        //This QUrl override is tolerant changes URLs to `file://` type.
+        success = QDesktopServices::openUrl(QUrl(filePathName));
+    }
+    else
+    {
+        success = QProcess::startDetached(systemApps[programSAID].Path, QStringList() << filePathName);
+    }
+
+    if (!success)
+        QMessageBox::critical(NULL, "Error opening file",
+                              QString("Error opening file.\nFile: %1\nProgram: %2")
+                              .arg(filePathName,
+                                   programSAID == -1
+                                   ? "Default System Application"
+                                   : systemApps[programSAID].Path));
 }
 
 void FileViewManager::PopulateInternalTables()
@@ -173,9 +207,10 @@ void FileViewManager::PopulateInternalTables()
     while (query.next())
     {
         QSqlRecord record = query.record();
+        long long EOWID = record.value("EOWID").toLongLong();
         QString lowerSuffix = record.value("LExtension").toString();
         long long preferredSAID = record.value("SAID").toLongLong();
-        preferredOpenProgram[lowerSuffix] = preferredSAID;
+        preferredOpenProgram[lowerSuffix] = ExtOpenWithData(EOWID, preferredSAID);
     }
 }
 
@@ -231,7 +266,7 @@ long long FileViewManager::GetPreferredOpenApplication(const QString& fileName)
 {
     QString lowerSuffix = QFileInfo(fileName).suffix().toLower();
     if (preferredOpenProgram.contains(lowerSuffix))
-        return preferredOpenProgram[lowerSuffix];
+        return preferredOpenProgram[lowerSuffix].SAID;
     else
         return -1;
 }
@@ -239,21 +274,36 @@ long long FileViewManager::GetPreferredOpenApplication(const QString& fileName)
 bool FileViewManager::SetPreferredOpenApplication(const QString& fileName, long long preferredSAID)
 {
     QString lowerSuffix = QFileInfo(fileName).suffix().toLower();
+    long long EOWID = -1;
+    if (preferredOpenProgram.contains(lowerSuffix))
+        EOWID = preferredOpenProgram[lowerSuffix].EOWID;
 
     QString setPreferredSAIDError =
             "Could not alter preferred program information for file in the database.";
 
-    //TODO: Doesn't primary key get NULL on REPLACE?
+    QString querystr;
+    if (EOWID == -1)
+        querystr = "INSERT INTO ExtOpenWith (LExtension, SAID) VALUES (?, ?)";
+    else
+        querystr = "UPDATE ExtOpenWith SET LExtension = ?, SAID = ? WHERE EOWID = ?";
+
     QSqlQuery query(db);
-    query.prepare("INSERT OR REPLACE ExtOpenWith SET SAID = ? WHERE LExtension = ?");
-    query.addBindValue(preferredSAID);
+    query.prepare(querystr);
+
     query.addBindValue(lowerSuffix);
+    query.addBindValue(preferredSAID);
+
+    if (EOWID != -1)
+        query.addBindValue(EOWID); //Edit
 
     if (!query.exec())
         return Error(setPreferredSAIDError, query.lastError());
 
+    if (EOWID == -1)
+        EOWID = query.lastInsertId().toLongLong(); //Get real EOWID value after insert.
+
     //We are [RESPONSIBLE] for updating the internal tables.
-    preferredOpenProgram[lowerSuffix] = preferredSAID;
+    preferredOpenProgram[lowerSuffix] = ExtOpenWithData(EOWID, preferredSAID);
 
     return true;
 }
@@ -269,6 +319,8 @@ void FileViewManager::CreateTables()
     //Extensions are meant to be LOWERCASE WITHOUT THE FIRST DOT character.
     //There is also a special extension called '' (empty string!) which appears in OpenWith list
     //  of all files after the extension's specialized openers, before the others.
+    //TODO: ^ No there isn't a '' extension! We should make special care in Open with dialog preference,
+    //  etc to make sure we exempt '' from other extensions even!
 
     QSqlQuery query(db);
 

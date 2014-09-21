@@ -135,6 +135,8 @@ void OpenWithDialog::accept()
     if (!success)
         return;
 
+    //TODO: Associate app with extension.
+
     long long oldPreferredSAID = dbm->fview.GetPreferredOpenApplication(m_fileName);
     if (ui->chkPreferProgram->isChecked() && SAID != oldPreferredSAID)
         success = dbm->fview.SetPreferredOpenApplication(m_fileName, SAID);
@@ -365,10 +367,10 @@ void OpenWithDialog::pact_browse()
 
 void OpenWithDialog::pact_rename()
 {
-
+    //TODO
 }
 
 void OpenWithDialog::pact_remove()
 {
-
+    //TODO
 }

@@ -40,13 +40,15 @@ public:
     void Preview(const QString& filePathName, FilePreviewerWidget* fpw);
     void OpenReadOnly(const QString& filePathName, FileManager* files);
     void OpenEditable(const QString& filePathName, FileManager* files);
-    void OpenWith(const QString& filePathName, DatabaseManager* dbm);
+    void OpenWith(const QString& filePathName, DatabaseManager* dbm, QWidget* dialogParent);
     void ShowProperties(const QString& filePathName);
 
 private:
     /// Only file extension will be verified.
     /// Returns NULL if there isn't a preview handler for the extension.
     FilePreviewHandler* GetPreviewHandler(const QString& fileName);
+
+    void RealOpenFile(const QString& filePathName, long long programSAID);
 
     // Database Functions /////////////////////////////////////////////////////////////////////////
 public:
@@ -60,8 +62,21 @@ public:
     };
 
     QHash<long long, SystemAppData> systemApps;
-    QHash<QString, long long> preferredOpenProgram;
 
+private:
+    struct ExtOpenWithData
+    {
+        ExtOpenWithData() { }
+        ExtOpenWithData(long long EOWID, long long SAID) : EOWID(EOWID), SAID(SAID) { }
+        long long EOWID;
+        long long SAID;
+    };
+
+    //Don't use directly; many extensions don't have a record in this QHash.
+    //  Use `GetPreferredOpenApplication` to return `-1` for those.
+    QHash<QString, ExtOpenWithData> preferredOpenProgram;
+
+public:
     /// This function is only called once upon startup. Other functions are [RESPONSIBLE] for
     /// keeping the internal tables updated afterwards.
     void PopulateInternalTables();
