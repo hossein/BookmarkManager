@@ -126,7 +126,7 @@ FilePreviewHandler* FileViewManager::GetPreviewHandler(const QString& fileName)
         return NULL;
 }
 
-void FileViewManager::PopulateSystemAppsList()
+void FileViewManager::PopulateInternalTables()
 {
     //Instead we populate the internal fast-access lists.
     //Note: We do NOT do this at `FileViewManager::PopulateModels()` as it is called multiple times
@@ -134,6 +134,7 @@ void FileViewManager::PopulateSystemAppsList()
     //So we do it at this function ONLY ONCE and then the database functions directly modify
     //      `this->systemApps` instead of re-retrieval from DB each time.
 
+    /// System Applications Table /////////////////////////////////////////////////////////////////
     QString retrieveError = "Could not get programs information from the database.";
     QSqlQuery query(db);
     query.prepare("SELECT * FROM SystemApp");
@@ -156,6 +157,25 @@ void FileViewManager::PopulateSystemAppsList()
         sa.LargeIcon = Util::DeSerializeQPixmap(record.value("LargeIcon").toByteArray());
 
         systemApps[sa.SAID] = sa;
+    }
+
+    /// Extension Open With Table /////////////////////////////////////////////////////////////////
+    retrieveError = "Could not get preferred program information from database.";
+    query.prepare("SELECT * FROM ExtOpenWith");
+
+    if (!query.exec())
+    {
+        Error(retrieveError, query.lastError());
+        return;
+    }
+
+    preferredOpenProgram.clear();
+    while (query.next())
+    {
+        QSqlRecord record = query.record();
+        QString lowerSuffix = record.value("LExtension").toString();
+        long long preferredSAID = record.value("SAID").toLongLong();
+        preferredOpenProgram[lowerSuffix] = preferredSAID;
     }
 }
 
@@ -201,30 +221,19 @@ bool FileViewManager::AddOrEditSystemApp(long long& SAID, FileViewManager::Syste
         sadata.SAID = addedSAID;
     }
 
-    //We are RESPONSIBLE for updating the internal tables, too! Both on Add and Edit.
+    //We are [RESPONSIBLE] for updating the internal tables, too! Both on Add and Edit.
     systemApps[SAID] = sadata;
 
     return true;
 }
 
-bool FileViewManager::GetPreferredOpenApplication(const QString& fileName, long long& preferredSAID)
+long long FileViewManager::GetPreferredOpenApplication(const QString& fileName)
 {
     QString lowerSuffix = QFileInfo(fileName).suffix().toLower();
-
-    QString retrieveError = "Could not get preferred program information from database.";
-    QSqlQuery query(db);
-    query.prepare("SELECT * FROM ExtOpenWith WHERE LExtension = ?");
-    query.addBindValue(lowerSuffix);
-
-    if (!query.exec())
-        return Error(retrieveError, query.lastError());
-
-    if (query.first())
-        preferredSAID = query.record().value("SAID").toLongLong(); //Might be -1, when user has set it.
-    else //Simply no results where returned.
-        preferredSAID = -1;
-
-    return true;
+    if (preferredOpenProgram.contains(lowerSuffix))
+        return preferredOpenProgram[lowerSuffix];
+    else
+        return -1;
 }
 
 bool FileViewManager::SetPreferredOpenApplication(const QString& fileName, long long preferredSAID)
@@ -234,13 +243,17 @@ bool FileViewManager::SetPreferredOpenApplication(const QString& fileName, long 
     QString setPreferredSAIDError =
             "Could not alter preferred program information for file in the database.";
 
+    //TODO: Doesn't primary key get NULL on REPLACE?
     QSqlQuery query(db);
-    query.prepare("UPDATE ExtOpenWith SET SAID = ? WHERE LExtension = ?");
+    query.prepare("INSERT OR REPLACE ExtOpenWith SET SAID = ? WHERE LExtension = ?");
     query.addBindValue(preferredSAID);
     query.addBindValue(lowerSuffix);
 
     if (!query.exec())
         return Error(setPreferredSAIDError, query.lastError());
+
+    //We are [RESPONSIBLE] for updating the internal tables.
+    preferredOpenProgram[lowerSuffix] = preferredSAID;
 
     return true;
 }

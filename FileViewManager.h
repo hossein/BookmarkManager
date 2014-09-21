@@ -60,15 +60,19 @@ public:
     };
 
     QHash<long long, SystemAppData> systemApps;
+    QHash<QString, long long> preferredOpenProgram;
 
-    void PopulateSystemAppsList();
+    /// This function is only called once upon startup. Other functions are [RESPONSIBLE] for
+    /// keeping the internal tables updated afterwards.
+    void PopulateInternalTables();
+
     bool AddOrEditSystemApp(long long& SAID, SystemAppData& sadata);
 
     /// Only file extension will be verified.
     /// Sets `preferredSAID` to -1 if either there isn't a preferred application or the user has
     /// explicitly preferred to open with default system application. In both cases we should open
     /// with the default system app.
-    bool GetPreferredOpenApplication(const QString& fileName, long long& preferredSAID);
+    long long GetPreferredOpenApplication(const QString& fileName);
 
     /// Setting to -1 doesn't remove the database entry or anything (as if it should, to save space).
     bool SetPreferredOpenApplication(const QString& fileName, long long preferredSAID);

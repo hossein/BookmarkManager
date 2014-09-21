@@ -50,10 +50,7 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
     ui->btnBrowse->setFixedWidth(20 + QFontMetrics(this->font()).width("..."));
 
     //Get default app SAID
-    long long preferredSAID;
-    bool getPreferredSAIDSuccess = dbm->fview.GetPreferredOpenApplication(fileName, preferredSAID);
-    if (!getPreferredSAIDSuccess)
-        return; //`canShowTheDialog` is still false.
+    long long preferredSAID = dbm->fview.GetPreferredOpenApplication(fileName);
 
     //Add the program items
     m_defaultProgramItem = new QListWidgetItem();
