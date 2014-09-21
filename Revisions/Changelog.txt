@@ -30,3 +30,5 @@
 2014-09-16  25  OpenWidthDlg: list apps with beautiful ItemDelegate, filtering and getting EXE info
 2014-09-17  25  App list browsing, adding systemApps to database, bugfixes.
 2014-09-18  27  Coding improvements
+2014-09-21  32  Default system application and Preferred application implemented, OpenWithDialog 
+                has defapp & sandboxing support, OpenWith works initially.

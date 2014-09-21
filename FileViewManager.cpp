@@ -38,6 +38,20 @@ void FileViewManager::AddPreviewHandler(FilePreviewHandler* fph)
         m_extensionsPreviewHandlers[ext] = fph;
 }
 
+bool FileViewManager::HasPreviewHandler(const QString& fileName)
+{
+    return (GetPreviewHandler(fileName) != NULL);
+}
+
+FilePreviewHandler* FileViewManager::GetPreviewHandler(const QString& fileName)
+{
+    QString lowerSuffix = QFileInfo(fileName).suffix().toLower();
+    if (m_extensionsPreviewHandlers.contains(lowerSuffix))
+        return m_extensionsPreviewHandlers[lowerSuffix];
+    else
+        return NULL;
+}
+
 int FileViewManager::ChooseADefaultFileBasedOnExtension(const QStringList& filesList)
 {
     if (filesList.count() == 1)
@@ -64,11 +78,6 @@ int FileViewManager::ChooseADefaultFileBasedOnExtension(const QStringList& files
 
     //If the above prioritized file choosing doesn't work, simply choose the first item.
     return 0;
-}
-
-bool FileViewManager::HasPreviewHandler(const QString& fileName)
-{
-    return (GetPreviewHandler(fileName) != NULL);
 }
 
 void FileViewManager::Preview(const QString& filePathName, FilePreviewerWidget* fpw)
@@ -127,15 +136,6 @@ void FileViewManager::OpenWith(const QString& filePathName, DatabaseManager* dbm
 void FileViewManager::ShowProperties(const QString& filePathName)
 {
     //NOTE: This needs to show REAL file name and attaching date also.
-}
-
-FilePreviewHandler* FileViewManager::GetPreviewHandler(const QString& fileName)
-{
-    QString lowerSuffix = QFileInfo(fileName).suffix().toLower();
-    if (m_extensionsPreviewHandlers.contains(lowerSuffix))
-        return m_extensionsPreviewHandlers[lowerSuffix];
-    else
-        return NULL;
 }
 
 void FileViewManager::RealOpenFile(const QString& filePathName, long long programSAID)
