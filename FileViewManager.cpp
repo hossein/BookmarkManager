@@ -95,8 +95,12 @@ void FileViewManager::PopulateOpenWithMenu(const QString& fileName, QMenu* paren
     if (preferredSAID == -1)
         parentMenu->setDefaultAction(ow_sysdefault);
 
-    //Associated programs
+    //Associated programs, sort alphabetically
+    QMap<QString, long long> sortMap;
     foreach (long long associatedSAID, GetAssociatedOpenApplications(fileName))
+        sortMap.insert(systemApps[associatedSAID].Name.toLower(), associatedSAID);
+
+    foreach (long long associatedSAID, sortMap.values())
     {
         SystemAppData& sa = systemApps[associatedSAID];
         QAction* act = parentMenu->addAction(QIcon(sa.SmallIcon), sa.Name, receiver, member);
