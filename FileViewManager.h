@@ -98,7 +98,7 @@ public:
     QList<long long> GetAssociatedOpenApplications(const QString& fileName);
 
     /// If the file type is already associated, this function returns `true` without modifying
-    /// the database.
+    /// the database. Setting to -1 also returns true without modifying the db.
     bool AssociateApplicationWithExtension(const QString& fileName, long long associatedSAID);
 
     //ExtOpenWith

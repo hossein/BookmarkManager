@@ -297,6 +297,9 @@ bool FileViewManager::AssociateApplicationWithExtension(const QString& fileName,
 {
     QString lowerSuffix = QFileInfo(fileName).suffix().toLower();
 
+    if (associatedSAID == -1)
+        return true;
+
     if (associatedOpenPrograms.contains(lowerSuffix)
         && associatedOpenPrograms[lowerSuffix].contains(associatedSAID))
         return true; //Already associated.

@@ -135,7 +135,12 @@ void OpenWithDialog::accept()
     if (!success)
         return;
 
-    //TODO: Associate app with extension.
+    if (SAID != OutParams::NoSAID_DefaultSystemHandler)
+    {
+        success = dbm->fview.AssociateApplicationWithExtension(m_fileName, SAID);
+        if (!success)
+            return;
+    }
 
     long long oldPreferredSAID = dbm->fview.GetPreferredOpenApplication(m_fileName);
     if (ui->chkPreferProgram->isChecked() && SAID != oldPreferredSAID)
