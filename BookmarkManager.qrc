@@ -4,5 +4,6 @@
         <file>res/fivestars_white.png</file>
         <file>res/exec16.png</file>
         <file>res/exec32.png</file>
+        <file>res/go.png</file>
     </qresource>
 </RCC>

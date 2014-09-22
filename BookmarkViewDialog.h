@@ -30,6 +30,9 @@ private slots:
     void on_twAttachedFiles_itemSelectionChanged();
     void on_twAttachedFiles_customContextMenuRequested(const QPoint& pos);
 
+    /// File Properties section
+    void on_btnOpenUrl_clicked();
+
     //The following functions were copied from BookmarkEditDialog. Maybe common-ize them?
     /// Tags Section //////////////////////////////////////////////////////////////////////////////
     void PopulateUITags();

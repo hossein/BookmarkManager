@@ -6,6 +6,9 @@
 #include <QApplication>
 #include <QMenu>
 
+#include <QUrl>
+#include <QDesktopServices>
+
 BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkViewDialog),
     dbm(dbm), canShowTheDialog(false)
@@ -139,6 +142,11 @@ void BookmarkViewDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
 
     QPoint menuPos = ui->twAttachedFiles->viewport()->mapToGlobal(pos);
     afMenu.exec(menuPos);
+}
+
+void BookmarkViewDialog::on_btnOpenUrl_clicked()
+{
+    QDesktopServices::openUrl(QUrl(viewBData.URL));
 }
 
 void BookmarkViewDialog::PopulateUITags()

@@ -78,6 +78,7 @@
 ///     and wheel zooming.
 ///   - Encoding selector for text viewer. Font selection option and wheel zooming.
 ///   - Changing icons of SystemApps. Especially useful for batch files and console programs.
+///   - Choose which browser to open the URL with as a drop-down menu in BMViewDlg.
 
 class Config
 {

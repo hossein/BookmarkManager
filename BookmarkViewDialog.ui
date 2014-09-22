@@ -112,20 +112,47 @@
             <widget class="QLineEdit" name="leURL"/>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton">
+            <widget class="QToolButton" name="btnOpenUrl">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Open URL In Default Browser</string>
+             </property>
              <property name="text">
               <string>Go</string>
+             </property>
+             <property name="icon">
+              <iconset resource="BookmarkManager.qrc">
+               <normaloff>:/res/go.png</normaloff>:/res/go.png</iconset>
+             </property>
+             <property name="toolButtonStyle">
+              <enum>Qt::ToolButtonTextBesideIcon</enum>
              </property>
             </widget>
            </item>
           </layout>
          </item>
          <item>
-          <widget class="TagLineEdit" name="leTags">
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QLabel" name="lblTags">
+             <property name="text">
+              <string>Tags:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="TagLineEdit" name="leTags">
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -206,6 +233,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="BookmarkManager.qrc"/>
+ </resources>
  <connections/>
 </ui>
