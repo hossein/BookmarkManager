@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>res/fivestars.png</file>
         <file>res/fivestars_white.png</file>
-        <file>res/exec.png</file>
+        <file>res/exec16.png</file>
+        <file>res/exec32.png</file>
     </qresource>
 </RCC>

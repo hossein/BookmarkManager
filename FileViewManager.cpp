@@ -10,6 +10,9 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+
+#include <QMenu>
+
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
 #include <QtSql/QSqlResult>
@@ -78,6 +81,43 @@ int FileViewManager::ChooseADefaultFileBasedOnExtension(const QStringList& files
 
     //If the above prioritized file choosing doesn't work, simply choose the first item.
     return 0;
+}
+
+void FileViewManager::PopulateOpenWithMenu(const QString& fileName, QMenu* parentMenu,
+                                           const QObject* receiver, const char* member)
+{
+    typedef QKeySequence QKS;
+    long long preferredSAID = GetPreferredOpenApplication(fileName);
+
+    //System default item
+    QAction* ow_sysdefault = parentMenu->addAction(
+                QIcon(":/res/exec16.png"), "Default System Application", receiver, member);
+    ow_sysdefault->setData(OWS_OpenWithSystemDefault);
+    if (preferredSAID == -1)
+        parentMenu->setDefaultAction(ow_sysdefault);
+
+    parentMenu->addSeparator();
+
+    //Associated programs
+    bool hadAssociatedSAID = false;
+    foreach (long long associatedSAID, GetAssociatedOpenApplications(fileName))
+    {
+        hadAssociatedSAID = true;
+
+        SystemAppData& sa = systemApps[associatedSAID];
+        QAction* act = parentMenu->addAction(QIcon(sa.SmallIcon), sa.Name, receiver, member);
+        act->setData(associatedSAID);
+        if (preferredSAID == associatedSAID)
+            parentMenu->setDefaultAction(act);
+    }
+
+    if (hadAssociatedSAID)
+        parentMenu->addSeparator();
+
+    //Open With dialog request item
+    QAction* ow_openwithreq = parentMenu->addAction(
+                "Choose Default Program...", receiver, member, QKS("Ctrl+Enter"));
+    ow_openwithreq->setData(OWS_OpenWithDialogRequest);
 }
 
 void FileViewManager::Preview(const QString& filePathName, FilePreviewerWidget* fpw)
@@ -376,6 +416,13 @@ void FileViewManager::CreateTables()
     //  Especially on Windows, it is easy to get the Open With list Explorer uses, however
     //  that list is usually cluttered and also for some file types, e.g EXE doesn't allow
     //  customization without registry hacking, and also deleting entries from it is not easy.
+
+    //Preferred Applications vs Associated Applications:
+    //  Each file extension (aka type or suffix) has one Preferred application and multiple
+    //  Associated Applications. Associated applications are a list of programs which the user
+    //  has ever used to open the file extension with. Preferred application is the application
+    //  that user prefers the file to be opened with that application upon Double-Click.
+    //  'System Default' (usually -1) can be a Preferred application BUT NEVER an associated one.
 
     //Extensions are meant to be LOWERCASE WITHOUT THE FIRST DOT character.
     //There is also a special extension called '' (empty string!) which appears in OpenWith list

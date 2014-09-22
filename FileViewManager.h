@@ -5,6 +5,7 @@
 #include <QStringList>
 #include <QPixmap>
 
+class QMenu;
 class DatabaseManager;
 class FileManager;
 class FilePreviewHandler;
@@ -40,6 +41,16 @@ private:
 public:
     /// Only file extensions will be verified.
     int ChooseADefaultFileBasedOnExtension(const QStringList& filesList);
+
+    /// Makes a nice 'Open With >' menu.
+    /// Only file extension will be verified.
+    void PopulateOpenWithMenu(const QString& fileName, QMenu* parentMenu,
+                              const QObject* receiver, const char* member);
+    enum OpenWithSpecialValues
+    {
+        OWS_OpenWithSystemDefault = -1,
+        OWS_OpenWithDialogRequest = -2
+    };
 
     // File Opening Functions /////////////////////////////////////////////////////////////////////
 public:

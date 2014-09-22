@@ -55,7 +55,7 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
     //Add the program items
     m_defaultProgramItem = new QListWidgetItem();
     setProgItemData(m_defaultProgramItem, SISAID_SystemDefaultItem, 0,
-                    QPixmap(":/res/exec.png"), "Default System Application", QString());
+                    QPixmap(":/res/exec32.png"), "Default System Application", QString());
     ui->lwProgs->addItem(m_defaultProgramItem);
     if (preferredSAID == -1)
         ui->lwProgs->setCurrentItem(m_defaultProgramItem);
