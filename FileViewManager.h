@@ -63,8 +63,12 @@ public:
     void OpenEditable(const QString& filePathName, FileManager* files);
     void OpenWith(const QString& filePathName, DatabaseManager* dbm, QWidget* dialogParent);
     void ShowProperties(const QString& filePathName);
+
+    ///If !sandboxed, then files can be NULL.
+    void GenericOpenFile(const QString& filePathName, long long programSAID,
+                         bool sandboxed, FileManager* files);
 private:
-    void RealOpenFile(const QString& filePathName, long long programSAID);
+    void DirectOpenFile(const QString& filePathName, long long programSAID);
 
     // Database Functions /////////////////////////////////////////////////////////////////////////
 public:

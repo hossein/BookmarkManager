@@ -133,17 +133,13 @@ void FileViewManager::Preview(const QString& filePathName, FilePreviewerWidget* 
 
 void FileViewManager::OpenReadOnly(const QString& filePathName, FileManager* files)
 {
-    QString sandBoxFilePathName = files->CopyFileToSandBoxAndGetAddress(filePathName);
-    if (sandBoxFilePathName.isEmpty()) //Error on copying, etc
-        return;
-
-    RealOpenFile(sandBoxFilePathName, GetPreferredOpenApplication(sandBoxFilePathName));
+    GenericOpenFile(filePathName, GetPreferredOpenApplication(filePathName), true, files);
 }
 
 void FileViewManager::OpenEditable(const QString& filePathName, FileManager* files)
 {
     Q_UNUSED(files)
-    RealOpenFile(filePathName, GetPreferredOpenApplication(filePathName));
+    GenericOpenFile(filePathName, GetPreferredOpenApplication(filePathName), false, NULL);
 }
 
 void FileViewManager::OpenWith(const QString& filePathName, DatabaseManager* dbm,
@@ -162,15 +158,7 @@ void FileViewManager::OpenWith(const QString& filePathName, DatabaseManager* dbm
     if (result != QDialog::Accepted)
         return;
 
-    QString filePathNameToOpen = filePathName;
-    if (outParams.openSandboxed)
-    {
-        filePathNameToOpen = dbm->files.CopyFileToSandBoxAndGetAddress(filePathName);
-        if (filePathNameToOpen.isEmpty()) //Error on copying, etc
-            return;
-    }
-
-    RealOpenFile(filePathNameToOpen, outParams.selectedSAID);
+    GenericOpenFile(filePathName, outParams.selectedSAID, outParams.openSandboxed, &dbm->files);
 }
 
 void FileViewManager::ShowProperties(const QString& filePathName)
@@ -178,12 +166,27 @@ void FileViewManager::ShowProperties(const QString& filePathName)
     //NOTE: This needs to show REAL file name and attaching date also.
 }
 
-void FileViewManager::RealOpenFile(const QString& filePathName, long long programSAID)
+void FileViewManager::GenericOpenFile(const QString& filePathName, long long programSAID,
+                                      bool sandboxed, FileManager* files)
+{
+    QString filePathNameToOpen = filePathName;
+
+    if (sandboxed)
+    {
+        filePathNameToOpen = files->CopyFileToSandBoxAndGetAddress(filePathName);
+        if (filePathNameToOpen.isEmpty()) //Error on copying, etc
+            return;
+    }
+
+    DirectOpenFile(filePathNameToOpen, programSAID);
+}
+
+void FileViewManager::DirectOpenFile(const QString& filePathName, long long programSAID)
 {
     bool success;
     if (programSAID == -1)
     {
-        //This QUrl override is tolerant changes URLs to `file://` type.
+        //This QUrl override is tolerant and changes URLs to `file://` type.
         success = QDesktopServices::openUrl(QUrl(filePathName));
     }
     else
