@@ -86,7 +86,6 @@ int FileViewManager::ChooseADefaultFileBasedOnExtension(const QStringList& files
 void FileViewManager::PopulateOpenWithMenu(const QString& fileName, QMenu* parentMenu,
                                            const QObject* receiver, const char* member)
 {
-    typedef QKeySequence QKS;
     long long preferredSAID = GetPreferredOpenApplication(fileName);
 
     //System default item
@@ -96,14 +95,9 @@ void FileViewManager::PopulateOpenWithMenu(const QString& fileName, QMenu* paren
     if (preferredSAID == -1)
         parentMenu->setDefaultAction(ow_sysdefault);
 
-    parentMenu->addSeparator();
-
     //Associated programs
-    bool hadAssociatedSAID = false;
     foreach (long long associatedSAID, GetAssociatedOpenApplications(fileName))
     {
-        hadAssociatedSAID = true;
-
         SystemAppData& sa = systemApps[associatedSAID];
         QAction* act = parentMenu->addAction(QIcon(sa.SmallIcon), sa.Name, receiver, member);
         act->setData(associatedSAID);
@@ -111,12 +105,12 @@ void FileViewManager::PopulateOpenWithMenu(const QString& fileName, QMenu* paren
             parentMenu->setDefaultAction(act);
     }
 
-    if (hadAssociatedSAID)
-        parentMenu->addSeparator();
+    //Separator :)
+    parentMenu->addSeparator();
 
     //Open With dialog request item
     QAction* ow_openwithreq = parentMenu->addAction(
-                "Choose Default Program...", receiver, member, QKS("Ctrl+Enter"));
+                "Choose Default Program...", receiver, member);
     ow_openwithreq->setData(OWS_OpenWithDialogRequest);
 }
 
