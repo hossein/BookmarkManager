@@ -193,6 +193,27 @@ void FileViewManager::PopulateInternalTables()
         systemApps[sa.SAID] = sa;
     }
 
+    /// Extension Associations Table //////////////////////////////////////////////////////////////
+    retrieveError = "Could not get extention program associations information from database.";
+    query.prepare("SELECT * FROM ExtAssoc");
+
+    if (!query.exec())
+    {
+        Error(retrieveError, query.lastError());
+        return;
+    }
+
+    associatedOpenPrograms.clear();
+    while (query.next())
+    {
+        QSqlRecord record = query.record();
+        QString lowerSuffix = record.value("LExtension").toString();
+        long long associatedSAID = record.value("SAID").toLongLong();
+        //This always works since QHash returns a default-constructed QList when value at lowerSuffix
+        //  doesn't exist.
+        associatedOpenPrograms[lowerSuffix].append(associatedSAID);
+    }
+
     /// Extension Open With Table /////////////////////////////////////////////////////////////////
     retrieveError = "Could not get preferred program information from database.";
     query.prepare("SELECT * FROM ExtOpenWith");
@@ -258,6 +279,43 @@ bool FileViewManager::AddOrEditSystemApp(long long& SAID, FileViewManager::Syste
 
     //We are [RESPONSIBLE] for updating the internal tables, too! Both on Add and Edit.
     systemApps[SAID] = sadata;
+
+    return true;
+}
+
+QList<long long> FileViewManager::GetAssociatedOpenApplications(const QString& fileName)
+{
+    QString lowerSuffix = QFileInfo(fileName).suffix().toLower();
+    if (associatedOpenPrograms.contains(lowerSuffix))
+        return associatedOpenPrograms[lowerSuffix];
+    else
+        return QList<long long>();
+}
+
+bool FileViewManager::AssociateApplicationWithExtension(const QString& fileName,
+                                                        long long associatedSAID)
+{
+    QString lowerSuffix = QFileInfo(fileName).suffix().toLower();
+
+    if (associatedOpenPrograms.contains(lowerSuffix)
+        && associatedOpenPrograms[lowerSuffix].contains(associatedSAID))
+        return true; //Already associated.
+
+    QString setAssociatedSAIDError =
+            "Could not alter extension associated programs information for file in the database.";
+
+    QSqlQuery query(db);
+    query.prepare("INSERT INTO ExtAssoc (LExtension, SAID) VALUES (?, ?)");
+
+    query.addBindValue(lowerSuffix);
+    query.addBindValue(associatedSAID);
+
+    if (!query.exec())
+        return Error(setAssociatedSAIDError, query.lastError());
+
+    //We are [RESPONSIBLE] for updating the internal tables.
+    //This always works since QHash returns a default-constructed QList when lowerSuffix doesn't exist.
+    associatedOpenPrograms[lowerSuffix].append(associatedSAID);
 
     return true;
 }

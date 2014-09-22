@@ -69,6 +69,9 @@ public:
     QHash<long long, SystemAppData> systemApps;
 
 private:
+    //Don't use directly; for the same reason as preferredOpenProgram.
+    QHash<QString, QList<long long>> associatedOpenPrograms;
+
     struct ExtOpenWithData
     {
         ExtOpenWithData() { }
@@ -86,12 +89,23 @@ public:
     /// keeping the internal tables updated afterwards.
     void PopulateInternalTables();
 
+    //SystemApp
     bool AddOrEditSystemApp(long long& SAID, SystemAppData& sadata);
 
+    //ExtAssoc
+    /// Only file extension will be verified. Returns an empty list if there isn't any association
+    /// for the default program. TODO: What about the default '' extension?
+    QList<long long> GetAssociatedOpenApplications(const QString& fileName);
+
+    /// If the file type is already associated, this function returns `true` without modifying
+    /// the database.
+    bool AssociateApplicationWithExtension(const QString& fileName, long long associatedSAID);
+
+    //ExtOpenWith
     /// Only file extension will be verified.
-    /// Sets `preferredSAID` to -1 if either there isn't a preferred application or the user has
-    /// explicitly preferred to open with default system application. In both cases we should open
-    /// with the default system app.
+    /// Returns -1 if either there isn't a preferred application or the user has explicitly
+    /// preferred to open with default system application. Anyway in -1 case we should open with
+    /// the default system app.
     long long GetPreferredOpenApplication(const QString& fileName);
 
     /// Setting to -1 doesn't remove the database entry or anything (as if it should, to save space).
