@@ -119,17 +119,20 @@ void BookmarkViewDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
         ui->twAttachedFiles->selectedItems().empty())
         return;
 
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    QString filePathName = GetAttachedFileFullPathName(filesListIdx);
+
     typedef QKeySequence QKS;
     QMenu afMenu("Attached File Menu");
 
     QAction* a_open     = afMenu.addAction("&Open"           , this, SLOT(af_open()),       QKS("Enter"));
     QAction* a_edit     = afMenu.addAction("Open (&Editable)", this, SLOT(af_edit()));
-    QAction* a_openWith = afMenu.addAction("Open Wit&h..."   , this, SLOT(af_openWith()),   QKS("Ctrl+Enter"));
+    QMenu*   m_openWith = afMenu.addMenu  ("Open Wit&h"     );
+    dbm->fview.PopulateOpenWithMenu(filePathName, m_openWith , this, SLOT(af_openWith()));
                           afMenu.addSeparator();
     QAction* a_props    = afMenu.addAction("P&roperties"     , this, SLOT(af_properties()), QKS("Alt+Enter"));
 
     Q_UNUSED(a_edit);
-    Q_UNUSED(a_openWith);
     Q_UNUSED(a_props);
 
     afMenu.setDefaultAction(a_open); //Always Open is the default double-click action.
@@ -240,8 +243,26 @@ void BookmarkViewDialog::af_edit()
 
 void BookmarkViewDialog::af_openWith()
 {
+    QAction* owitem = qobject_cast<QAction*>(sender());
+    if (!owitem)
+        return;
+
+    long long SAID = owitem->data().toLongLong();
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    dbm->fview.OpenWith(GetAttachedFileFullPathName(filesListIdx), dbm, this);
+    QString filePathName = GetAttachedFileFullPathName(filesListIdx);
+
+    if (SAID == FileViewManager::OWS_OpenWithDialogRequest)
+    {
+        dbm->fview.OpenWith(filePathName, dbm, this);
+    }
+    else if (SAID == FileViewManager::OWS_OpenWithSystemDefault)
+    {
+        dbm->fview.GenericOpenFile(filePathName, -1, true, &dbm->files);
+    }
+    else
+    {
+        dbm->fview.GenericOpenFile(filePathName, SAID, true, &dbm->files);
+    }
 }
 
 void BookmarkViewDialog::af_properties()

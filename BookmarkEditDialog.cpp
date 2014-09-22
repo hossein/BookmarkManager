@@ -368,11 +368,12 @@ void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
     }
     else
     {
-        //TODO: Both in here and BMViewDlg: Use a MENU for open with.
+        QString fileOrigName = editedFilesList[filesListIdx].OriginalName;
         QAction* a_preview  = afMenu.addAction("&Preview"        , this, SLOT(af_preview()),    QKS("Enter"));
         QAction* a_open     = afMenu.addAction("&Open"           , this, SLOT(af_open()),       QKS("Shift+Enter"));
         QAction* a_edit     = afMenu.addAction("Open (&Editable)", this, SLOT(af_edit()));
-        QAction* a_openWith = afMenu.addAction("Open Wit&h..."   , this, SLOT(af_openWith()),   QKS("Ctrl+Enter"));
+        QMenu*   m_openWith = afMenu.addMenu  ("Open Wit&h"      );
+        dbm->fview.PopulateOpenWithMenu(fileOrigName, m_openWith , this, SLOT(af_openWith()));
                               afMenu.addSeparator();
         QAction* a_setDef   = afMenu.addAction("Set &As Default" , this, SLOT(af_setAsDefault()));
         QAction* a_rename   = afMenu.addAction("Rena&me"         , this, SLOT(af_rename()));
@@ -381,11 +382,10 @@ void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
         QAction* a_props    = afMenu.addAction("P&roperties"     , this, SLOT(af_properties()), QKS("Alt+Enter"));
 
         Q_UNUSED(a_edit);
-        Q_UNUSED(a_openWith);
         Q_UNUSED(a_remove);
         Q_UNUSED(a_props);
 
-        bool canPreview = dbm->fview.HasPreviewHandler(editedFilesList[filesListIdx].OriginalName);
+        bool canPreview = dbm->fview.HasPreviewHandler(fileOrigName);
         a_preview->setEnabled(canPreview);
         afMenu.setDefaultAction(canPreview ? a_preview : a_open);
 
@@ -517,8 +517,26 @@ void BookmarkEditDialog::af_edit()
 
 void BookmarkEditDialog::af_openWith()
 {
+    QAction* owitem = qobject_cast<QAction*>(sender());
+    if (!owitem)
+        return;
+
+    long long SAID = owitem->data().toLongLong();
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
-    dbm->fview.OpenWith(GetAttachedFileFullPathName(filesListIdx), dbm, this);
+    QString filePathName = GetAttachedFileFullPathName(filesListIdx);
+
+    if (SAID == FileViewManager::OWS_OpenWithDialogRequest)
+    {
+        dbm->fview.OpenWith(filePathName, dbm, this);
+    }
+    else if (SAID == FileViewManager::OWS_OpenWithSystemDefault)
+    {
+        dbm->fview.GenericOpenFile(filePathName, -1, true, &dbm->files);
+    }
+    else
+    {
+        dbm->fview.GenericOpenFile(filePathName, SAID, true, &dbm->files);
+    }
 }
 
 void BookmarkEditDialog::af_setAsDefault()
