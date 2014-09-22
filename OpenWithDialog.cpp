@@ -270,8 +270,6 @@ int OpenWithDialog::filterItemsRoleAndSelectFirst(int role, const QString& str)
 
 void OpenWithDialog::filter()
 {
-    //TODO: Change these when Default System App is also added.
-
     //We need to control unselecting/selecting the only (maybe browsed) item ourselves to prevent
     //  buttons remaining enabled for hidden items, so we deselect everything, AND:
     //BEFORE returnING from this function always choose the first filtered item.
@@ -378,4 +376,5 @@ void OpenWithDialog::pact_rename()
 void OpenWithDialog::pact_remove()
 {
     //TODO
+    //TODO: Now do we want to show associated apps on top? And what does this 'Remove' is supposed to do?
 }

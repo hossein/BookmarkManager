@@ -141,7 +141,6 @@ void FileViewManager::OpenWith(const QString& filePathName, DatabaseManager* dbm
 {
     //Note that we do NOT use the dbm's dialogParent; as we need to make the parent of the
     //  OpenWithDialog the previous dialog which was open, NOT the MainWindow.
-    //TODO: Incomplete
     OpenWithDialog::OutParams outParams;
     OpenWithDialog openWithDlg(dbm, filePathName, &outParams, dialogParent);
 
