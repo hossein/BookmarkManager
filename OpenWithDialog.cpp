@@ -120,6 +120,8 @@ void OpenWithDialog::accept()
         QString browsedSystemAppPath =
                 QDir::toNativeSeparators(selItem->data(AppItemRole::Path).toString());
 
+        SAID = -1; //This is IMPORTANT for the operation of `AddOrEditSystemApp`.
+
         FileViewManager::SystemAppData sadata;
         sadata.SAID = SAID; //Not important.
         sadata.Name = selItem->data(AppItemRole::Name).toString();
