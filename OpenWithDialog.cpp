@@ -54,6 +54,7 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
     long long preferredSAID = dbm->fview.GetPreferredOpenApplication(m_fileName);
 
     //Add the program items
+    //Default item
     m_defaultProgramItem = new QListWidgetItem();
     setProgItemData(m_defaultProgramItem, SISAID_SystemDefaultItem, 0,
                     QPixmap(":/res/exec32.png"), "Default System Application", QString());
@@ -61,9 +62,18 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
     if (preferredSAID == -1)
         ui->lwProgs->setCurrentItem(m_defaultProgramItem);
 
-    int index = 1; //index 0 was the system default item.
+    //Program items
+    //First sort using QMap
+    QMap<QString, long long> sortMap;
     foreach (const FileViewManager::SystemAppData& sa, dbm->fview.systemApps)
+        sortMap.insert(sa.Name.toLower(), sa.SAID);
+
+    //Then display them
+    int index = 1; //index 0 was the system default item.
+    foreach (long long appSAID, sortMap.values())
     {
+        const FileViewManager::SystemAppData& sa = dbm->fview.systemApps[appSAID];
+
         QListWidgetItem* item = new QListWidgetItem();
         setProgItemData(item, sa.SAID, index++, sa.LargeIcon, sa.Name, sa.Path);
         ui->lwProgs->addItem(item);
@@ -231,21 +241,7 @@ void OpenWithDialog::setProgItemData(QListWidgetItem* item, long long SAID, int 
     item->setData(AppItemRole::Path, path);
     item->setData(AppItemRole::Index, index); //Used for alternating colorizing by AppListItemDelegate.
 }
-/*
-void OpenWithDialog::lwProgsShowAllNonBrowsedItems()
-{
-    for (int row = 0; row < ui->lwProgs->count(); row++)
-        ui->lwProgs->item(row)->setHidden(true);
-    m_browsedProgramItem->setHidden(false);
-}
 
-void OpenWithDialog::lwProgsShowOnlyBrowsedItem()
-{
-    for (int row = 0; row < ui->lwProgs->count(); row++)
-        ui->lwProgs->item(row)->setHidden(false);
-    m_browsedProgramItem->setHidden(true);
-}
-*/
 int OpenWithDialog::filterItemsRoleAndSelectFirst(int role, const QString& str)
 {
     int numFound = 0;
