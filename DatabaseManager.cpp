@@ -24,15 +24,18 @@ DatabaseManager::~DatabaseManager()
 
 bool DatabaseManager::BackupOpenOrCreate(const QString& fileName)
 {
+    bool success;
     if (QFileInfo(fileName).exists())
-        return BackupOpenDatabase(fileName);
+        success = BackupOpenDatabase(fileName);
     else
-        return CreateDatabase(fileName);
+        success = CreateDatabase(fileName);
 
     bms.setSqlDatabase(db);
     files.setSqlDatabase(db);
     fview.setSqlDatabase(db);
     tags.setSqlDatabase(db);
+
+    return success;
 }
 
 void DatabaseManager::Close()
@@ -58,6 +61,10 @@ bool DatabaseManager::BackupOpenDatabase(const QString& fileName)
     db.setDatabaseName(fileName);
     if (!db.open())
         return Error("Could not open the database file:\n" + fileName, db.lastError());
+
+    //Need to enable this manually.
+    if (!EnableForeignKeysSupport())
+        return false;
 
     if (!CheckVersion())
         return false;
@@ -100,6 +107,12 @@ bool DatabaseManager::CreateDatabase(const QString& fileName)
     if (!db.open())
         return Error("Could not create the database file:\n" + fileName, db.lastError());
 
+    //Before creating the tables, try to query and enable foreign key support. This is useful to
+    //  warn the user about non-existent foreign-keys support before parsing the FOREIGN key statements
+    //  in tables fail.
+    if (!EnableForeignKeysSupport())
+        return false;
+
     QSqlQuery query(db);
 
     query.exec("CREATE TABLE Info( Version INTEGER )");
@@ -111,6 +124,60 @@ bool DatabaseManager::CreateDatabase(const QString& fileName)
     tags.CreateTables();
 
     return true;
+}
+
+bool DatabaseManager::EnableForeignKeysSupport()
+{
+    //http://www.sqlite.org/foreignkeys.html
+    //Foreign key support in SQLite 3 is either disabled using a directive, or anyway is disabled
+    //  by default.
+    //We should query the state using 'PRAGMA foreign_keys;': if it returns no data, foreign keys
+    //  aren't supported. If it returns 0, we enable them with another PRAGMA. If it returns 1, it
+    //  is already enabled (maybe at a future SQLite version).
+
+    //This is just an assertion.
+    if (!db.open())
+        return Error("To enable foreign key support in SQLite first open the databse connection.");
+
+    QSqlQuery query(db);
+    if (!query.exec("PRAGMA foreign_keys;"))
+        return Error("Error while querying foreign key support on SQLite database.", query.lastError());
+
+    if (!query.first())
+        return Error("Foreign keys are not supported! SQLite version used is too old.");
+
+    qDebug() << "^^^" << query.value(0);
+
+    int foreignKeyEnabled = query.value(0).toInt();
+    if (foreignKeyEnabled == 0)
+    {
+        //Enable it
+        if (!query.exec("PRAGMA foreign_keys = ON;"))
+            return Error("Could not enable foreign key support in SQLite!", query.lastError());
+
+        //Check again to make sure.
+        QString checkError = "Error while checking the enabling of foreign key support in SQLite";
+        if (!query.exec("PRAGMA foreign_keys;"))
+            return Error(checkError + ".", query.lastError());
+        if (!query.first())
+            return Error(checkError + ":\n\nNo results were returned.");
+        qDebug() << "vvv" << query.value(0);
+        if (query.value(0).toInt() != 1)
+            return Error(checkError + ":\n\nForeign key support was not enabled as expected. "
+                         "Returned result was: " + query.value(0).toString() + ".");
+        return true;
+    }
+    else if (foreignKeyEnabled == 1)
+    {
+        //Already enabled
+        return true;
+    }
+    else
+    {
+        //Unknown value
+        return Error("Unknown result of foreign key support query in SQLite: " +
+                     QString::number(foreignKeyEnabled) + ".");
+    }
 }
 
 bool DatabaseManager::CheckVersion()
