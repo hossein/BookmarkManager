@@ -323,6 +323,53 @@ bool FileViewManager::AddOrEditSystemApp(long long& SAID, FileViewManager::Syste
     return true;
 }
 
+bool FileViewManager::DeleteSystemAppAndPreferrenceAndAssociations(long long SAID)
+{
+    //<OLD>
+    //In the style of Object-Relational databases that SUPPORT Foreign-Keys, remove the related
+    //  data first. We don't use SQLite's Foreign-Keys and CASCADEs.
+    //<NEW>
+    //We do use these features now to do things without transactions.
+
+    ///Start transaction
+    ///QString deleteSystemAppError =
+    ///        "Could not start transaction to delete the application from database";
+    ///
+    ///if (!db.transaction())
+    ///    return Error(deleteSystemAppError, db.lastError());
+
+    ///Delete from SystemApp
+    ///deleteSystemAppError =
+    ///        "Could not remove associated programs information for file extension from the database.";
+
+    QString deleteSystemAppError = "Could not remove program from database.";
+
+    QSqlQuery query(db);
+    query.prepare("DELETE FROM SystemApp WHERE SAID = ?");
+    query.addBindValue(SAID);
+
+    //We are using foreign keys that CASCADE on delete, so executing that query also removes the
+    //  entries from ExtAssoc and ExtOpenWith tables. Removing from ExtAssoc table simply removes
+    //  the program from the associated, 'bold' programs for that extension. Removing from
+    //  ExtOpenWith table causes the preferred application to become system default (-1).
+    if (!query.exec())
+        return Error(deleteSystemAppError, query.lastError());
+
+    //We are [RESPONSIBLE] for updating the internal tables, all three of them.
+    systemApps.remove(SAID);
+
+    for (auto it = associatedOpenPrograms.begin(); it != associatedOpenPrograms.end(); ++it)
+        it.value().removeAll(SAID);
+
+    for (auto it = preferredOpenProgram.begin(); it != preferredOpenProgram.end(); )
+        if (it.value().SAID == SAID)
+            it = preferredOpenProgram.erase(it);
+        else
+            ++it;
+
+    return true;
+}
+
 QList<long long> FileViewManager::GetAssociatedOpenApplications(const QString& fileName)
 {
     QString lowerSuffix = QFileInfo(fileName).suffix().toLower();
@@ -386,6 +433,15 @@ bool FileViewManager::UnAssociateApplicationWithExtension(const QString& fileNam
     return true;
 }
 
+QList<QString> FileViewManager::GetExtensionsWithWhichApplicationIsAssociated(long long SAID)
+{
+    QList<QString> extensionList;
+    for (auto it = associatedOpenPrograms.constBegin(); it != associatedOpenPrograms.constEnd(); ++it)
+        if (it.value().contains(SAID))
+            extensionList.append(it.key());
+    return extensionList;
+}
+
 long long FileViewManager::GetPreferredOpenApplication(const QString& fileName)
 {
     QString lowerSuffix = QFileInfo(fileName).suffix().toLower();
@@ -432,6 +488,15 @@ bool FileViewManager::SetPreferredOpenApplication(const QString& fileName, long 
     return true;
 }
 
+QList<QString> FileViewManager::GetExtensionsForWhichApplicationIsPreffered(long long SAID)
+{
+    QList<QString> extensionList;
+    for (auto it = preferredOpenProgram.constBegin(); it != preferredOpenProgram.constEnd(); ++it)
+        if (it.value().SAID == SAID)
+            extensionList.append(it.key());
+    return extensionList;
+}
+
 void FileViewManager::CreateTables()
 {
     //IMPORTANT:
@@ -461,11 +526,15 @@ void FileViewManager::CreateTables()
 
     //Extension Association Table: programs that were recently used to open that extension.
     query.exec("CREATE TABLE ExtAssoc"
-               "( EAID INTEGER PRIMARY KEY AUTOINCREMENT, LExtension TEXT, SAID INTEGER )");
+               "( EAID INTEGER PRIMARY KEY AUTOINCREMENT, LExtension TEXT, SAID INTEGER, "
+               "  FOREIGN KEY(SAID) REFERENCES SystemApp(SAID) ON DELETE CASCADE "
+               ")");
 
     //Extension Open With Table: User prefers to open an extension with System Default or an app.
     query.exec("CREATE TABLE ExtOpenWith"
-               "( EOWID INTEGER PRIMARY KEY AUTOINCREMENT, LExtension TEXT, SAID INTEGER )");
+               "( EOWID INTEGER PRIMARY KEY AUTOINCREMENT, LExtension TEXT, SAID INTEGER, "
+               "  FOREIGN KEY(SAID) REFERENCES SystemApp(SAID) ON DELETE CASCADE "
+               ")");
 }
 
 void FileViewManager::PopulateModels()

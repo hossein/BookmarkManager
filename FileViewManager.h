@@ -108,6 +108,13 @@ public:
     /// SAID can only be -1 for adding, not anything else.
     bool AddOrEditSystemApp(long long& SAID, SystemAppData& sadata);
 
+    /// <OLD>
+    /// IMPORTANT: The following function uses a transaction itself and therefore MUST NOT be called
+    /// inside another transaction as SQLite 3 does NOT support nested transactions.
+    /// <NEW>
+    /// Now we use foreign keys and don't rely on transactions.
+    bool DeleteSystemAppAndPreferrenceAndAssociations(long long SAID);
+
     //ExtAssoc
     /// Only file extension will be verified. Returns an empty list if there isn't any association
     /// for the default program. TODO: What about the default '' extension?
@@ -120,6 +127,12 @@ public:
     /// Does nothing if the application is not already associated with the extension.
     bool UnAssociateApplicationWithExtension(const QString& fileName, long long associatedSAID);
 
+    /// Returns all extensions with which this SAID is associated. This function does NOT tolerate
+    /// -1 (sysdefault), -2, etc values and may return and extension list for them; HOWEVER unlike
+    /// `GetExtensionsForWhichApplicationIsPreffered` application logic does NOT put -1 in the list
+    /// of associated applications for any extension.
+    QList<QString> GetExtensionsWithWhichApplicationIsAssociated(long long SAID);
+
     //ExtOpenWith
     /// Only file extension will be verified.
     /// Returns -1 if either there isn't a preferred application or the user has explicitly
@@ -129,6 +142,10 @@ public:
 
     /// Setting to -1 doesn't remove the database entry or anything (as if it should, to save space).
     bool SetPreferredOpenApplication(const QString& fileName, long long preferredSAID);
+
+    /// Returns all extensions for which this SAID is preferred. This function does NOT tolerate
+    /// -1 (sysdefault), -2, etc values and may return and extension list for them.
+    QList<QString> GetExtensionsForWhichApplicationIsPreffered(long long SAID);
 
 protected:
     // ISubManager interface
