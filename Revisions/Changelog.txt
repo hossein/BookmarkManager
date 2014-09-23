@@ -33,3 +33,4 @@
 2014-09-21  32  Default system application and Preferred application implemented, OpenWithDialog 
                 has defapp & sandboxing support, OpenWith works initially.
 2014-09-22  30  Associated applications and sorted Open With menu implemented.
+2014-09-23  30  OpenWithDlg AppList sorting, Rename and unassociate implemented, bugfixes.

@@ -146,8 +146,6 @@ bool DatabaseManager::EnableForeignKeysSupport()
     if (!query.first())
         return Error("Foreign keys are not supported! SQLite version used is too old.");
 
-    qDebug() << "^^^" << query.value(0);
-
     int foreignKeyEnabled = query.value(0).toInt();
     if (foreignKeyEnabled == 0)
     {
@@ -161,7 +159,6 @@ bool DatabaseManager::EnableForeignKeysSupport()
             return Error(checkError + ".", query.lastError());
         if (!query.first())
             return Error(checkError + ":\n\nNo results were returned.");
-        qDebug() << "vvv" << query.value(0);
         if (query.value(0).toInt() != 1)
             return Error(checkError + ":\n\nForeign key support was not enabled as expected. "
                          "Returned result was: " + query.value(0).toString() + ".");

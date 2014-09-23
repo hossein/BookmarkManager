@@ -323,24 +323,10 @@ bool FileViewManager::AddOrEditSystemApp(long long& SAID, FileViewManager::Syste
     return true;
 }
 
-bool FileViewManager::DeleteSystemAppAndPreferrenceAndAssociations(long long SAID)
+bool FileViewManager::DeleteSystemAppAndAssociationsAndPreference(long long SAID)
 {
-    //<OLD>
-    //In the style of Object-Relational databases that SUPPORT Foreign-Keys, remove the related
-    //  data first. We don't use SQLite's Foreign-Keys and CASCADEs.
-    //<NEW>
-    //We do use these features now to do things without transactions.
-
-    ///Start transaction
-    ///QString deleteSystemAppError =
-    ///        "Could not start transaction to delete the application from database";
-    ///
-    ///if (!db.transaction())
-    ///    return Error(deleteSystemAppError, db.lastError());
-
-    ///Delete from SystemApp
-    ///deleteSystemAppError =
-    ///        "Could not remove associated programs information for file extension from the database.";
+    //We use SQLite foreign keys and CASCADING deletes to delete the data from SystemApp and all
+    //  tables which reference the SAID (i.e ExtAssoc and ExtOpenWith) without need to transactions.
 
     QString deleteSystemAppError = "Could not remove program from database.";
 

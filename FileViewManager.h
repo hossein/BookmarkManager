@@ -108,12 +108,8 @@ public:
     /// SAID can only be -1 for adding, not anything else.
     bool AddOrEditSystemApp(long long& SAID, SystemAppData& sadata);
 
-    /// <OLD>
-    /// IMPORTANT: The following function uses a transaction itself and therefore MUST NOT be called
-    /// inside another transaction as SQLite 3 does NOT support nested transactions.
-    /// <NEW>
-    /// Now we use foreign keys and don't rely on transactions.
-    bool DeleteSystemAppAndPreferrenceAndAssociations(long long SAID);
+    /// This function removes ALL Associated and Preferred data for this program too.
+    bool DeleteSystemAppAndAssociationsAndPreference(long long SAID);
 
     //ExtAssoc
     /// Only file extension will be verified. Returns an empty list if there isn't any association
