@@ -51,7 +51,8 @@ void AppListItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
     const int text2Top = text1Top + fontHeightPx;
     const int textLeft = rect.left() + SizeHintHeight;
 
-    painter->setFont(boldFont);
+    if (index.data(AppItemRole::Assoc).toBool())
+        painter->setFont(boldFont);
     painter->setPen(QPen(isSelected ? palette.highlightedText() : palette.text(), 1));
     QRect text1rect(textLeft, text1Top, 100000, fontHeightPx);
     painter->drawText(text1rect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, progName);

@@ -50,13 +50,14 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
     //Make the browse ("...") button small.
     ui->btnBrowse->setFixedWidth(20 + QFontMetrics(this->font()).width("..."));
 
-    //Get default app SAID
+    //Get preferred and associated apps SAIDs
     long long preferredSAID = dbm->fview.GetPreferredOpenApplication(m_fileName);
+    QList<long long> associatedSAIDs = dbm->fview.GetAssociatedOpenApplications(m_fileName);
 
     //Add the program items
     //Default item
     m_defaultProgramItem = new QListWidgetItem();
-    setProgItemData(m_defaultProgramItem, SISAID_SystemDefaultItem, 0,
+    setProgItemData(m_defaultProgramItem, SISAID_SystemDefaultItem, 0, true,
                     QPixmap(":/res/exec32.png"), "Default System Application", QString());
     ui->lwProgs->addItem(m_defaultProgramItem);
     if (preferredSAID == -1)
@@ -73,9 +74,10 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
     foreach (long long appSAID, sortMap.values())
     {
         const FileViewManager::SystemAppData& sa = dbm->fview.systemApps[appSAID];
+        bool isAssociated = associatedSAIDs.contains(appSAID);
 
         QListWidgetItem* item = new QListWidgetItem();
-        setProgItemData(item, sa.SAID, index++, sa.LargeIcon, sa.Name, sa.Path);
+        setProgItemData(item, sa.SAID, index++, isAssociated, sa.LargeIcon, sa.Name, sa.Path);
         ui->lwProgs->addItem(item);
 
         if (sa.SAID == preferredSAID)
@@ -229,7 +231,7 @@ bool OpenWithDialog::isSpecialItem(QListWidgetItem* item)
     return (item->data(AppItemRole::SAID).toLongLong() < 0);
 }
 
-void OpenWithDialog::setProgItemData(QListWidgetItem* item, long long SAID, int index,
+void OpenWithDialog::setProgItemData(QListWidgetItem* item, long long SAID, int index, bool associated,
                                      const QPixmap& pixmap, const QString& text, const QString& path)
 {
     item->setIcon(QIcon(pixmap));
@@ -240,6 +242,7 @@ void OpenWithDialog::setProgItemData(QListWidgetItem* item, long long SAID, int 
     item->setData(AppItemRole::SAID, SAID);
     item->setData(AppItemRole::Path, path);
     item->setData(AppItemRole::Index, index); //Used for alternating colorizing by AppListItemDelegate.
+    item->setData(AppItemRole::Assoc, associated); //We show associated (and special) programs bold.
 }
 
 int OpenWithDialog::filterItemsRoleAndSelectFirst(int role, const QString& str)
@@ -324,7 +327,7 @@ void OpenWithDialog::filter()
                 //New program, get its display name and icon and display it.
                 QString displayName = WinFunctions::GetProgramDisplayName(absoluteFilePath);
                 QPixmap largeIcon = WinFunctions::GetProgramLargeIcon(absoluteFilePath);
-                setProgItemData(m_browsedProgramItem, SISAID_BrowsedItem, 0,
+                setProgItemData(m_browsedProgramItem, SISAID_BrowsedItem, 0, true/*Show it BOLD*/,
                                 largeIcon, displayName, absoluteFilePath);
             }
             else

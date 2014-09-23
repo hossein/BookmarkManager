@@ -9,7 +9,8 @@ struct AppItemRole
         Name = Qt::DisplayRole,
         SAID = Qt::UserRole + 0,
         Path = Qt::UserRole + 1,
-        Index= Qt::UserRole + 2
+        Index= Qt::UserRole + 2,
+        Assoc= Qt::UserRole + 3
     };
 };
 

@@ -67,7 +67,7 @@ private slots:
     void on_lwProgs_customContextMenuRequested(const QPoint& pos);
 
     bool isSpecialItem(QListWidgetItem* item);
-    void setProgItemData(QListWidgetItem* item, long long SAID, int index,
+    void setProgItemData(QListWidgetItem* item, long long SAID, int index, bool associated,
                          const QPixmap& pixmap, const QString& text, const QString& path);
 
     int filterItemsRoleAndSelectFirst(int role, const QString& str);
