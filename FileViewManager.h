@@ -117,6 +117,9 @@ public:
     /// the database. Setting to -1 also returns true without modifying the db.
     bool AssociateApplicationWithExtension(const QString& fileName, long long associatedSAID);
 
+    /// Does nothing if the application is not already associated with the extension.
+    bool UnAssociateApplicationWithExtension(const QString& fileName, long long associatedSAID);
+
     //ExtOpenWith
     /// Only file extension will be verified.
     /// Returns -1 if either there isn't a preferred application or the user has explicitly

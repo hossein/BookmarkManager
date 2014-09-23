@@ -345,7 +345,7 @@ bool FileViewManager::AssociateApplicationWithExtension(const QString& fileName,
         return true; //Already associated.
 
     QString setAssociatedSAIDError =
-            "Could not alter extension associated programs information for file in the database.";
+            "Could not alter associated programs information for file extension in the database.";
 
     QSqlQuery query(db);
     query.prepare("INSERT INTO ExtAssoc (LExtension, SAID) VALUES (?, ?)");
@@ -359,6 +359,29 @@ bool FileViewManager::AssociateApplicationWithExtension(const QString& fileName,
     //We are [RESPONSIBLE] for updating the internal tables.
     //This always works since QHash returns a default-constructed QList when lowerSuffix doesn't exist.
     associatedOpenPrograms[lowerSuffix].append(associatedSAID);
+
+    return true;
+}
+
+bool FileViewManager::UnAssociateApplicationWithExtension(const QString& fileName,
+                                                          long long associatedSAID)
+{
+    QString lowerSuffix = QFileInfo(fileName).suffix().toLower();
+
+    QString unAssociateError =
+            "Could not remove associated programs information for file extension from the database.";
+
+    QSqlQuery query(db);
+    query.prepare("DELETE FROM ExtAssoc WHERE LExtension = ? AND SAID = ?");
+
+    query.addBindValue(lowerSuffix);
+    query.addBindValue(associatedSAID);
+
+    if (!query.exec())
+        return Error(unAssociateError, query.lastError());
+
+    //We are [RESPONSIBLE] for updating the internal tables.
+    associatedOpenPrograms[lowerSuffix].removeAll(associatedSAID);
 
     return true;
 }
