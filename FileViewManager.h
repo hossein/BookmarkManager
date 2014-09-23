@@ -105,6 +105,7 @@ public:
     void PopulateInternalTables();
 
     //SystemApp
+    /// SAID can only be -1 for adding, not anything else.
     bool AddOrEditSystemApp(long long& SAID, SystemAppData& sadata);
 
     //ExtAssoc

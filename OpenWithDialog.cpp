@@ -9,6 +9,7 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QFontMetrics>
+#include <QInputDialog>
 #include <QMenu>
 #include <QToolButton>
 
@@ -370,7 +371,24 @@ void OpenWithDialog::pact_browse()
 
 void OpenWithDialog::pact_rename()
 {
-    //TODO
+    //We can't reach here if there is no item selected, as the 'Rename' menu would be disabled.
+    QListWidgetItem* selItem = ui->lwProgs->selectedItems()[0];
+    long long SAID = selItem->data(AppItemRole::SAID).toLongLong();
+
+    FileViewManager::SystemAppData& sadata = dbm->fview.systemApps[SAID];
+    bool ok;
+    QString newName = QInputDialog::getText(
+                        this, "Rename Application", "Enter the new name for the application:",
+                        QLineEdit::Normal, sadata.Name, &ok);
+
+    if (!ok)
+        return;
+
+    sadata.Name = newName;
+    bool success = dbm->fview.AddOrEditSystemApp(SAID, sadata);
+
+    if (success)
+        selItem->setData(AppItemRole::Name, newName);
 }
 
 void OpenWithDialog::pact_remove()
