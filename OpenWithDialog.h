@@ -38,6 +38,8 @@ private:
     OutParams* outParams;
 
     QToolButton* m_optionsButton;
+    QList<QAction*> m_unassocActions;
+
     QListWidgetItem* m_defaultProgramItem;
     QListWidgetItem* m_browsedProgramItem;
 
@@ -79,4 +81,5 @@ private slots:
     void pact_browse();
     void pact_rename();
     void pact_remove();
+    void pact_unassociate();
 };

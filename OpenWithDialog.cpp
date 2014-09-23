@@ -35,6 +35,14 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
     optionsMenu->addAction("Rena&me",           this, SLOT(pact_rename()), QKS("F2"));
     optionsMenu->addAction("Remo&ve From List", this, SLOT(pact_remove()), QKS("Del"));
 
+    QAction* act;
+    act = optionsMenu->addSeparator();
+    act->setVisible(false);
+    m_unassocActions.append(act);
+    act = optionsMenu->addAction("Do&n't Show in Open With Menu", this, SLOT(pact_unassociate()));
+    act->setVisible(false);
+    m_unassocActions.append(act);
+
     m_optionsButton = new QToolButton(this);
     m_optionsButton->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
     m_optionsButton->setText("&Options");
@@ -184,7 +192,15 @@ void OpenWithDialog::on_lwProgs_itemSelectionChanged()
     bool isSpecial = (hasSelected ? isSpecialItem(ui->lwProgs->selectedItems()[0]) : false);
 
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(hasSelected);
-    m_optionsButton->setEnabled(hasSelected && !isSpecial);
+
+    bool isNormalProgramItem = hasSelected && !isSpecial;
+    m_optionsButton->setEnabled(isNormalProgramItem);
+    if (isNormalProgramItem)
+    {
+        bool assoc = ui->lwProgs->selectedItems()[0]->data(AppItemRole::Assoc).toBool();
+        foreach (QAction* act, m_unassocActions)
+            act->setVisible(assoc);
+    }
 }
 
 void OpenWithDialog::on_lwProgs_itemActivated(QListWidgetItem* item)
@@ -215,6 +231,13 @@ void OpenWithDialog::on_lwProgs_customContextMenuRequested(const QPoint& pos)
     {
         optionsMenu.addAction("Rena&me",           this, SLOT(pact_rename()), QKS("F2"));
         optionsMenu.addAction("Remo&ve From List", this, SLOT(pact_remove()), QKS("Del"));
+
+        const bool isAssociated = ui->lwProgs->selectedItems()[0]->data(AppItemRole::Assoc).toBool();
+        if (isAssociated)
+        {
+            optionsMenu.addSeparator();
+            optionsMenu.addAction("Do&n't Show in Open With Menu", this, SLOT(pact_unassociate()));
+        }
     }
 
     QPoint menuPos = ui->lwProgs->viewport()->mapToGlobal(pos);
@@ -407,4 +430,18 @@ void OpenWithDialog::pact_remove()
 {
     //TODO
     //TODO: Now do we want to show associated apps on top? And what does this 'Remove' is supposed to do?
+}
+
+void OpenWithDialog::pact_unassociate()
+{
+    //We can't reach here if there is no item selected, as the 'Don't Show...' menu would be disabled.
+    QListWidgetItem* selItem = ui->lwProgs->selectedItems()[0];
+    long long SAID = selItem->data(AppItemRole::SAID).toLongLong();
+
+    bool success = dbm->fview.UnAssociateApplicationWithExtension(m_fileName, SAID);
+
+    //Note that we do NOT sort the applications again afterwards; the newly un-associated item
+    //  remains in its place, but with a non-bold font.
+    if (success)
+        selItem->setData(AppItemRole::Assoc, false);
 }
