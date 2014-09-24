@@ -20,7 +20,7 @@ bool TagManager::RetrieveBookmarkTags(long long BID, QStringList& tagsList)
     if (!query.exec())
         return Error(retrieveError, query.lastError());
 
-    int indexOfTagName = query.record().indexOf("TagName");
+    const int indexOfTagName = query.record().indexOf("TagName");
     while (query.next())
         tagsList.append(query.value(indexOfTagName).toString());
 
@@ -42,8 +42,9 @@ bool TagManager::SetBookmarkTags(long long BID, const QStringList& tagsList,
     if (!query.exec())
         return Error(setTagsError, query.lastError());
 
-    int indexOfBTID = query.record().indexOf("BTID");
-    int indexOfTagName = query.record().indexOf("TagName");
+    const QSqlRecord record = query.record();
+    const int indexOfBTID = record.indexOf("BTID");
+    const int indexOfTagName = record.indexOf("TagName");
     while (query.next())
     {
         QString tagNameInDB = query.value(indexOfTagName).toString();

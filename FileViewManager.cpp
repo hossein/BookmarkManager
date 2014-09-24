@@ -223,7 +223,7 @@ void FileViewManager::PopulateInternalTables()
     while (query.next())
     {
         SystemAppData sa;
-        QSqlRecord record = query.record();
+        const QSqlRecord record = query.record();
         sa.SAID      = record.value("SAID").toLongLong();
         sa.Name      = record.value("Name").toString();
         sa.Path      = record.value("Path").toString();
@@ -246,7 +246,7 @@ void FileViewManager::PopulateInternalTables()
     associatedOpenPrograms.clear();
     while (query.next())
     {
-        QSqlRecord record = query.record();
+        const QSqlRecord record = query.record();
         QString lowerSuffix = record.value("LExtension").toString();
         long long associatedSAID = record.value("SAID").toLongLong();
         //This always works since QHash returns a default-constructed QList when value at lowerSuffix
@@ -267,7 +267,7 @@ void FileViewManager::PopulateInternalTables()
     preferredOpenProgram.clear();
     while (query.next())
     {
-        QSqlRecord record = query.record();
+        const QSqlRecord record = query.record();
         long long EOWID = record.value("EOWID").toLongLong();
         QString lowerSuffix = record.value("LExtension").toString();
         long long preferredSAID = record.value("SAID").toLongLong();

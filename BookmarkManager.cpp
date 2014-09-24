@@ -22,14 +22,14 @@ bool BookmarkManager::RetrieveBookmark(long long BID, BookmarkManager::BookmarkD
     if (!query.first()) //Simply no results where returned.
         return Error(retrieveError + "\nThe selected bookmark was not found.");
 
-    //NOTE: These consecutive `.record()`s must be assigned to one var.
-    bdata.BID      = query.record().value("BID"     ).toLongLong();
-    bdata.Name     = query.record().value("Name"    ).toString();
-    bdata.URL      = query.record().value("URL"     ).toString();
-    bdata.Desc     = query.record().value("Desc"    ).toString();
-    bdata.DefBFID  = query.record().value("DefBFID" ).toLongLong();
-    bdata.Rating   = query.record().value("Rating"  ).toInt();
-    bdata.AddDate  = query.record().value("AddDate" ).toLongLong();
+    const QSqlRecord record = query.record();
+    bdata.BID      = record.value("BID"     ).toLongLong();
+    bdata.Name     = record.value("Name"    ).toString();
+    bdata.URL      = record.value("URL"     ).toString();
+    bdata.Desc     = record.value("Desc"    ).toString();
+    bdata.DefBFID  = record.value("DefBFID" ).toLongLong();
+    bdata.Rating   = record.value("Rating"  ).toInt();
+    bdata.AddDate  = record.value("AddDate" ).toLongLong();
 
     return true;
 }
