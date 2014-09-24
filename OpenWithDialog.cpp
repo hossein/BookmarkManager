@@ -188,19 +188,22 @@ void OpenWithDialog::on_btnBrowse_clicked()
 
 void OpenWithDialog::on_lwProgs_itemSelectionChanged()
 {
-    //TODO: Prevent preferred application from being removed from the list of assoc and write reason here.
-    bool hasSelected = !ui->lwProgs->selectedItems().isEmpty();
-    bool isSpecial = (hasSelected ? isSpecialItem(ui->lwProgs->selectedItems()[0]) : false);
+    const bool hasSelected = !ui->lwProgs->selectedItems().isEmpty();
+    const bool isSpecial = (hasSelected ? isSpecialItem(ui->lwProgs->selectedItems()[0]) : false);
 
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(hasSelected);
 
-    bool isNormalProgramItem = hasSelected && !isSpecial;
+    const bool isNormalProgramItem = hasSelected && !isSpecial;
     m_optionsButton->setEnabled(isNormalProgramItem);
     if (isNormalProgramItem)
     {
-        bool assoc = ui->lwProgs->selectedItems()[0]->data(AppItemRole::Assoc).toBool();
+        //[Prevent Un-associating the preferred item in the UI]. This has no bad effect to the logic,
+        //  just if we allow un-associating the preferred item it won't show in the Open With menu.
+        //  (although we do show it bold and underlined in our item delegate).
+        const bool assoc = ui->lwProgs->selectedItems()[0]->data(AppItemRole::Assoc).toBool();
+        const bool pref = ui->lwProgs->selectedItems()[0]->data(AppItemRole::Pref).toBool();
         foreach (QAction* act, m_unassocActions)
-            act->setVisible(assoc);
+            act->setVisible(assoc && !pref);
     }
 }
 
@@ -233,8 +236,10 @@ void OpenWithDialog::on_lwProgs_customContextMenuRequested(const QPoint& pos)
         optionsMenu.addAction("Rena&me",           this, SLOT(pact_rename()), QKS("F2"));
         optionsMenu.addAction("Remo&ve From List", this, SLOT(pact_remove()), QKS("Del"));
 
+        //[Prevent Un-associating the preferred item in the UI]
         const bool isAssociated = ui->lwProgs->selectedItems()[0]->data(AppItemRole::Assoc).toBool();
-        if (isAssociated)
+        const bool isPreferred = ui->lwProgs->selectedItems()[0]->data(AppItemRole::Pref).toBool();
+        if (isAssociated && !isPreferred)
         {
             optionsMenu.addSeparator();
             optionsMenu.addAction("Do&n't Show in Open With Menu", this, SLOT(pact_unassociate()));
