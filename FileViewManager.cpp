@@ -12,6 +12,7 @@
 #include <QFileInfo>
 
 #include <QMenu>
+#include <QHBoxLayout>
 
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
@@ -127,6 +128,30 @@ void FileViewManager::Preview(const QString& filePathName, FilePreviewerWidget* 
         return;
 
     fpw->PreviewFileUsingPreviewHandler(filePathName, fph);
+}
+
+void FileViewManager::PreviewStandalone(const QString& filePathName, QWidget* dialogParent)
+{
+    QDialog* fpdialog = new QDialog(dialogParent);
+    fpdialog->setWindowTitle(QString("Preview '%1'").arg(QFileInfo(filePathName).fileName()));
+    fpdialog->setContentsMargins(0, 0, 0, 0);
+    fpdialog->resize(640, 480);
+
+    //Maximize button would be more useful than a Help button on this dialog, e.g to view big pictures.
+    Qt::WindowFlags flags = fpdialog->windowFlags();
+    flags &= ~Qt::WindowContextHelpButtonHint;
+    flags |= Qt::WindowMaximizeButtonHint;
+    fpdialog->setWindowFlags(flags);
+
+    QHBoxLayout* hlay = new QHBoxLayout(fpdialog);
+    hlay->setContentsMargins(0, 0, 0, 0);
+    fpdialog->setLayout(hlay);
+
+    FilePreviewerWidget* fpw = new FilePreviewerWidget(fpdialog);
+    hlay->addWidget(fpw, 1);
+
+    Preview(filePathName, fpw);
+    fpdialog->exec();
 }
 
 void FileViewManager::OpenReadOnly(const QString& filePathName, FileManager* files)

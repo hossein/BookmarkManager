@@ -76,7 +76,7 @@
 ///                       How-to-programmatically-use-the-Recycle-Bin
 ///   - Zoom in/out, real size, fit size, rotate cw/ccw buttons for image viewer, support dragging
 ///     and wheel zooming.
-///   - Encoding selector for text viewer. Font selection option and wheel zooming.
+///   - Encoding and word-wrap selector for text viewer. Font selection option and wheel zooming.
 ///   - Changing icons of SystemApps. Especially useful for batch files and console programs.
 ///   - Choose which browser to open the URL with as a drop-down menu in BMViewDlg.
 

@@ -59,6 +59,7 @@ public:
     /// (as this class is an ISubManager itself and doesn't have access to FileManager to resolve
     ///  the :archive: URL into an absolute path).
     void Preview(const QString& filePathName, FilePreviewerWidget* fpw);
+    void PreviewStandalone(const QString& filePathName, QWidget* dialogParent); //Convenience Function
     void OpenReadOnly(const QString& filePathName, FileManager* files);
     void OpenEditable(const QString& filePathName, FileManager* files);
     void OpenWith(const QString& filePathName, DatabaseManager* dbm, QWidget* dialogParent);
