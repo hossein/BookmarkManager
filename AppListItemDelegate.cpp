@@ -44,6 +44,9 @@ void AppListItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
     QFont boldFont(option.font);
     boldFont.setBold(true);
 
+    QFont boldUnderlinedFont(boldFont);
+    boldUnderlinedFont.setUnderline(true);
+
     QFontMetrics fm(boldFont);
     const int fontHeightPx = fm.height();
     const int topPos = (SizeHintHeight - 2 * fontHeightPx) / 2;
@@ -51,8 +54,17 @@ void AppListItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
     const int text2Top = text1Top + fontHeightPx;
     const int textLeft = rect.left() + SizeHintHeight;
 
-    if (index.data(AppItemRole::Assoc).toBool())
+    bool isAssociated = index.data(AppItemRole::Assoc).toBool();
+    bool isPreferred = index.data(AppItemRole::Pref).toBool();
+    //We don't let user un-associate a preferred app in the UI, but anyway we can check with the
+    //  following condition:
+    //if (isAssociated || isPreferred)
+    //... Or with this exact order:
+    if (isAssociated)
         painter->setFont(boldFont);
+    if (isPreferred)
+        painter->setFont(boldUnderlinedFont);
+
     painter->setPen(QPen(isSelected ? palette.highlightedText() : palette.text(), 1));
     QRect text1rect(textLeft, text1Top, 100000, fontHeightPx);
     painter->drawText(text1rect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, progName);

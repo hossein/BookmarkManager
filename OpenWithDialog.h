@@ -71,7 +71,8 @@ private slots:
     bool isSpecialItem(QListWidgetItem* item);
     void AddProgramItems(const QList<long long>& SAIDs, long long preferredSAID,
                          bool isAssociated, int& index);
-    void SetProgItemData(QListWidgetItem* item, long long SAID, int index, bool associated,
+    void SetProgItemData(QListWidgetItem* item, long long SAID,
+                         int index, bool associated, bool preferred,
                          const QPixmap& pixmap, const QString& text, const QString& path);
 
     int filterItemsRoleAndSelectFirst(int role, const QString& str);
