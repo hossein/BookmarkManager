@@ -211,7 +211,7 @@ void FileViewManager::PopulateInternalTables()
     /// System Applications Table /////////////////////////////////////////////////////////////////
     QString retrieveError = "Could not get programs information from the database.";
     QSqlQuery query(db);
-    query.prepare("SELECT * FROM SystemApp");
+    query.prepare("SELECT * FROM SystemApp WHERE SAID >= 0");
 
     if (!query.exec())
     {
@@ -509,6 +509,12 @@ void FileViewManager::CreateTables()
     query.exec("CREATE TABLE SystemApp"
                "( SAID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Path TEXT, "
                "  SmallIcon BLOB, LargeIcon BLOB )");
+
+    //Note: After supporting foreign keys, we get error if we want to set a Preferred app to -1
+    //  in ExtOpenWith table, because there is no application with SAID=-1 in SystemApp.
+    //  We simply insert dummy -1 in SystemApp table such that this constraint is not violated.
+    //  The more correct solution is NOT to store -1's in the DB at all.
+    query.exec("INSERT INTO SystemApp(SAID) VALUES (-1)");
 
     //Extension Association Table: programs that were recently used to open that extension.
     query.exec("CREATE TABLE ExtAssoc"
