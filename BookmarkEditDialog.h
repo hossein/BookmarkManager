@@ -41,6 +41,10 @@ public:
 public:
     bool canShow();
 
+private:
+    /// Validation before acception.
+    bool validate();
+
 public slots:
     void accept();
 private slots:

@@ -16,8 +16,6 @@
 //      remaining. We achieve this by not keeping a editedDefBFID and instead having a bool field
 //      editedFilesList.
 
-//TODO: Don't allow empty name.
-
 BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId,
                                        OutParams* outParams, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm),
@@ -82,8 +80,23 @@ bool BookmarkEditDialog::canShow()
     return canShowTheDialog;
 }
 
+bool BookmarkEditDialog::validate()
+{
+    if (ui->leName->text().trimmed().length() == 0)
+    {
+        QMessageBox::warning(this, "Validation Error",
+                             "Please enter a non-blank name for the bookmark.");
+        return false;
+    }
+
+    return true;
+}
+
 void BookmarkEditDialog::accept()
 {
+    if (!validate())
+        return;
+
     //Choose a default file ourselves if user hasn't made a choice.
     if (editedFilesList.size() > 0 && DefaultFileIndex() == -1)
     {
