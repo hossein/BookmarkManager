@@ -517,7 +517,8 @@ void OpenWithDialog::pact_remove()
 
     if (myPrefSAID == SAID)
     {
-        //TODO m_defaultProgramItem->setdata(pref, true);
+        m_defaultProgramItem->setData(AppItemRole::Pref, true);
+
         //IMPORTANT: Only select it if visible, i.e not filtered; otherwise I expected that we end up
         //  with no selection visible and the 'Options' and 'OK' buttons enabled, but we really end up
         //  with the first item in the filtered list selected, so we deselect everything manually.
@@ -525,6 +526,11 @@ void OpenWithDialog::pact_remove()
             ui->lwProgs->setCurrentItem(m_defaultProgramItem);
         else
             ui->lwProgs->setCurrentIndex(QModelIndex());
+    }
+    else
+    {
+        //Clear selection on removing the preferred app, generally.
+        ui->lwProgs->setCurrentIndex(QModelIndex());
     }
 }
 
