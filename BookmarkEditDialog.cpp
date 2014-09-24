@@ -16,6 +16,8 @@
 //      remaining. We achieve this by not keeping a editedDefBFID and instead having a bool field
 //      editedFilesList.
 
+//TODO: Don't allow empty name.
+
 BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId,
                                        OutParams* outParams, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm),
