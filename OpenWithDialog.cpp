@@ -26,6 +26,9 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
 
     //Don't enable until user selects something.
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+    //Btw we have a 'Close' button instead of a 'Cancel' button, because we can make modifications
+    //  in the OpenWithDialog to the application list and then Close it and have all the saves changed.
+    //  'Cancel' is not a good name in this scenario.
 
 //TODO: These QAction shortcuts WORK NOWHERE!
 
