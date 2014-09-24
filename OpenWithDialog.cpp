@@ -188,6 +188,7 @@ void OpenWithDialog::on_btnBrowse_clicked()
 
 void OpenWithDialog::on_lwProgs_itemSelectionChanged()
 {
+    //TODO: Prevent preferred application from being removed from the list of assoc and write reason here.
     bool hasSelected = !ui->lwProgs->selectedItems().isEmpty();
     bool isSpecial = (hasSelected ? isSpecialItem(ui->lwProgs->selectedItems()[0]) : false);
 
@@ -406,6 +407,8 @@ void OpenWithDialog::pact_browse()
 
 void OpenWithDialog::pact_rename()
 {
+    //TODO: Seems there is a NULL byte at the end of the prog names. Try putting sth after them.
+
     //We can't reach here if there is no item selected, as the 'Rename' menu would be disabled.
     QListWidgetItem* selItem = ui->lwProgs->selectedItems()[0];
     long long SAID = selItem->data(AppItemRole::SAID).toLongLong();
@@ -428,8 +431,97 @@ void OpenWithDialog::pact_rename()
 
 void OpenWithDialog::pact_remove()
 {
-    //TODO
-    //TODO: Now do we want to show associated apps on top? And what does this 'Remove' is supposed to do?
+    QListWidgetItem* selItem = ui->lwProgs->selectedItems()[0];
+    long long SAID = selItem->data(AppItemRole::SAID).toLongLong();
+    QString appName = selItem->data(AppItemRole::Name).toString();
+
+    int result = QMessageBox::question(
+                this, "Remove Application From List",
+                QString("Remove '%1' from list of commonly used applications?").arg(appName),
+                QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+
+    if (result != QMessageBox::Yes)
+        return;
+
+    QList<long long> myAssocSAIDs = dbm->fview.GetAssociatedOpenApplications(m_fileName);
+    long long myPrefSAID = dbm->fview.GetPreferredOpenApplication(m_fileName);
+
+    QStringList assocExts = dbm->fview.GetExtensionsWithWhichApplicationIsAssociated(SAID);
+    QStringList prefExts = dbm->fview.GetExtensionsForWhichApplicationIsPreffered(SAID);
+
+    QString alreadyAssocPrefError;
+
+    const bool associatedWithMyFileType = myAssocSAIDs.contains(SAID);
+    if (associatedWithMyFileType && assocExts.size() == 1)
+    {
+        //Only associated with this app. Don't warn the user.
+    }
+    else if (assocExts.size() > 0)
+    {
+        QString includingThisFileType = associatedWithMyFileType ? " (including this file type)" : "";
+        alreadyAssocPrefError +=
+            QString("The program '%1' is commonly used to open the following file types%2:\n%3\n\n")
+            .arg(appName, includingThisFileType, assocExts.join(" "));
+    }
+
+    if (prefExts.size() > 0)
+    {
+        //Only preferred to open the current file type.
+        if (alreadyAssocPrefError.length() == 0)
+            alreadyAssocPrefError += QString("The program '%1' ").arg(appName);
+        else
+            alreadyAssocPrefError += "In addition, it ";
+
+        alreadyAssocPrefError += "is used as the preferred application to open ";
+
+        if (myPrefSAID == SAID && prefExts.size() == 1)
+        {
+            //Only preferred for current file type.
+            alreadyAssocPrefError += "the current file type.\n";
+        }
+        else
+        {
+            QString includingThisFileType = (myPrefSAID == SAID) ? " (including this file type)" : "";
+            alreadyAssocPrefError +=
+                QString("the following file types%1:\n%2\n")
+                .arg(includingThisFileType, prefExts.join(" "));
+        }
+
+        alreadyAssocPrefError += "If you remove it from this list, the file types that open with it "
+                            "will default to opening with the default system application.\n\n";
+    }
+
+    if (alreadyAssocPrefError.length() > 0)
+    {
+        alreadyAssocPrefError += "Are you sure you want to delete it from the list?";
+
+        int result = QMessageBox::question(
+                    this, "Remove Application From List", alreadyAssocPrefError,
+                    QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+
+        if (result != QMessageBox::Yes)
+            return;
+    }
+
+    //Finally user chose to delete the program.
+    dbm->fview.DeleteSystemAppAndAssociationsAndPreference(SAID);
+
+    //Now remove the selItem too, AND: if it was the preferred application set the System Default
+    //  item as the preferred thing (this is what the DeleteSystemApp... function does), and select
+    //  it for more emphasis too. Otherwise the selection is just cleared.
+    delete selItem;
+
+    if (myPrefSAID == SAID)
+    {
+        //TODO m_defaultProgramItem->setdata(pref, true);
+        //IMPORTANT: Only select it if visible, i.e not filtered; otherwise I expected that we end up
+        //  with no selection visible and the 'Options' and 'OK' buttons enabled, but we really end up
+        //  with the first item in the filtered list selected, so we deselect everything manually.
+        if (!m_defaultProgramItem->isHidden())
+            ui->lwProgs->setCurrentItem(m_defaultProgramItem);
+        else
+            ui->lwProgs->setCurrentIndex(QModelIndex());
+    }
 }
 
 void OpenWithDialog::pact_unassociate()

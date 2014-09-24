@@ -128,6 +128,9 @@ bool DatabaseManager::CreateDatabase(const QString& fileName)
 
 bool DatabaseManager::EnableForeignKeysSupport()
 {
+    //TODO: ADD RESTRICT things for on delete on ALL tables.
+    //  We don't need UPDATEing cascades, no one updates the PKs.
+
     //http://www.sqlite.org/foreignkeys.html
     //Foreign key support in SQLite 3 is either disabled using a directive, or anyway is disabled
     //  by default.
