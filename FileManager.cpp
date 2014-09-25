@@ -5,9 +5,11 @@
 #include "WinFunctions.h"
 #include "Util.h"
 
+//TODO: Remove these includes later. ALSO remove util, winfuncs, conf, etc if not needed later.
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
 #include <QtSql/QSqlResult>
@@ -174,7 +176,8 @@ bool FileManager::RetrieveBookmarkFiles(long long BID, QList<FileManager::Bookma
 bool FileManager::UpdateBookmarkFiles(long long BID,
                                       const QList<BookmarkFile>& originalBookmarkFiles,
                                       const QList<BookmarkFile>& editedBookmarkFiles,
-                                      QList<long long>& editedBFIDs)
+                                      QList<long long>& editedBFIDs,
+                                      const QString& fileArchiveNameForNewFiles)
 {
     QSqlQuery query(db);
 
@@ -220,7 +223,7 @@ bool FileManager::UpdateBookmarkFiles(long long BID,
         //Insert new files into our FileArchive.
         if (bf.FID)
         {
-            if (!AddFile(bf))
+            if (!AddFile(bf, fileArchiveNameForNewFiles))
                 return false;
         }
 
@@ -315,10 +318,11 @@ bool FileManager::UpdateFile(long long FID, const FileManager::BookmarkFile& bf)
     return true;
 }
 
-bool FileManager::AddFile(FileManager::BookmarkFile& bf)
+bool FileManager::AddFile(FileManager::BookmarkFile& bf, const QString& fileArchiveName)
 {
     //Add file to our FileArchive directory and also set the `bf.ArchiveURL` field.
     bool addFileToArchiveSuccess =
+            fileArchives[fileArchiveName]->
             AddFileToArchive(bf.OriginalName, bf.Ex_RemoveAfterAttach, bf.ArchiveURL);
 
     if (!addFileToArchiveSuccess)
@@ -347,56 +351,6 @@ bool FileManager::AddFile(FileManager::BookmarkFile& bf)
 
     long long addedFID = query.lastInsertId().toLongLong();
     bf.FID = addedFID;
-
-    return true;
-}
-
-bool FileManager::AddFileToArchive(const QString& filePathName, bool removeOriginalFile,
-                                   QString& fileArchiveURL)
-{
-    //Check if file is valid.
-    QFileInfo fi(filePathName);
-    if (!fi.exists())
-        return Error("The selected file \"" + filePathName + "\" does not exist!");
-    else if (!fi.isFile())
-        return Error("The path \"" + filePathName + "\" does not point to a valid file!");
-
-    //Decide where should the file be copied.
-    fileArchiveURL = CalculateFileArchiveURL(filePathName);
-    QString targetFilePathName = GetFullArchivePathForFile(fileArchiveURL, conf->nominalFileArchiveDirName);
-
-    //Create its directory if doesn't exist.
-    QString targetFileDir = QFileInfo(targetFilePathName).absolutePath();
-    QFileInfo tdi(targetFileDir);
-    if (!tdi.exists())
-    {
-        //Can NOT use `canonicalFilePath`, since the directory still doesn't exist, it will just
-        //  return an empty string.
-        if (!filesTransaction.MakePath(".", tdi.absoluteFilePath()))
-            return Error("Could not create the directory for placing the attached file."
-                         "\n\nDirectory: " + tdi.absoluteFilePath());
-    }
-    else if (!tdi.isDir())
-    {
-        return Error("The path for placing the attached file is not a directory!"
-                     "\n\nDirectory: " + tdi.absoluteFilePath());
-    }
-
-    //Copy the file.
-    bool success = filesTransaction.CopyFile(filePathName, targetFilePathName);
-    if (!success)
-        return Error(QString("Could not copy the source file to destination directory!"
-                             "\n\nSource File: %1\nDestination File: %2")
-                             .arg(filePathName, targetFilePathName));
-
-    //Remove the original file.
-    if (removeOriginalFile)
-    {
-        success = filesTransaction.SystemTrashFile(filePathName);
-        //We do NOT return FALSE in case of failure.
-        Error(QString("Could not delete the original file from your filesystem. "
-                      "You should manually delete it yourself.\n\nFile: %1").arg(filePathName));
-    };
 
     return true;
 }
@@ -503,43 +457,6 @@ void FileManager::SetBookmarkFileIndexes(const QSqlRecord& record)
     bfidx.ModifyDate   = record.indexOf("ModifyDate"  );
     bfidx.Size         = record.indexOf("Size"        );
     bfidx.MD5          = record.indexOf("MD5"         );
-}
-
-QString FileManager::CalculateFileArchiveURL(const QString& fileFullPathName)
-{
-    QFileInfo fi(fileFullPathName);
-
-    int fileNameHash = FileNameHash(fi.fileName());
-    fileNameHash = fileNameHash % 16;
-
-    //Prefix the randomHash with the already calculated fileNameHash.
-    QString prefix = QString::number(fileNameHash, 16).toUpper();
-    QString fileDir = fi.absolutePath();
-    QString randomHash =
-            Util::NonExistentRandomFileNameInDirectory(fileDir, 7, prefix, "." + fi.suffix());
-
-    //Use `prefix` again to put files in different directories.
-    QString fileArchiveURL = prefix + "/" + randomHash;
-    return fileArchiveURL;
-}
-
-QString FileManager::GetFullArchivePathForFile(const QString& fileArchiveURL,
-                                            const QString& archiveFolderName)
-{
-    QString path = QDir::currentPath() + "/" + archiveFolderName + "/" + fileArchiveURL;
-    return path;
-}
-
-int FileManager::FileNameHash(const QString& fileNameOnly)
-{
-    //For now just calculates the utf-8 sum of all bytes.
-    QByteArray utf8 = fileNameOnly.toUtf8();
-    int sum = 0;
-
-    for (int i = 0; i < utf8.size(); i++)
-        sum += utf8[i];
-
-    return sum;
 }
 
 bool FileManager::RemoveDirectoryRecursively(const QString& dirPathName, bool removeParentDir)

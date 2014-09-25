@@ -92,7 +92,8 @@ public:
     bool UpdateBookmarkFiles(long long BID,
                              const QList<BookmarkFile>& originalBookmarkFiles,
                              const QList<BookmarkFile>& editedBookmarkFiles,
-                             QList<long long>& editedBFIDs);
+                             QList<long long>& editedBFIDs,
+                             const QString& fileArchiveNameForNewFiles);
 
     /// This function gets and returns ABSOLUTE path names, NOT ArchiveURLs. This can change though!
     /// Returns empty QString on error. [Why we don't delete file after app]
@@ -103,12 +104,12 @@ private:
     bool AddBookmarkFile(long long BID, long long FID, long long& addedBFID);
     /// Merely updates OriginalName, ModifyDate, Size and MD5.
     /// `bf.FID` WILL BE DISREGARDED! The `FID` argument will be used to determine the file.
+    /// This functions can not be used to change ArchiveURL of BookmarkFiles to move files to
+    /// other archives
     bool UpdateFile(long long FID, const BookmarkFile& bf);
     /// Adds the file into the FileArchive folder and Updates the "FID" and "ArchiveURL" fields.
-    bool AddFile(BookmarkFile& bf);
-    /// Only to be called by `AddFile`.
-    bool AddFileToArchive(const QString& filePathName, bool removeOriginalFile,
-                          QString& fileArchiveURL);
+    /// Make sure 'fileArchiveName` exists before calling this function.
+    bool AddFile(BookmarkFile& bf, const QString& fileArchiveName);
 
     //Removing bookmarks
     /// This function will clean-up the no-more-used files automatically by calling "RemoveFile"
@@ -125,16 +126,6 @@ private:
     void SetBookmarkFileIndexes(const QSqlRecord& record);
 
     //Files in file archive handling
-    /// Could be called `CreateFileArchiveURL` too.
-    /// Note: This only happens ONCE, and later if file name in archive, or any other property
-    ///       that is used to calculate the hash or anyhting in the FileArchive changes, the file
-    ///       remains in the folder that it always was and doesn't change location.
-    ///       Also, remaining the file extension does NOT change the extension that is used with
-    ///       the file in the FileArchive.
-    QString CalculateFileArchiveURL(const QString& fileFullPathName);
-    QString GetFullArchivePathForFile(const QString& fileArchiveURL, const QString& archiveFolderName);
-    int FileNameHash(const QString& fileNameOnly);
-
     bool RemoveDirectoryRecursively(const QString& dirPathName, bool removeParentDir = true);
 
 private:

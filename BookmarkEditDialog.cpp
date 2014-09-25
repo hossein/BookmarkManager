@@ -142,7 +142,7 @@ void BookmarkEditDialog::accept()
         QList<long long> updatedBFIDs;
         success = dbm->files.UpdateBookmarkFiles(editBId,
                                                  editOriginalBData.Ex_FilesList, editedFilesList,
-                                                 updatedBFIDs);
+                                                 updatedBFIDs, ":archive:"); //TODO: Temporary :archive: passing.
         if (!success)
             return DoRollBackAction();
 
