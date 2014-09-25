@@ -78,9 +78,19 @@ bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool remo
     return true;
 }
 
-bool FileArchiveManager::RemoveFileFromArchive(const QString& fileArchiveURL)
+bool FileArchiveManager::RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash)
 {
-    if (!filesTransaction.RenameFile(fullFilePathName, fullTrashPathName))
+    bool success;
+    QString fileOperationError = "Unable to remove a file from the FileArchive.";
+
+    QString fullFilePathName = GetFullArchivePathForRelativeURL(fileRelArchiveURL);
+
+    if (trash)
+        success = filesTransaction->SystemTrashFile(fullFilePathName);
+    else
+        success = filesTransaction->DeleteFile(fullFilePathName);
+
+    if (!success)
         return Error(fileOperationError + QString("\n\nFile Name: ") + fullFilePathName);
 
     return true;

@@ -23,7 +23,7 @@ public:
     /// A Files Transaction MUST have been started before calling Add/Remove functions. And TODO: Check this.
     bool AddFileToArchive(const QString& filePathName, bool removeOriginalFile,
                           QString& fileArchiveURL);
-    bool RemoveFileFromArchive(const QString& fileArchiveURL);
+    bool RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash);
 
 private:
     /// Could be called `CreateFileArchiveURL` too.

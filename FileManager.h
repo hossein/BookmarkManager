@@ -119,7 +119,7 @@ private:
     bool RemoveFile(long long FID);
     /// Only to be called by `RemoveFile`.
     /// UPDATE: TODO: Changed usage now.
-    bool RemoveFileFromArchive(const QString& fileArchiveURL);
+    bool RemoveFileFromArchive(const QString& fileArchiveURL, bool trash);
 
     /// Moving files to trash, and opening files in sandboxed mode are done with the Move/Copy
     /// functions below.

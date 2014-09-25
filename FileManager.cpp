@@ -85,6 +85,9 @@ QString FileManager::GetFullArchiveFilePath(const QString& fileArchiveURL)
             return fileArchives[famName]->GetFullArchivePathForRelativeURL(relativeFileURLToArchive);
         }
     }
+
+    //TODO: If not fonnd return what? or do the error handling where?
+    return QString();
 }
 
 QString FileManager::GetFileNameOnlyFromOriginalNameField(const QString& originalName)
@@ -408,6 +411,7 @@ bool FileManager::RemoveBookmarkFile(long long BFID, long long FID)
 
 bool FileManager::RemoveFile(long long FID)
 {
+    /**
     QString removeFileError = "Unable To remove an old file information from database.";
     QSqlQuery query(db);
 
@@ -437,9 +441,13 @@ bool FileManager::RemoveFile(long long FID)
         return false;
 
     return true;
+    **/
+
+    //TODO: Set an error prefix or re-design some aspects?
+    return MoveFile(FID, conf->fileTrashPrefix);
 }
 
-bool FileManager::RemoveFileFromArchive(const QString& fileArchiveURL)
+bool FileManager::RemoveFileFromArchive(const QString& fileArchiveURL, bool trash)
 {
     /**
     QString fileOperationError = "Unable to remove a file from the FileArchive.";
@@ -457,13 +465,14 @@ bool FileManager::RemoveFileFromArchive(const QString& fileArchiveURL)
     return true;
     **/
 
-    QString originalFileArchiveName = GetArchiveNameOfFile(originalFileArchiveURL);
+    QString originalFileArchiveName = GetArchiveNameOfFile(fileArchiveURL);
     if (!fileArchives.keys().contains(originalFileArchiveName))
         return Error(QString("The source file archive '%1' does not exist!")
                      .arg(originalFileArchiveName));
 
     QString relativeFileURLToArchive = fileArchiveURL.mid(originalFileArchiveName.length() + 1);
-    return fileArchives[originalFileArchiveName]->RemoveFileFromArchive(relativeFileURLToArchive);
+    return fileArchives[originalFileArchiveName]->
+            RemoveFileFromArchive(relativeFileURLToArchive, trash);
 }
 
 bool FileManager::MoveFile(long long FID, const QString& destinationArchiveName)
@@ -502,7 +511,7 @@ bool FileManager::MoveFile(long long FID, const QString& destinationArchiveName)
         return false;
 
     //Remove the file from the old file archive.
-    success = RemoveFileFromArchive(fileArchiveURL);
+    success = RemoveFileFromArchive(fileArchiveURL, false);
     if (!success)
         return false;
 
@@ -518,7 +527,8 @@ bool FileManager::MoveFile(long long FID, const QString& destinationArchiveName)
 
 bool FileManager::CopyFile(long long FID, const QString& destinationArchiveName)
 {
-
+    //TODO
+    return true;
 }
 
 QString FileManager::StandardIndexedBookmarkFileByBIDQuery() const
@@ -540,7 +550,7 @@ void FileManager::SetBookmarkFileIndexes(const QSqlRecord& record)
     bfidx.MD5          = record.indexOf("MD5"         );
 }
 
-bool FileManager::GetArchiveNameOfFile(const QString& fileArchiveURL)
+QString FileManager::GetArchiveNameOfFile(const QString& fileArchiveURL)
 {
     int indexOfSlash = fileArchiveURL.indexOf('/');
     if (indexOfSlash == -1)
