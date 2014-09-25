@@ -2,10 +2,12 @@
 #include "ISubManager.h"
 #include "TransactionalFileOperator.h"
 
+#include <QHash>
 #include <QDateTime>
 #include <QtSql/QSqlQueryModel>
 
 class DatabaseManager;
+class FileArchiveManager;
 
 class FileManager : public ISubManager
 {
@@ -45,6 +47,9 @@ public:
         bool Ex_RemoveAfterAttach;
     };
 
+private:
+    /// This must map LOWER-CASE archive names with ':' colons to the corresponding class.
+    QHash<QString, FileArchiveManager*> fileArchives;
     TransactionalFileOperator filesTransaction;
 
 public:

@@ -5,6 +5,7 @@
 
 class TransactionalFileOperator;
 
+/// This class is also known as FAM.
 class FileArchiveManager : public IManager
 {
 private:

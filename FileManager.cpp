@@ -1,6 +1,7 @@
 #include "FileManager.h"
 
 #include "Config.h"
+#include "FileArchiveManager.h"
 #include "WinFunctions.h"
 #include "Util.h"
 
@@ -14,10 +15,17 @@
 FileManager::FileManager(QWidget* dialogParent, Config* conf)
     : ISubManager(dialogParent, conf)
 {
+    //TODO: Temporary
+    FileArchiveManager* fam = new FileArchiveManager(
+                dialogParent, conf, ":archive:",
+                QDir::currentPath() + "/" + conf->nominalFileArchiveDirName, &filesTransaction);
+    fileArchives[":archive:"] = fam;
 }
 
 FileManager::~FileManager()
 {
+    foreach (FileArchiveManager* fam, fileArchives)
+        delete fam;
 }
 
 bool FileManager::InitializeFilesDirectory()
