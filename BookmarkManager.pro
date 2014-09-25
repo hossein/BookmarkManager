@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     PreviewHandlers/ImagePreviewHandler.cpp \
     PreviewHandlers/TextPreviewHandler.cpp \
     OpenWithDialog.cpp \
-    AppListItemDelegate.cpp
+    AppListItemDelegate.cpp \
+    FileArchiveManager.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -58,7 +59,8 @@ HEADERS  += MainWindow.h \
     PreviewHandlers/ImagePreviewHandler.h \
     PreviewHandlers/TextPreviewHandler.h \
     OpenWithDialog.h \
-    AppListItemDelegate.h
+    AppListItemDelegate.h \
+    FileArchiveManager.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \
