@@ -16,7 +16,10 @@ protected:
     ISubManager(QWidget* dialogParent, Config* conf)
         : IManager(dialogParent, conf)
     {
+    }
 
+    virtual ~ISubManager()
+    {
     }
 
     virtual void CreateTables() = 0;

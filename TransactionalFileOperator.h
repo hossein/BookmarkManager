@@ -31,6 +31,8 @@ private:
     bool fileTransactionStarted;
     QList<FileOp> fileOps;
 
+    //TODO: Return error in all functions if transaction is not started.
+
 public:
     TransactionalFileOperator();
 

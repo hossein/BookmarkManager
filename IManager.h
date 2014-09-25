@@ -7,8 +7,10 @@ class Config;
 class QWidget;
 
 /// Interface for a class that manages something in the program.
-/// Used only for Database Manager, our main manager.
-/// An IManager MUST NOT begin or end transactions in the database.
+/// Used only for Database Manager, our main manager, and for FileArchiveManager that has nothing
+///     to do with databases and doesn't have models, tables, etc.
+/// An IManager MUST NOT begin or end transactions in the database (TransactionalFileOperations
+///     are okay).
 class IManager
 {
 protected:
@@ -19,7 +21,10 @@ protected:
     IManager(QWidget* dialogParent, Config* conf)
         : dialogParent(dialogParent), conf(conf)
     {
+    }
 
+    virtual ~IManager()
+    {
     }
 
     bool Error(const QString& errorText)

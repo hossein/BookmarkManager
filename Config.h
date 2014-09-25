@@ -49,10 +49,10 @@
 ///   - "Delete" moves the bookmarks or archivefiles to a "Trash", never deletes them!
 ///   - Search
 ///   - Import Firefox bookmarks (by both browsing the json file and selecting profile!)
-///   - Extension Association Edit Dialog: For each extension, show the list of Open With (but not
+///   x Extension Association Edit Dialog: For each extension, show the list of Open With (but not
 ///     the system default Open dialog, because we want to be system-independent and not use
 ///     Windows' registry CLASSES, etc) and let user (only!) Remove the apps he needs. Also a
-///     dialog for the global programs that are used for every extension.
+///     dialog for the global programs that are used for every extension. Done in OpenWithDialog.
 ///
 /// LATER:
 ///   - Changes to Edit/Add UI for editing tags with mouse only
@@ -79,6 +79,7 @@
 ///   - Encoding and word-wrap selector for text viewer. Font selection option and wheel zooming.
 ///   - Changing icons of SystemApps. Especially useful for batch files and console programs.
 ///   - Choose which browser to open the URL with as a drop-down menu in BMViewDlg.
+///   - A way to choose Global programs that appear in Open With menu of all file extensions.
 
 class Config
 {
