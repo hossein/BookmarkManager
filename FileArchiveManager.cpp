@@ -8,17 +8,14 @@
 #include <QFile>
 #include <QFileInfo>
 
-//NOTE: In the process of FileArchiveManager'izing, the key phrases to search for are
+//NOTE: In the process of I/FileArchiveManager'izing, the key phrases to search for are
 //      the `conf->nominal/prefix` and `QDir::current` thingies.
 FileArchiveManager::FileArchiveManager(QWidget* dialogParent, Config* conf,
                                        const QString& archiveName, const QString& archiveRoot,
                                        TransactionalFileOperator* filesTransaction)
-    : IManager(dialogParent, conf), m_archiveName(archiveName), m_archiveRoot(archiveRoot)
-    , filesTransaction(filesTransaction)
+    : IArchiveManager(dialogParent, conf, archiveName, archiveRoot, filesTransaction)
 {
-    //TODO: If archive folder doesn't exist, must create it here, not anywhere else.
 
-    m_archiveRoot = QDir(m_archiveRoot).absolutePath(); //Mainly to remove '/' from the end.
 }
 
 FileArchiveManager::~FileArchiveManager()
@@ -131,5 +128,3 @@ QString FileArchiveManager::GetFullArchivePathForRelativeURL(const QString& file
     QString path = m_archiveRoot + "/" + fileArchiveURL;
     return path;
 }
-
-

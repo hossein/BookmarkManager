@@ -60,7 +60,8 @@ HEADERS  += MainWindow.h \
     PreviewHandlers/TextPreviewHandler.h \
     OpenWithDialog.h \
     AppListItemDelegate.h \
-    FileArchiveManager.h
+    FileArchiveManager.h \
+    IArchiveManager.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \

@@ -1,19 +1,13 @@
 #pragma once
-#include "IManager.h"
+#include "IArchiveManager.h"
 
 #include <QString>
 
 class TransactionalFileOperator;
 
 /// This class is also known as FAM.
-class FileArchiveManager : public IManager
+class FileArchiveManager : public IArchiveManager
 {
-private:
-    /// My archive name with ':' colons at beginning and end.
-    QString m_archiveName;
-    QString m_archiveRoot;
-    TransactionalFileOperator* filesTransaction;
-
 public:
     FileArchiveManager(QWidget* dialogParent, Config* conf,
                        const QString& archiveName, const QString& archiveRoot,
@@ -36,8 +30,6 @@ private:
     int FileNameHash(const QString& fileNameOnly);
 
 public:
-    /// We MUST always use FAM to get full file paths instead of manually appending the relative URL
-    /// to the FAM root path; as some FAMs might use their own strategies to store file paths.
     QString GetFullArchivePathForRelativeURL(const QString& fileArchiveURL);
 
 };

@@ -7,9 +7,9 @@ class Config;
 class QWidget;
 
 /// Interface for a class that manages something in the program.
-/// Used only for Database Manager, our main manager, and for FileArchiveManager that has nothing
+/// Used only for Database Manager, our main manager, and for IArchiveManager that has nothing
 ///     to do with databases and doesn't have models, tables, etc.
-/// An IManager MUST NOT begin or end transactions in the database (as for FileArchiveManager,
+/// An IManager MUST NOT begin or end transactions in the database (as for IArchiveManager,
 ///     it must not begin or end TransactionalFileOperations transactions neither).
 class IManager
 {

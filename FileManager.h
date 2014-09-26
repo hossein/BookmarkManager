@@ -7,7 +7,7 @@
 #include <QtSql/QSqlQueryModel>
 
 class DatabaseManager;
-class FileArchiveManager;
+class IArchiveManager;
 
 class FileManager : public ISubManager
 {
@@ -49,7 +49,7 @@ public:
 
 private:
     /// This must map LOWER-CASE archive names with ':' colons to the corresponding class.
-    QHash<QString, FileArchiveManager*> fileArchives;
+    QHash<QString, IArchiveManager*> fileArchives;
     TransactionalFileOperator filesTransaction;
 
 public:
@@ -118,7 +118,7 @@ private:
     /// Removes a file from database and the FileArchive folder.
     bool TrashFile(long long FID);
 
-    /// A convenience function that calls the appropriate FAM's 'RemoveFileFromArchive' function.
+    /// A convenience function that calls the appropriate ArchiveMan's 'RemoveFileFromArchive' function.
     /// A File Transaction MUST HAVE BEEN STARTED before using this function.
     bool RemoveFileFromArchive(const QString& fileArchiveURL, bool trash);
 
