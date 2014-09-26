@@ -116,9 +116,10 @@ private:
     /// for FIDs who are not in use by any other bookmarks.
     bool RemoveBookmarkFile(long long BFID, long long FID);
     /// Removes a file from database and the FileArchive folder.
-    bool RemoveFile(long long FID);
-    /// Only to be called by `RemoveFile`.
-    /// UPDATE: TODO: Changed usage now.
+    bool TrashFile(long long FID);
+
+    /// A convenience function that calls the appropriate FAM's 'RemoveFileFromArchive' function.
+    /// A File Transaction MUST HAVE BEEN STARTED before using this function.
     bool RemoveFileFromArchive(const QString& fileArchiveURL, bool trash);
 
     /// Moving files to trash, and opening files in sandboxed mode are done with the Move/Copy

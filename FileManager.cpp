@@ -403,68 +403,20 @@ bool FileManager::RemoveBookmarkFile(long long BFID, long long FID)
     {
         //This shows no other bookmarks rely on this file!
         //Remove the file completely from db and the archive.
-        return RemoveFile(FID); //TODO: TrashFile
+        return TrashFile(FID); //TODO: TrashFile
     }
 
     return true;
 }
 
-bool FileManager::RemoveFile(long long FID)
+bool FileManager::TrashFile(long long FID)
 {
-    /**
-    QString removeFileError = "Unable To remove an old file information from database.";
-    QSqlQuery query(db);
-
-    //Get the required file names from the DB.
-    query.prepare("SELECT * FROM File WHERE FID = ?");
-    query.addBindValue(FID);
-    if (!query.exec())
-        return Error(removeFileError, query.lastError());
-
-    query.first();
-    //QString originalFileName = query.record().value("OriginalName");
-    QString fileArchiveURL = query.record().value("ArchiveURL").toString();
-
-    //Trash the file from the DB.
-    query.prepare("INSERT INTO FileTrash(FID, OriginalName, ArchiveURL, ModifyDate, Size, MD5) "
-                  "SELECT FID, OriginalName, ArchiveURL, ModifyDate, Size, MD5 FROM File WHERE FID = ?");
-    query.addBindValue(FID);
-    if (!query.exec())
-        return Error(removeFileError, query.lastError());
-
-    query.prepare("DELETE FROM File WHERE FID = ?");
-    query.addBindValue(FID);
-    if (!query.exec())
-        return Error(removeFileError, query.lastError());
-
-    if (!RemoveFileFromArchive(fileArchiveURL))
-        return false;
-
-    return true;
-    **/
-
     //TODO: Set an error prefix or re-design some aspects?
     return MoveFile(FID, conf->fileTrashPrefix);
 }
 
 bool FileManager::RemoveFileFromArchive(const QString& fileArchiveURL, bool trash)
 {
-    /**
-    QString fileOperationError = "Unable to remove a file from the FileArchive.";
-
-    QString fullFilePathName = GetFullArchivePathForFile(fileArchiveURL, conf->nominalFileArchiveDirName);
-    QString fullTrashPathName = GetFullArchivePathForFile(fileArchiveURL, conf->nominalFileTrashDirName);
-
-    QString fullTrashPath = QFileInfo(fullTrashPathName).absolutePath();
-    if (!QDir::current().mkpath(fullTrashPath))
-        return Error(fileOperationError + QString("\n\nFile Name: ") + fullFilePathName);
-
-    if (!filesTransaction.RenameFile(fullFilePathName, fullTrashPathName))
-        return Error(fileOperationError + QString("\n\nFile Name: ") + fullFilePathName);
-
-    return true;
-    **/
-
     QString originalFileArchiveName = GetArchiveNameOfFile(fileArchiveURL);
     if (!fileArchives.keys().contains(originalFileArchiveName))
         return Error(QString("The source file archive '%1' does not exist!")
