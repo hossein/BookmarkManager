@@ -20,9 +20,10 @@ public:
                        TransactionalFileOperator* filesTransaction);
     ~FileArchiveManager();
 
-    /// A Files Transaction MUST have been started before calling this function. And TODO: Check this.
+    /// A Files Transaction MUST have been started before calling Add/Remove functions. And TODO: Check this.
     bool AddFileToArchive(const QString& filePathName, bool removeOriginalFile,
                           QString& fileArchiveURL);
+    bool RemoveFileFromArchive(const QString& fileArchiveURL);
 
 private:
     /// Could be called `CreateFileArchiveURL` too.

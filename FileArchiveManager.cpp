@@ -9,7 +9,7 @@
 #include <QFileInfo>
 
 //NOTE: In the process of FileArchiveManager'izing, the key phrases to search for are
-//      the `conf->nominal` and `QDir::current` thingies.
+//      the `conf->nominal/prefix` and `QDir::current` thingies.
 FileArchiveManager::FileArchiveManager(QWidget* dialogParent, Config* conf,
                                        const QString& archiveName, const QString& archiveRoot,
                                        TransactionalFileOperator* filesTransaction)
@@ -74,6 +74,14 @@ bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool remo
         Error(QString("Could not delete the original file from your filesystem. "
                       "You should manually delete it yourself.\n\nFile: %1").arg(filePathName));
     };
+
+    return true;
+}
+
+bool FileArchiveManager::RemoveFileFromArchive(const QString& fileArchiveURL)
+{
+    if (!filesTransaction.RenameFile(fullFilePathName, fullTrashPathName))
+        return Error(fileOperationError + QString("\n\nFile Name: ") + fullFilePathName);
 
     return true;
 }

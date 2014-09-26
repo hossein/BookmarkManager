@@ -118,12 +118,27 @@ private:
     /// Removes a file from database and the FileArchive folder.
     bool RemoveFile(long long FID);
     /// Only to be called by `RemoveFile`.
+    /// UPDATE: TODO: Changed usage now.
     bool RemoveFileFromArchive(const QString& fileArchiveURL);
+
+    /// Moving files to trash, and opening files in sandboxed mode are done with the Move/Copy
+    /// functions below.
+    /// These two DO handle the Database too.
+    /// A File Transaction MUST HAVE BEEN STARTED before using these functions (well actually
+    /// we could do without transactions, but using TransactionalFileOperator is a requirement
+    /// of Updating the bookmark files in BMEditDialog so we must do it).
+    bool MoveFile(long long FID, const QString& destinationArchiveName);
+    bool CopyFile(long long FID, const QString& destinationArchiveName);
 
 private:
     //Standard queries
     QString StandardIndexedBookmarkFileByBIDQuery() const;
     void SetBookmarkFileIndexes(const QSqlRecord& record);
+
+    /// Which archive a file is in? Returns empty QString if the URL is wrong and doesn't
+    /// contain a valid archived file URL. Does NOT check to make sure the fileArchiveName
+    /// it returns exists or not.
+    QString GetArchiveNameOfFile(const QString& fileArchiveURL);
 
     //Files in file archive handling
     bool RemoveDirectoryRecursively(const QString& dirPathName, bool removeParentDir = true);

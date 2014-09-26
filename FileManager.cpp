@@ -19,9 +19,14 @@ FileManager::FileManager(QWidget* dialogParent, Config* conf)
 {
     //TODO: Temporary
     FileArchiveManager* fam = new FileArchiveManager(
-                dialogParent, conf, ":archive:",
+                dialogParent, conf, conf->fileArchivePrefix,
                 QDir::currentPath() + "/" + conf->nominalFileArchiveDirName, &filesTransaction);
-    fileArchives[":archive:"] = fam;
+    fileArchives[conf->fileArchivePrefix] = fam;
+
+    fam = new FileArchiveManager(
+                dialogParent, conf, conf->fileTrashPrefix,
+                QDir::currentPath() + "/" + conf->nominalFileTrashDirName, &filesTransaction);
+    fileArchives[conf->fileTrashPrefix] = fam;
 }
 
 FileManager::~FileManager()
@@ -383,7 +388,7 @@ bool FileManager::RemoveBookmarkFile(long long BFID, long long FID)
     if (!query.exec())
         return Error(attachedRemoveError, query.lastError());
 
-    //If file FID is not used by other bookmarks, remove the file altogether.
+    //If file FID is not used by other bookmarks (shared), remove the file altogether.
     QString attachedRemoveCheckForUseError =
             "Unable To clean-up after removing an old attached file from database.";
     query.prepare("SELECT * FROM BookmarkFile WHERE FID = ?");
@@ -395,7 +400,7 @@ bool FileManager::RemoveBookmarkFile(long long BFID, long long FID)
     {
         //This shows no other bookmarks rely on this file!
         //Remove the file completely from db and the archive.
-        return RemoveFile(FID);
+        return RemoveFile(FID); //TODO: TrashFile
     }
 
     return true;
@@ -436,6 +441,7 @@ bool FileManager::RemoveFile(long long FID)
 
 bool FileManager::RemoveFileFromArchive(const QString& fileArchiveURL)
 {
+    /**
     QString fileOperationError = "Unable to remove a file from the FileArchive.";
 
     QString fullFilePathName = GetFullArchivePathForFile(fileArchiveURL, conf->nominalFileArchiveDirName);
@@ -449,6 +455,70 @@ bool FileManager::RemoveFileFromArchive(const QString& fileArchiveURL)
         return Error(fileOperationError + QString("\n\nFile Name: ") + fullFilePathName);
 
     return true;
+    **/
+
+    QString originalFileArchiveName = GetArchiveNameOfFile(originalFileArchiveURL);
+    if (!fileArchives.keys().contains(originalFileArchiveName))
+        return Error(QString("The source file archive '%1' does not exist!")
+                     .arg(originalFileArchiveName));
+
+    QString relativeFileURLToArchive = fileArchiveURL.mid(originalFileArchiveName.length() + 1);
+    return fileArchives[originalFileArchiveName]->RemoveFileFromArchive(relativeFileURLToArchive);
+}
+
+bool FileManager::MoveFile(long long FID, const QString& destinationArchiveName)
+{
+    QString retrieveFileError = "Unable to retrieve file information from the database.";
+    QString moveFileError = "Unable to record file moving information in the database.";
+    QSqlQuery query(db);
+
+    //Get the required file names from the DB.
+    query.prepare("SELECT * FROM File WHERE FID = ?");
+    query.addBindValue(FID);
+    if (!query.exec())
+        return Error(retrieveFileError, query.lastError());
+
+    query.first();
+    QString fileArchiveURL = query.record().value("ArchiveURL").toString();
+
+    QString fullArchiveFilePath = GetFullArchiveFilePath(fileArchiveURL);
+    if (fullArchiveFilePath.isEmpty())
+        return Error(QString("Archive file \"%1\" is invalid and does not match a real file.")
+                     .arg(fileArchiveURL));
+
+    //Add the file to destinationArchiveName (e.g ':trash:').
+    //Note: We could just set the second parameter of `AddFileToArchive` to true to remove the
+    //  original file from the old archive. This is fine with the current implementation as
+    //  FAM doesn't store extra information about the files. However we do it in two-steps of
+    //  adding to new archive then removing from the old archive for more integrity, although
+    //  that way we didn't even needed to get `originalFileArchiveName`.
+    QString newFileArchiveURL;
+    //NOTE: The errors of the following (and many other calls here, incl. Remove) might not be evident to user,
+    //  maybe set a prefix or title like 'Error while trashing file/adding new bookmark file, etc'
+    //  string on the errors?
+    bool success = fileArchives[destinationArchiveName]->AddFileToArchive(
+                fullArchiveFilePath, false, newFileArchiveURL);
+    if (!success)
+        return false;
+
+    //Remove the file from the old file archive.
+    success = RemoveFileFromArchive(fileArchiveURL);
+    if (!success)
+        return false;
+
+    //Change the file archive name accordingly.
+    query.prepare("Update File SET ArchiveURL = ? WHERE FID = ?");
+    query.addBindValue(newFileArchiveURL);
+    query.addBindValue(FID);
+    if (!query.exec())
+        return Error(moveFileError, query.lastError());
+
+    return true;
+}
+
+bool FileManager::CopyFile(long long FID, const QString& destinationArchiveName)
+{
+
 }
 
 QString FileManager::StandardIndexedBookmarkFileByBIDQuery() const
@@ -468,6 +538,16 @@ void FileManager::SetBookmarkFileIndexes(const QSqlRecord& record)
     bfidx.ModifyDate   = record.indexOf("ModifyDate"  );
     bfidx.Size         = record.indexOf("Size"        );
     bfidx.MD5          = record.indexOf("MD5"         );
+}
+
+bool FileManager::GetArchiveNameOfFile(const QString& fileArchiveURL)
+{
+    int indexOfSlash = fileArchiveURL.indexOf('/');
+    if (indexOfSlash == -1)
+        return QString();
+
+    QString fileArchiveName = fileArchiveURL.left(indexOfSlash);
+    return fileArchiveName;
 }
 
 bool FileManager::RemoveDirectoryRecursively(const QString& dirPathName, bool removeParentDir)
