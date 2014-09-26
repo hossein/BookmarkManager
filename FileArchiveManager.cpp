@@ -38,7 +38,7 @@ bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool remo
 
     //Decide where should the file be copied.
     QString fileRelArchiveURL = CalculateFileArchiveURL(filePathName);
-    QString targetFilePathName = GetFullArchivePathForFile(fileRelArchiveURL);
+    QString targetFilePathName = GetFullArchivePathForRelativeURL(fileRelArchiveURL);
     //Out param
     fileArchiveURL = m_archiveName + "/" + fileRelArchiveURL;
 
@@ -96,12 +96,6 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
     return fileArchiveURL;
 }
 
-QString FileArchiveManager::GetFullArchivePathForFile(const QString& fileArchiveURL)
-{
-    QString path = m_archiveRoot + "/" + fileArchiveURL;
-    return path;
-}
-
 int FileArchiveManager::FileNameHash(const QString& fileNameOnly)
 {
     //For now just calculates the utf-8 sum of all bytes.
@@ -113,3 +107,11 @@ int FileArchiveManager::FileNameHash(const QString& fileNameOnly)
 
     return sum;
 }
+
+QString FileArchiveManager::GetFullArchivePathForRelativeURL(const QString& fileArchiveURL)
+{
+    QString path = m_archiveRoot + "/" + fileArchiveURL;
+    return path;
+}
+
+

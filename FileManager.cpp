@@ -68,7 +68,18 @@ QString FileManager::GetUserReadableArchiveFilePath(const QString& originalName)
 
 QString FileManager::GetFullArchiveFilePath(const QString& fileArchiveURL)
 {
-    return GetFullArchivePathForFile(fileArchiveURL, conf->nominalFileArchiveDirName);
+    //TODO: Need to test to make sure the URL is a valid colonized archive URL and that
+    //      the archive exists(user can change the DB, or simply can remove the archives?, errors may happen, etc)
+    //      , etc AND should we set these as requirements on this function?
+    foreach (const QString& famName, fileArchives.keys())
+    {
+        if (fileArchiveURL.left(famName.length()) == famName)
+        {
+            //Strip the ":arhiveName:/" part from the file url.
+            QString relativeFileURLToArchive = fileArchiveURL.mid(famName.length() + 1);
+            return fileArchives[famName]->GetFullArchivePathForRelativeURL(relativeFileURLToArchive);
+        }
+    }
 }
 
 QString FileManager::GetFileNameOnlyFromOriginalNameField(const QString& originalName)

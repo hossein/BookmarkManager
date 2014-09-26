@@ -32,6 +32,11 @@ private:
     ///       Also, remaining the file extension does NOT change the extension that is used with
     ///       the file in the FileArchive.
     QString CalculateFileArchiveURL(const QString& fileFullPathName);
-    QString GetFullArchivePathForFile(const QString& fileArchiveURL);
     int FileNameHash(const QString& fileNameOnly);
+
+public:
+    /// We MUST always use FAM to get full file paths instead of manually appending the relative URL
+    /// to the FAM root path; as some FAMs might use their own strategies to store file paths.
+    QString GetFullArchivePathForRelativeURL(const QString& fileArchiveURL);
+
 };
