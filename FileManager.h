@@ -116,20 +116,28 @@ private:
     /// for FIDs who are not in use by any other bookmarks.
     bool RemoveBookmarkFile(long long BFID, long long FID);
     /// Removes a file from database and the FileArchive folder.
+    /// A File Transaction MUST HAVE BEEN STARTED before calling this function.
     bool TrashFile(long long FID);
 
     /// A convenience function that calls the appropriate ArchiveMan's 'RemoveFileFromArchive' function.
-    /// A File Transaction MUST HAVE BEEN STARTED before using this function.
+    /// A File Transaction MUST HAVE BEEN STARTED before calling this function.
     bool RemoveFileFromArchive(const QString& fileArchiveURL, bool trash);
 
     /// Moving files to trash, and opening files in sandboxed mode are done with the Move/Copy
-    /// functions below.
-    /// These two DO handle the Database too.
-    /// A File Transaction MUST HAVE BEEN STARTED before using these functions (well actually
-    /// we could do without transactions, but using TransactionalFileOperator is a requirement
-    /// of Updating the bookmark files in BMEditDialog so we must do it).
-    bool MoveFile(long long FID, const QString& destinationArchiveName);
-    bool CopyFile(long long FID, const QString& destinationArchiveName);
+    ///   functions below.
+    /// These two do NOT handle the Database; work solely on physical files.
+    /// Do they need File Transaction? If the archive that they want to write to is an ArchiveMan
+    ///   that requires transactions, e.g FAM then yes, a File Transaction MUST HAVE BEEN STARTED
+    ///   before using these functions (well actually we could do without transactions, but using
+    ///   TransactionalFileOperator is a requirement of Updating the bookmark files in BMEditDialog
+    ///   so we must do it).
+    ///   If the ArchiveMan doesn't need transactions and we are simply copying, no transaction is
+    ///   required.
+    bool MoveFile(long long FID, const QString& destArchiveName, QString& newFileArchiveURL);
+    bool CopyFile(long long FID, const QString& destArchiveName, QString& newFileArchiveURL);
+    /// Auxiliary function used by the above functions.
+    bool MoveOrCopyAux(long long FID, const QString& destArchiveName, bool removeOriginal,
+                       QString& newFileArchiveURL);
 
 private:
     //Standard queries

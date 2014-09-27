@@ -411,8 +411,26 @@ bool FileManager::RemoveBookmarkFile(long long BFID, long long FID)
 
 bool FileManager::TrashFile(long long FID)
 {
+    //Note: Since we are in a files transaction, we think DB transaction is started, too;
+    //  although even without DB transaction this function would be okay.
+    QString trashFileError = "Unable to record file trashing information in the database.";
+    QSqlQuery query(db);
+
+    //First move the physical file
     //TODO: Set an error prefix or re-design some aspects?
-    return MoveFile(FID, conf->fileTrashPrefix);
+    QString newFileArchiveURL;
+    bool success = MoveFile(FID, conf->fileTrashPrefix, newFileArchiveURL);
+    if (!success)
+        return false;
+
+    //Now update DB to change the file archive name accordingly.
+    query.prepare("Update File SET ArchiveURL = ? WHERE FID = ?");
+    query.addBindValue(newFileArchiveURL);
+    query.addBindValue(FID);
+    if (!query.exec())
+        return Error(trashFileError, query.lastError());
+
+    return true;
 }
 
 bool FileManager::RemoveFileFromArchive(const QString& fileArchiveURL, bool trash)
@@ -427,10 +445,20 @@ bool FileManager::RemoveFileFromArchive(const QString& fileArchiveURL, bool tras
             RemoveFileFromArchive(relativeFileURLToArchive, trash);
 }
 
-bool FileManager::MoveFile(long long FID, const QString& destinationArchiveName)
+bool FileManager::MoveFile(long long FID, const QString& destArchiveName, QString& newFileArchiveURL)
+{
+    return MoveOrCopyAux(FID, destArchiveName, true, newFileArchiveURL);
+}
+
+bool FileManager::CopyFile(long long FID, const QString& destArchiveName, QString& newFileArchiveURL)
+{
+    return MoveOrCopyAux(FID, destArchiveName, false, newFileArchiveURL);
+}
+
+bool FileManager::MoveOrCopyAux(long long FID, const QString& destArchiveName,
+                                bool removeOriginal, QString& newFileArchiveURL)
 {
     QString retrieveFileError = "Unable to retrieve file information from the database.";
-    QString moveFileError = "Unable to record file moving information in the database.";
     QSqlQuery query(db);
 
     //Get the required file names from the DB.
@@ -447,39 +475,29 @@ bool FileManager::MoveFile(long long FID, const QString& destinationArchiveName)
         return Error(QString("Archive file \"%1\" is invalid and does not match a real file.")
                      .arg(fileArchiveURL));
 
-    //Add the file to destinationArchiveName (e.g ':trash:').
-    //Note: We could just set the second parameter of `AddFileToArchive` to true to remove the
+    //Add the file to destArchiveName (e.g ':trash:').
+    //NOTE: We could just set the second parameter of `AddFileToArchive` to true to remove the
     //  original file from the old archive. This is fine with the current implementation as
     //  ArchiveMans don't store extra information about the files. However we do it in two-steps of
     //  adding to new archive then removing from the old archive for more integrity, although
     //  that way we didn't even needed to get `originalFileArchiveName`.
-    QString newFileArchiveURL;
+
     //NOTE: The errors of the following (and many other calls here, incl. Remove) might not be evident to user,
     //  maybe set a prefix or title like 'Error while trashing file/adding new bookmark file, etc'
     //  string on the errors?
-    bool success = fileArchives[destinationArchiveName]->AddFileToArchive(
+    bool success = fileArchives[destArchiveName]->AddFileToArchive(
                 fullArchiveFilePath, false, newFileArchiveURL);
     if (!success)
         return false;
 
-    //Remove the file from the old file archive.
-    success = RemoveFileFromArchive(fileArchiveURL, false);
-    if (!success)
-        return false;
+    if (removeOriginal)
+    {
+        //Remove the file from the old file archive.
+        success = RemoveFileFromArchive(fileArchiveURL, false);
+        if (!success)
+            return false;
+    }
 
-    //Change the file archive name accordingly.
-    query.prepare("Update File SET ArchiveURL = ? WHERE FID = ?");
-    query.addBindValue(newFileArchiveURL);
-    query.addBindValue(FID);
-    if (!query.exec())
-        return Error(moveFileError, query.lastError());
-
-    return true;
-}
-
-bool FileManager::CopyFile(long long FID, const QString& destinationArchiveName)
-{
-    //TODO
     return true;
 }
 
