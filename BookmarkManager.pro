@@ -34,7 +34,8 @@ SOURCES += main.cpp\
     PreviewHandlers/TextPreviewHandler.cpp \
     OpenWithDialog.cpp \
     AppListItemDelegate.cpp \
-    FileArchiveManager.cpp
+    FileArchiveManager.cpp \
+    FileSandBoxManager.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -61,7 +62,8 @@ HEADERS  += MainWindow.h \
     OpenWithDialog.h \
     AppListItemDelegate.h \
     FileArchiveManager.h \
-    IArchiveManager.h
+    IArchiveManager.h \
+    FileSandBoxManager.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \
