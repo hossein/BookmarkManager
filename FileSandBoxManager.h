@@ -10,7 +10,7 @@ public:
     ~FileSandBoxManager();
 
     /// Doesn't require Files Transaction.
-    bool AddFileToArchive(const QString& filePathName, bool removeOriginalFile,
+    bool AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
                           QString& fileArchiveURL);
     bool RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash);
 

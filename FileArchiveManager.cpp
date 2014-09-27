@@ -22,7 +22,7 @@ FileArchiveManager::~FileArchiveManager()
 
 }
 
-bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool removeOriginalFile,
+bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
                                           QString& fileArchiveURL)
 {
     //Check if file is valid.
@@ -63,7 +63,7 @@ bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool remo
                              .arg(filePathName, targetFilePathName));
 
     //Remove the original file.
-    if (removeOriginalFile)
+    if (systemTrashOriginalFile)
     {
         success = filesTransaction->SystemTrashFile(filePathName);
         //We do NOT return FALSE in case of failure.

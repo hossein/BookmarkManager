@@ -11,7 +11,7 @@ public:
     ~FileArchiveManager();
 
     /// A Files Transaction MUST have been started before calling Add/Remove functions. And TODO: Check this.
-    bool AddFileToArchive(const QString& filePathName, bool removeOriginalFile,
+    bool AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
                           QString& fileArchiveURL);
     bool RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash);
 

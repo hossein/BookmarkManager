@@ -20,7 +20,7 @@ FileSandBoxManager::~FileSandBoxManager()
 
 }
 
-bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool removeOriginalFile,
+bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
                                           QString& fileArchiveURL)
 {
     QFileInfo originalfi(filePathName);
@@ -74,7 +74,7 @@ bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool remo
     fileArchiveURL = m_archiveName + "/" + originalfi.fileName();
 
     //Remove the original file.
-    if (removeOriginalFile)
+    if (systemTrashOriginalFile)
     {
         WinFunctions::MoveFileToRecycleBin(filePathName);
         //We do NOT return FALSE in case of failure.

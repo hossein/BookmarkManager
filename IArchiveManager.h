@@ -36,7 +36,7 @@ public:
 
     /// Note: Some derivates, e.g FAM, require that a Files Transaction MUST have been started
     /// before calling Add/Remove functions.
-    virtual bool AddFileToArchive(const QString& filePathName, bool removeOriginalFile,
+    virtual bool AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
                                   QString& fileArchiveURL) = 0;
     virtual bool RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash) = 0;
 
