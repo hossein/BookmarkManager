@@ -149,8 +149,6 @@ private:
     /// it returns exists or not.
     QString GetArchiveNameOfFile(const QString& fileArchiveURL);
 
-    //Files in file archive handling
-    bool RemoveDirectoryRecursively(const QString& dirPathName, bool removeParentDir = true);
 
 private:
     bool CreateLocalFileDirectory(const QString& archiveFolderName);

@@ -124,6 +124,34 @@ QString Util::NonExistentRandomFileNameInDirectory(const QString& dirPath, int l
     return randomFileName;
 }
 
+bool Util::RemoveDirectoryRecursively(const QString& dirPathName, bool removeParentDir)
+{
+    // http://john.nachtimwald.com/2010/06/08/qt-remove-directory-and-its-contents/
+
+    bool success = true;
+    QDir dir(dirPathName);
+    if (!dir.exists())
+        return true; //We wanted it deleted; it's already deleted, success!
+
+    QFileInfoList entriesInfo = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System |
+                                                  QDir::Hidden | QDir::AllDirs | QDir::Files);
+
+    foreach (const QFileInfo& ei, entriesInfo)
+    {
+        if (ei.isDir())
+            success = RemoveDirectoryRecursively(ei.absoluteFilePath());
+        else
+            success = QFile::remove(ei.absoluteFilePath());
+
+        if (!success)
+            return success;
+    }
+
+    if (removeParentDir)
+        success = dir.rmdir(dirPathName);
+    return success;
+}
+
 QString Util::UserReadableFileSize(long long size)
 {
     if (size < 1024L)

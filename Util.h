@@ -19,10 +19,12 @@ public:
 
     static void CaseInsensitiveStringListDifference(QStringList& list1, QStringList& list2);
 
-    // Files //////////////////////////////////////////////////////////////////////////////////////
+    // Files, Directories, FileSystem /////////////////////////////////////////////////////////////
     static QString NonExistentRandomFileNameInDirectory(const QString& dirPath, int length,
                                                         const QString& prefix = QString(""),
                                                         const QString& extension = QString(""));
+
+    static bool RemoveDirectoryRecursively(const QString& dirPathName, bool removeParentDir = true);
 
     // File Properties Handling ///////////////////////////////////////////////////////////////////
     static QString UserReadableFileSize(long long size);

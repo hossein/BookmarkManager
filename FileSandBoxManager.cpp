@@ -1,8 +1,7 @@
 #include "FileSandBoxManager.h"
 
-#include "Config.h"
-#include "TransactionalFileOperator.h"
 #include "Util.h"
+#include "WinFunctions.h"
 
 #include <QDir>
 #include <QFile>
@@ -39,7 +38,7 @@ bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool remo
     QFileInfo sbfi(sandBoxFilePathName);
     if (sbfi.isDir())
     {
-        bool deleteSuccess = RemoveDirectoryRecursively(sandBoxFilePathName);
+        bool deleteSuccess = Util::RemoveDirectoryRecursively(sandBoxFilePathName);
         if (!deleteSuccess)
         {
             fileArchiveURL = QString();
@@ -77,7 +76,7 @@ bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool remo
     //Remove the original file.
     if (removeOriginalFile)
     {
-        filesTransaction->SystemTrashFile(filePathName);
+        WinFunctions::MoveFileToRecycleBin(filePathName);
         //We do NOT return FALSE in case of failure.
         Error(QString("Could not delete the original file from your filesystem. "
                       "You should manually delete it yourself.\n\nFile: %1").arg(filePathName));

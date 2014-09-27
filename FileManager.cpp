@@ -48,7 +48,7 @@ bool FileManager::ClearSandBox()
 {
     bool success;
     QString sandboxDirPath = QDir::currentPath() + "/" + conf->nominalFileSandBoxDirName;
-    success = RemoveDirectoryRecursively(sandboxDirPath, false); //Don't remove the SandBox itself.
+    success = Util::RemoveDirectoryRecursively(sandboxDirPath, false); //Don't remove the SandBox itself.
 
     if (!success)
         return Error("Can not remove the contents of File SandBox!)");
@@ -267,7 +267,7 @@ QString FileManager::CopyFileToSandBoxAndGetAddress(const QString& filePathName)
     QFileInfo sbfi(sandBoxFilePathName);
     if (sbfi.isDir())
     {
-        bool deleteSuccess = RemoveDirectoryRecursively(sandBoxFilePathName);
+        bool deleteSuccess = Util::RemoveDirectoryRecursively(sandBoxFilePathName);
         if (!deleteSuccess)
         {
             Error("The target for creating sandboxed file '" + sandBoxFilePathName +
@@ -528,34 +528,6 @@ QString FileManager::GetArchiveNameOfFile(const QString& fileArchiveURL)
 
     QString fileArchiveName = fileArchiveURL.left(indexOfSlash);
     return fileArchiveName;
-}
-
-bool FileManager::RemoveDirectoryRecursively(const QString& dirPathName, bool removeParentDir)
-{
-    // http://john.nachtimwald.com/2010/06/08/qt-remove-directory-and-its-contents/
-
-    bool success = true;
-    QDir dir(dirPathName);
-    if (!dir.exists())
-        return true; //We wanted it deleted; it's already deleted, success!
-
-    QFileInfoList entriesInfo = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System |
-                                                  QDir::Hidden | QDir::AllDirs | QDir::Files);
-
-    foreach (const QFileInfo& ei, entriesInfo)
-    {
-        if (ei.isDir())
-            success = RemoveDirectoryRecursively(ei.absoluteFilePath());
-        else
-            success = QFile::remove(ei.absoluteFilePath());
-
-        if (!success)
-            return success;
-    }
-
-    if (removeParentDir)
-        success = dir.rmdir(dirPathName);
-    return success;
 }
 
 bool FileManager::CreateLocalFileDirectory(const QString& archiveFolderName)

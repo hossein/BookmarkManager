@@ -1,10 +1,6 @@
 #pragma once
 #include "IArchiveManager.h"
 
-#include <QString>
-
-class TransactionalFileOperator;
-
 /// This class is also known as FAM.
 class FileArchiveManager : public IArchiveManager
 {

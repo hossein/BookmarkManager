@@ -383,6 +383,7 @@ void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
     }
     else
     {
+        //TODO: "Export File" or "Save File As" on ALL file menus (both on Edit and View dlgs).
         QString fileOrigName = editedFilesList[filesListIdx].OriginalName;
         QAction* a_preview  = afMenu.addAction("&Preview"        , this, SLOT(af_preview()),    QKS("Enter"));
         QAction* a_open     = afMenu.addAction("&Open"           , this, SLOT(af_open()),       QKS("Shift+Enter"));
