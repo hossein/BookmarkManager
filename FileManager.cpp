@@ -556,10 +556,6 @@ void FileManager::CreateTables()
                "( FID INTEGER PRIMARY KEY AUTOINCREMENT, OriginalName TEXT, ArchiveURL TEXT, "
                "  ModifyDate INTEGER, Size Integer, MD5 BLOB )");
 
-    query.exec("CREATE TABLE FileTrash"
-               "( FID INTEGER PRIMARY KEY              , OriginalName TEXT, ArchiveURL TEXT, "
-               "  ModifyDate INTEGER, Size Integer, MD5 BLOB )");
-
     query.exec("CREATE TABLE BookmarkFile"
                "( BFID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, FID INTEGER )");
 
