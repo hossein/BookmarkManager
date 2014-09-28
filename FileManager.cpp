@@ -1,9 +1,11 @@
 #include "FileManager.h"
 
 #include "Config.h"
-#include "FileArchiveManager.h"
 #include "WinFunctions.h"
 #include "Util.h"
+
+#include "FileArchiveManager.h"
+#include "FileSandBoxManager.h"
 
 //TODO: Remove these includes later. ALSO remove util, winfuncs, conf, etc if not needed later.
 #include <QDir>
@@ -27,6 +29,11 @@ FileManager::FileManager(QWidget* dialogParent, Config* conf)
                 dialogParent, conf, conf->fileTrashPrefix,
                 QDir::currentPath() + "/" + conf->nominalFileTrashDirName, &filesTransaction);
     fileArchives[conf->fileTrashPrefix] = fam;
+
+    FileSandBoxManager* fsbm = new FileSandBoxManager(
+                dialogParent, conf, ":sandbox:",
+                QDir::currentPath() + "/" + conf->nominalFileSandBoxDirName, &filesTransaction);
+    fileArchives[":sandbox:"] = fsbm;
 }
 
 FileManager::~FileManager()
