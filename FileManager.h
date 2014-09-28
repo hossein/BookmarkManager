@@ -57,7 +57,6 @@ public:
     ~FileManager();
 
     bool InitializeFilesDirectory();
-    bool ClearSandBox();
 
     //Files in file archive: Name convenience functions.
     bool IsInsideFileArchive(const QString& userReadablePath);
@@ -95,6 +94,9 @@ public:
                              QList<long long>& editedBFIDs,
                              const QString& fileArchiveNameForNewFiles);
 
+    //Sandbox
+public:
+    bool ClearSandBox();
     /// This function gets and returns ABSOLUTE path names, NOT ArchiveURLs. This can change though!
     /// Returns empty QString on error. [Why we don't delete file after app]
     QString CopyFileToSandBoxAndGetAddress(const QString& filePathName);

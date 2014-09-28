@@ -51,18 +51,6 @@ bool FileManager::InitializeFilesDirectory()
     return success;
 }
 
-bool FileManager::ClearSandBox()
-{
-    bool success;
-    QString sandboxDirPath = QDir::currentPath() + "/" + conf->nominalFileSandBoxDirName;
-    success = Util::RemoveDirectoryRecursively(sandboxDirPath, false); //Don't remove the SandBox itself.
-
-    if (!success)
-        return Error("Can not remove the contents of File SandBox!)");
-
-    return success;
-}
-
 bool FileManager::IsInsideFileArchive(const QString& userReadablePath)
 {
     int faPrefixLength = conf->fileArchivePrefix.length();
@@ -262,6 +250,13 @@ bool FileManager::UpdateBookmarkFiles(long long BID,
     }
 
     return true;
+}
+
+bool FileManager::ClearSandBox()
+{
+    //dynamic_cast as an assertion.
+    FileSandBoxManager* fsbm = dynamic_cast<FileSandBoxManager*>(fileArchives[":sandbox:"]);
+    return fsbm->ClearSandBox();
 }
 
 QString FileManager::CopyFileToSandBoxAndGetAddress(const QString& filePathName)

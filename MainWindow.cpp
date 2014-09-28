@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Load the application and logic
     LoadDatabaseAndUI();
 
-    // Additional sub-parts initialization
+    // Additional sub-parts initialization. NOTE: We don't check their return value.
     dbm.files.InitializeFilesDirectory();
     dbm.files.ClearSandBox();
     dbm.fview.PopulateInternalTables();

@@ -20,6 +20,15 @@ FileSandBoxManager::~FileSandBoxManager()
 
 }
 
+bool FileSandBoxManager::ClearSandBox()
+{
+    //Don't remove the SandBox directory itself.
+    bool success = Util::RemoveDirectoryRecursively(m_archiveRoot, false);
+    if (!success)
+        return Error("Can not remove the contents of File SandBox!)");
+    return success;
+}
+
 bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
                                           QString& fileArchiveURL)
 {
