@@ -96,21 +96,19 @@ bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool syst
 
 bool FileSandBoxManager::RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash)
 {
-    /**
     bool success;
-    QString fileOperationError = "Unable to remove a file from the FileArchive.";
+    QString fileOperationError = "Unable to remove a file from the file sandbox.";
 
     QString fullFilePathName = GetFullArchivePathForRelativeURL(fileRelArchiveURL);
 
     if (trash)
-        success = filesTransaction->SystemTrashFile(fullFilePathName);
+        success = WinFunctions::MoveFileToRecycleBin(fullFilePathName);
     else
-        success = filesTransaction->DeleteFile(fullFilePathName);
+        success = QFile::remove(fullFilePathName);
 
     if (!success)
         return Error(fileOperationError + QString("\n\nFile Name: ") + fullFilePathName);
-**/
-    //TODO
+
     return true;
 }
 
