@@ -266,45 +266,23 @@ bool FileManager::UpdateBookmarkFiles(long long BID,
 
 QString FileManager::CopyFileToSandBoxAndGetAddress(const QString& filePathName)
 {
-    QFileInfo originalfi(filePathName);
-    QString sandBoxFilePathName = QDir::currentPath() + "/" + conf->nominalFileSandBoxDirName
-            + "/" + originalfi.fileName();
-
-    //Try
-    QFileInfo sbfi(sandBoxFilePathName);
-    if (sbfi.isDir())
-    {
-        bool deleteSuccess = Util::RemoveDirectoryRecursively(sandBoxFilePathName);
-        if (!deleteSuccess)
-        {
-            Error("The target for creating sandboxed file '" + sandBoxFilePathName +
-                  "' is a directory and cannot be deleted!");
-            return QString();
-        }
-    }
-    else if (sbfi.exists()) //and is a file
-    {
-        bool deleteSuccess = QFile::remove(sandBoxFilePathName);
-        if (!deleteSuccess)
-        {
-            Error("A file already exists at the target for creating sandboxed file '"
-                  + sandBoxFilePathName + "' and cannot be deleted!");
-            return QString();
-        }
-    }
-    //else if (sbfi not exists)
-    //  fine;
-
-    bool copySuccess = QFile::copy(filePathName, sandBoxFilePathName);
-    if (!copySuccess)
-    {
-        Error(QString("Could not create a temporary, sandboxed file for read-only opening!\n"
-                      "Can not continue\nSource File: %1\nDestination File: %2")
-              .arg(filePathName, sandBoxFilePathName));
+    //TODO: Constant for ":sandbox:" everywhere.
+    QString fileArchiveURL;
+    bool success = fileArchives[":sandbox:"]->AddFileToArchive(filePathName, false, fileArchiveURL);
+    if (!success)
         return QString();
-    }
 
-    return sandBoxFilePathName;
+    return GetFullArchiveFilePath(fileArchiveURL);
+}
+
+QString FileManager::CopyFileToSandBoxAndGetAddress(long long FID)
+{
+    QString fileArchiveURL;
+    bool success = CopyFile(FID, ":sandbox:", fileArchiveURL);
+    if (!success)
+        return QString();
+
+    return GetFullArchiveFilePath(fileArchiveURL);
 }
 
 bool FileManager::AddBookmarkFile(long long BID, long long FID, long long& addedBFID)
@@ -578,6 +556,7 @@ void FileManager::PopulateModels()
 
 bool operator==(const FileManager::BookmarkFile& lhs, const FileManager::BookmarkFile& rhs)
 {
+    //This only checks [DISTINCT PROPERTY]s.
     //Note: Since we don't want to check the `Ex_` fields, we have to override `operator==`.
     //      Also we don't have to check BFID, BID, FID and ArchiveURL for the purposes of comparing
     //      BookmarkFiles in this program.

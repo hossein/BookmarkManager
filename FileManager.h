@@ -98,11 +98,14 @@ public:
     /// This function gets and returns ABSOLUTE path names, NOT ArchiveURLs. This can change though!
     /// Returns empty QString on error. [Why we don't delete file after app]
     QString CopyFileToSandBoxAndGetAddress(const QString& filePathName);
+    /// The following overload implements sandboxing files in theory using the `CopyFile` function,
+    /// but isn't used throughout the code.
+    QString CopyFileToSandBoxAndGetAddress(long long FID);
 
 private:
     //Adding bookmarks
     bool AddBookmarkFile(long long BID, long long FID, long long& addedBFID);
-    /// Merely updates OriginalName, ModifyDate, Size and MD5.
+    /// Merely updates OriginalName, ModifyDate, Size and MD5; i.e [DISTINCT PROPERTY]s.
     /// `bf.FID` WILL BE DISREGARDED! The `FID` argument will be used to determine the file.
     /// This functions can not be used to change ArchiveURL of BookmarkFiles to move files to
     /// other archives
