@@ -1,7 +1,6 @@
 #pragma once
 #include "IManager.h"
 
-#include <QDir>
 #include <QString>
 
 class TransactionalFileOperator;
@@ -19,20 +18,9 @@ protected:
 public:
     IArchiveManager(QWidget* dialogParent, Config* conf,
                     const QString& archiveName, const QString& archiveRoot,
-                    TransactionalFileOperator* filesTransaction)
-        : IManager(dialogParent, conf), m_archiveName(archiveName), m_archiveRoot(archiveRoot)
-        , filesTransaction(filesTransaction)
-    {
-        //TODO: If archive folder doesn't exist, must create it here, not anywhere else.
-        //Add as a note that children can add extra folder structure in their constructors.
+                    TransactionalFileOperator* filesTransaction);
 
-        m_archiveRoot = QDir(m_archiveRoot).absolutePath(); //Mainly to remove '/' from the end.
-    }
-
-    virtual ~IArchiveManager()
-    {
-
-    }
+    virtual ~IArchiveManager();
 
     /// Note: Some derivates, e.g FAM, require that a Files Transaction MUST have been started
     /// before calling Add/Remove functions.
@@ -44,5 +32,15 @@ public:
     /// relative URL to the ArchiveMan root path; as some ArchiveMans might use their own strategies
     /// to store file paths.
     virtual QString GetFullArchivePathForRelativeURL(const QString& fileArchiveURL) = 0;
+
+    //Initialization code.
+public:
+    /// This function create the root directory for saving the files.
+    /// Derived classes can re-implement this to add extra folder structure AFTER calling base
+    /// class'es `InitializeFilesDirectory()`.
+    virtual bool InitializeFilesDirectory();
+
+private:
+    bool CreateLocalFileDirectory(const QString& faDirPath);
 
 };

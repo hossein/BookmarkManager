@@ -45,9 +45,9 @@ FileManager::~FileManager()
 bool FileManager::InitializeFilesDirectory()
 {
     bool success = true;
-    success &= CreateLocalFileDirectory(conf->nominalFileArchiveDirName);
-    success &= CreateLocalFileDirectory(conf->nominalFileTrashDirName);
-    success &= CreateLocalFileDirectory(conf->nominalFileSandBoxDirName);
+    foreach (IArchiveManager* iam, fileArchives)
+        //Use `success &=` to initialize the rest of the dirs even if one encountered error.
+        success &= iam->InitializeFilesDirectory();
     return success;
 }
 
@@ -513,24 +513,6 @@ QString FileManager::GetArchiveNameOfFile(const QString& fileArchiveURL)
 
     QString fileArchiveName = fileArchiveURL.left(indexOfSlash);
     return fileArchiveName;
-}
-
-bool FileManager::CreateLocalFileDirectory(const QString& archiveFolderName)
-{
-    QString faDirPath = QDir::currentPath() + "/" + archiveFolderName;
-    QFileInfo faDirInfo(faDirPath);
-
-    if (!faDirInfo.exists())
-    {
-        if (!QDir::current().mkpath(faDirPath))
-            return Error(QString("'%1' directory could not be created!").arg(archiveFolderName));
-    }
-    else if (!faDirInfo.isDir())
-    {
-        return Error(QString("'%1' is not a directory!").arg(archiveFolderName));
-    }
-
-    return true;
 }
 
 void FileManager::CreateTables()

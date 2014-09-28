@@ -152,10 +152,6 @@ private:
     /// it returns exists or not.
     QString GetArchiveNameOfFile(const QString& fileArchiveURL);
 
-
-private:
-    bool CreateLocalFileDirectory(const QString& archiveFolderName);
-
 protected:
     // ISubManager interface
     void CreateTables();

@@ -35,7 +35,8 @@ SOURCES += main.cpp\
     OpenWithDialog.cpp \
     AppListItemDelegate.cpp \
     FileArchiveManager.cpp \
-    FileSandBoxManager.cpp
+    FileSandBoxManager.cpp \
+    IArchiveManager.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
