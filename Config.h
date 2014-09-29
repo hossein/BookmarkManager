@@ -80,6 +80,9 @@
 ///   - Changing icons of SystemApps. Especially useful for batch files and console programs.
 ///   - Choose which browser to open the URL with as a drop-down menu in BMViewDlg.
 ///   - A way to choose Global programs that appear in Open With menu of all file extensions.
+///   - Show at most THREE important digits after the slash, i.e if digits before dot are less than
+///     three, show more digits to the right.
+///     E.g 1.00 KiB, 10.0 KiB, 110 KiB, 1.00 MiB, 10.0 MiB, 110 MiB and so on.
 
 class Config
 {

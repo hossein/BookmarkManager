@@ -16,7 +16,18 @@
 FileManager::FileManager(QWidget* dialogParent, Config* conf)
     : ISubManager(dialogParent, conf)
 {
-    //TODO: Temporary
+
+}
+
+FileManager::~FileManager()
+{
+    foreach (IArchiveManager* iam, fileArchives)
+        delete iam;
+}
+
+bool FileManager::InitializeFileArchives()
+{
+    //TODO: Get from DB.
     FileArchiveManager* fam = new FileArchiveManager(
                 dialogParent, conf, conf->fileArchivePrefix,
                 QDir::currentPath() + "/" + conf->nominalFileArchiveDirName, &filesTransaction);
@@ -33,12 +44,6 @@ FileManager::FileManager(QWidget* dialogParent, Config* conf)
     fileArchives[":sandbox:"] = fsbm;
 }
 
-FileManager::~FileManager()
-{
-    foreach (IArchiveManager* iam, fileArchives)
-        delete iam;
-}
-
 bool FileManager::InitializeFilesDirectory()
 {
     bool success = true;
@@ -48,15 +53,15 @@ bool FileManager::InitializeFilesDirectory()
     return success;
 }
 
-bool FileManager::IsInsideFileArchive(const QString& userReadablePath)
-{
-    int faPrefixLength = conf->fileArchivePrefix.length();
-    if (userReadablePath.length() > faPrefixLength &&
-        userReadablePath.left(faPrefixLength) == conf->fileArchivePrefix &&
-        (userReadablePath[faPrefixLength] == '/' || userReadablePath[faPrefixLength] == '\\'))
-        return true;
-    return false;
-}
+///bool FileManager::IsInsideFileArchive(const QString& userReadablePath)
+///{
+///    int faPrefixLength = conf->fileArchivePrefix.length();
+///    if (userReadablePath.length() > faPrefixLength &&
+///        userReadablePath.left(faPrefixLength) == conf->fileArchivePrefix &&
+///        (userReadablePath[faPrefixLength] == '/' || userReadablePath[faPrefixLength] == '\\'))
+///        return true;
+///    return false;
+///}
 
 QString FileManager::GetUserReadableArchiveFilePath(const FileManager::BookmarkFile& bf)
 {

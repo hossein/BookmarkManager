@@ -56,10 +56,10 @@ public:
     FileManager(QWidget* dialogParent, Config* conf);
     ~FileManager();
 
-    bool InitializeFilesDirectory();
+    bool InitializeFileArchives();
 
-    //Files in file archive: Name convenience functions.
-    bool IsInsideFileArchive(const QString& userReadablePath);
+    /// //Files in file archive: Name convenience functions.
+    /// bool IsInsideFileArchive(const QString& userReadablePath);
     //NOTE: The following two functions can have equivalent 'TrashFile' sisters.
     /// Get a path that only contains the Archive name and the file name, e.g for a file
     /// with ArchiveURL of ":arch0:/F/FA/FA3D4FBE.html" and OriginalName of "Index.html",
