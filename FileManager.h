@@ -29,11 +29,11 @@ public:
     struct BookmarkFile
     {
         /// [DISTINCT PROPERTY]'s are the properties that show the properties of the real attached
-        ///     file. If attached file changes, they must change, too.
-        /// THEY ARE important for `FileManager::UpdateFile` and `operator==(BookmarkFile,BookmarkFile)`
-        ///     and these two functions must be updated if distinct properties change.
-        // Note: For unattached files, ArchiveURL is "" and Original URL is "C:\File.txt".
-        //   For already attached files, ArchiveURL is "F/F5AB32DA.txt" and Original URL is "File.txt".
+        ///     file. If attached file changes, they must change, too. THEY ARE important for
+        ///     `FileManager::UpdateFile` and `operator==(BookmarkFile,BookmarkFile)` and these two
+        ///     functions must be updated if distinct properties change.
+        // Note: For unattached files, ArchiveURL is "" and OriginalName is "C:\File.txt".
+        //   For attached files, ArchiveURL is ":arch0:/F/F5AB32DA.txt" and OriginalName is "File.txt".
         long long BFID;
         long long BID;
         long long FID;
@@ -61,7 +61,10 @@ public:
     //Files in file archive: Name convenience functions.
     bool IsInsideFileArchive(const QString& userReadablePath);
     //NOTE: The following two functions can have equivalent 'TrashFile' sisters.
-    QString GetUserReadableArchiveFilePath(const QString& originalName);
+    /// Get a path that only contains the Archive name and the file name, e.g for a file
+    /// with ArchiveURL of ":arch0:/F/FA/FA3D4FBE.html" and OriginalName of "Index.html",
+    /// it returns ":arch0:/Index.html". Must be called on ATTACHED files ONLY.
+    QString GetUserReadableArchiveFilePath(const BookmarkFile& bf);
     //TODO: Save :archive:, etc in the file too? Then we can have :archive1: on disk,
     //  :archive2: on shared network, :sanbox:, :trash:, etc and unify many functions here!
     QString GetFullArchiveFilePath(const QString& fileArchiveURL);

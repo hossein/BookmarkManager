@@ -193,7 +193,7 @@ void BookmarkViewDialog::PopulateUIFiles(bool saveSelection)
         if (bf.FID == -1)
             fileName = bf.OriginalName;
         else
-            fileName = dbm->files.GetUserReadableArchiveFilePath(bf.OriginalName);
+            fileName = dbm->files.GetUserReadableArchiveFilePath(bf);
         QTableWidgetItem* nameItem = new QTableWidgetItem(fileName);
         QTableWidgetItem* sizeItem = new QTableWidgetItem(Util::UserReadableFileSize(bf.Size));
 

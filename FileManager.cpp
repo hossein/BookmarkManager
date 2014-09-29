@@ -1,9 +1,6 @@
 #include "FileManager.h"
 
 #include "Config.h"
-#include "WinFunctions.h"
-#include "Util.h"
-
 #include "FileArchiveManager.h"
 #include "FileSandBoxManager.h"
 
@@ -61,9 +58,10 @@ bool FileManager::IsInsideFileArchive(const QString& userReadablePath)
     return false;
 }
 
-QString FileManager::GetUserReadableArchiveFilePath(const QString& originalName)
+QString FileManager::GetUserReadableArchiveFilePath(const FileManager::BookmarkFile& bf)
 {
-    return conf->fileArchivePrefix + "/" + originalName;
+    QString archiveName = GetArchiveNameOfFile(bf.ArchiveURL);
+    return archiveName + "/" + bf.OriginalName;
 }
 
 QString FileManager::GetFullArchiveFilePath(const QString& fileArchiveURL)
@@ -383,7 +381,7 @@ bool FileManager::RemoveBookmarkFile(long long BFID, long long FID)
     {
         //This shows no other bookmarks rely on this file!
         //Remove the file completely from db and the archive.
-        return TrashFile(FID); //TODO: TrashFile
+        return TrashFile(FID);
     }
 
     return true;

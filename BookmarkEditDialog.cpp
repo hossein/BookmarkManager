@@ -250,7 +250,7 @@ void BookmarkEditDialog::PopulateUIFiles(bool saveSelection)
         if (bf.FID == -1)
             fileName = bf.OriginalName;
         else
-            fileName = dbm->files.GetUserReadableArchiveFilePath(bf.OriginalName);
+            fileName = dbm->files.GetUserReadableArchiveFilePath(bf);
         QTableWidgetItem* nameItem = new QTableWidgetItem(fileName);
         QTableWidgetItem* sizeItem = new QTableWidgetItem(Util::UserReadableFileSize(bf.Size));
 
@@ -604,7 +604,7 @@ void BookmarkEditDialog::af_remove()
     else
     {
         const QString userReadableFileName =
-                dbm->files.GetUserReadableArchiveFilePath(editedFilesList[filesListIdx].OriginalName);
+                dbm->files.GetUserReadableArchiveFilePath(editedFilesList[filesListIdx]);
         removeConfirmText = "Are you sure you want to remove the file \"" + userReadableFileName +
                 "\"?\nIt will be removed from the File Archive as well, if no other bookmarks "
                 "are referencing it.";
