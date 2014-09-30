@@ -10,6 +10,12 @@ public:
                        TransactionalFileOperator* filesTransaction);
     ~FileArchiveManager();
 
+    /// Archive Type
+    virtual ArchiveType GetArchiveType()
+    {
+        return AT_FileArchive;
+    }
+
     /// A Files Transaction MUST have been started before calling Add/Remove functions. And TODO: Check this.
     bool AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
                           QString& fileArchiveURL);

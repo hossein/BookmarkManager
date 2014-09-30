@@ -22,6 +22,20 @@ public:
 
     virtual ~IArchiveManager();
 
+    //Pure Virtual Functions
+public:
+    enum ArchiveType
+    {
+        AT_Abstract = 0,
+        AT_FileArchive,
+        AT_SandBox
+    };
+    /// Get a unique type identifying this class (yes pure virtual functions can have implementations).
+    virtual ArchiveType GetArchiveType() = 0
+    {
+        return AT_Abstract;
+    }
+
     /// Note: Some derivates, e.g FAM, require that a Files Transaction MUST have been started
     /// before calling Add/Remove functions.
     virtual bool AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,

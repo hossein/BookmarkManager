@@ -12,6 +12,12 @@ public:
     /// Extra function of this class.
     bool ClearSandBox();
 
+    /// Archive Type
+    virtual ArchiveType GetArchiveType()
+    {
+        return AT_SandBox;
+    }
+
     /// Doesn't require Files Transaction.
     bool AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
                           QString& fileArchiveURL);
