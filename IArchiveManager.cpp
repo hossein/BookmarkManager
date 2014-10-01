@@ -3,6 +3,10 @@
 #include <QDir>
 #include <QFileInfo>
 
+//Include our own archive managers for the ArchiveManagerFactory.
+#include "FileArchiveManager.h"
+#include "FileSandBoxManager.h"
+
 IArchiveManager::IArchiveManager(QWidget* dialogParent, Config* conf,
                                  const QString& archiveName, const QString& archiveRoot,
                                  TransactionalFileOperator* filesTransaction)
@@ -38,4 +42,28 @@ bool IArchiveManager::CreateLocalFileDirectory(const QString& faDirPath)
     }
 
     return true;
+}
+
+
+
+ArchiveManagerFactory::ArchiveManagerFactory(QWidget* dialogParent, Config* conf,
+                                             TransactionalFileOperator* filesTransaction)
+    : m_dialogParent(dialogParent), m_conf(conf), m_filesTransaction(filesTransaction)
+{
+
+}
+
+IArchiveManager* ArchiveManagerFactory::CreateArchiveManager(IArchiveManager::ArchiveType type,
+                                                             const QString& archiveName,
+                                                             const QString& archiveRoot)
+{
+    IArchiveManager* iam = NULL;
+    switch (type)
+    {
+    case IArchiveManager::AT_FileArchive:
+        iam = new FileArchiveManager(m_dialogParent,m_conf,archiveName,archiveRoot,m_filesTransaction);
+    case IArchiveManager::AT_SandBox:
+        iam = new FileSandBoxManager(m_dialogParent,m_conf,archiveName,archiveRoot,m_filesTransaction);
+    }
+    return iam;
 }

@@ -58,3 +58,19 @@ private:
     bool CreateLocalFileDirectory(const QString& faDirPath);
 
 };
+
+/// We implement a factory class in this very file.
+class ArchiveManagerFactory
+{
+private:
+    QWidget* m_dialogParent;
+    Config* m_conf;
+    TransactionalFileOperator* m_filesTransaction;
+
+public:
+    ArchiveManagerFactory(QWidget* dialogParent, Config* conf,
+                          TransactionalFileOperator* filesTransaction);
+
+    IArchiveManager* CreateArchiveManager(IArchiveManager::ArchiveType type,
+                                          const QString& archiveName, const QString& archiveRoot);
+};
