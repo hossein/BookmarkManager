@@ -59,7 +59,7 @@ QString FileManager::GetFullArchiveFilePath(const QString& fileArchiveURL)
     {
         if (fileArchiveURL.left(archiveName.length()) == archiveName)
         {
-            //Strip the ":arhiveName:/" part from the file url.
+            //Strip the ":ArhiveName:/" part from the file url.
             QString relativeFileURLToArchive = fileArchiveURL.mid(archiveName.length() + 1);
             return fileArchives[archiveName]->GetFullArchivePathForRelativeURL(relativeFileURLToArchive);
         }
@@ -579,7 +579,6 @@ void FileManager::CreateDefaultArchives(QSqlQuery& query)
     //query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES "
     //              "(?, ?, ?), (?, ?, ?), (?, ?, ?);");
 
-    //TODO: ':arch0:'
     query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES (?, ?, ?);");
     query.addBindValue(conf->fileArchiveNamePATTERN.arg(0));
     query.addBindValue((int)IArchiveManager::AT_FileArchive);

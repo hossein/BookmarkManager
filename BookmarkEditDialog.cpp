@@ -1,6 +1,7 @@
 #include "BookmarkEditDialog.h"
 #include "ui_BookmarkEditDialog.h"
 
+#include "Config.h"
 #include "FileManager.h"
 #include "FileViewManager.h"
 #include "Util.h"
@@ -16,9 +17,9 @@
 //      remaining. We achieve this by not keeping a editedDefBFID and instead having a bool field
 //      editedFilesList.
 
-BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId,
+BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long long editBId,
                                        OutParams* outParams, QWidget *parent) :
-    QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm),
+    QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm), conf(conf),
     canShowTheDialog(false), outParams(outParams),
     originalEditBId(editBId), editBId(editBId) //[why-two-editbids]
 {
@@ -142,7 +143,7 @@ void BookmarkEditDialog::accept()
         QList<long long> updatedBFIDs;
         success = dbm->files.UpdateBookmarkFiles(editBId,
                                                  editOriginalBData.Ex_FilesList, editedFilesList,
-                                                 updatedBFIDs, ":archive:"); //TODO: Temporary :archive: passing.
+                                                 updatedBFIDs, conf->currentFileArchiveForAddingFiles);
         if (!success)
             return DoRollBackAction();
 
@@ -428,7 +429,7 @@ void BookmarkEditDialog::on_btnBrowse_clicked()
 void BookmarkEditDialog::on_btnAttach_clicked()
 {
     //Note: Multiple file handling:
-    //  Must detect here if user has removed a ":archive:" url in the textbox and do sth with its file!
+    //  Must detect here if user has removed a ":archX:" url in the textbox and do sth with its file!
 
     QString allFileNames = ui->leFileName->text().trimmed();
     if (allFileNames.isEmpty())

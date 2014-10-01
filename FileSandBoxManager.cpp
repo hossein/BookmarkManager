@@ -79,7 +79,7 @@ bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool syst
     }
 
     //Set the Output
-    //fileArchiveURL = sandBoxFilePathName; No: must be colon-ized :archive: URL.
+    //fileArchiveURL = sandBoxFilePathName; No: must be colon-ized :ArchiveName: URL.
     fileArchiveURL = m_archiveName + "/" + originalfi.fileName();
 
     //Remove the original file.

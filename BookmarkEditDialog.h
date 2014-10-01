@@ -3,6 +3,7 @@
 
 #include "DatabaseManager.h"
 
+class Config;
 class FileManager;
 class QTableWidgetItem;
 namespace Ui { class BookmarkEditDialog; }
@@ -21,6 +22,7 @@ public:
 private:
     Ui::BookmarkEditDialog *ui;
     DatabaseManager* dbm;
+    Config* conf;
     bool canShowTheDialog;
     OutParams* outParams;
     long long originalEditBId;
@@ -34,7 +36,7 @@ private:
     //long long editedDefBFID;
 
 public:
-    explicit BookmarkEditDialog(DatabaseManager* dbm, long long editBId = -1,
+    explicit BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long long editBId = -1,
                                 OutParams* outParams = NULL, QWidget *parent = 0);
     ~BookmarkEditDialog();
 

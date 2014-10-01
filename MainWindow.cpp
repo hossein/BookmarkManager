@@ -354,7 +354,7 @@ void MainWindow::NewBookmark()
 {
     //TODO: Make all these modal dialogs non-pointer, if it's okay with message loops.
     BookmarkEditDialog::OutParams outParams;
-    BookmarkEditDialog* bmEditDialog = new BookmarkEditDialog(&dbm, -1, &outParams, this);
+    BookmarkEditDialog* bmEditDialog = new BookmarkEditDialog(&dbm, &conf, -1, &outParams, this);
 
     int result = bmEditDialog->exec();
     if (result != QDialog::Accepted)
@@ -404,8 +404,8 @@ void MainWindow::ViewSelectedBookmark()
 void MainWindow::EditSelectedBookmark()
 {
     BookmarkEditDialog::OutParams outParams;
-    BookmarkEditDialog* bmEditDialog = new BookmarkEditDialog(&dbm, GetSelectedBookmarkID(), &outParams,
-                                                              this);
+    const long long BID = GetSelectedBookmarkID();
+    BookmarkEditDialog* bmEditDialog = new BookmarkEditDialog(&dbm, &conf, BID, &outParams, this);
 
     if (!bmEditDialog->canShow())
         return; //In case of errors a message is already shown.

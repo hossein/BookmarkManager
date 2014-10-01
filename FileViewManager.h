@@ -55,9 +55,9 @@ public:
     // File Opening Functions /////////////////////////////////////////////////////////////////////
 public:
     /// In ALL of the following functions:
-    /// `filePathName` MUST BE ABSOLUTE file path! NOT :archive: path.
+    /// `filePathName` MUST BE ABSOLUTE file path! NOT :ArchiveName: path.
     /// (as this class is an ISubManager itself and doesn't have access to FileManager to resolve
-    ///  the :archive: URL into an absolute path).
+    ///  the :ArchiveName: URL into an absolute path).
     void Preview(const QString& filePathName, FilePreviewerWidget* fpw);
     void PreviewStandalone(const QString& filePathName, QWidget* dialogParent); //Convenience Function
     void OpenReadOnly(const QString& filePathName, FileManager* files);

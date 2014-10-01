@@ -47,7 +47,7 @@ public:
     /// it must be able to be deleted by the calling class/container.
     virtual QWidget* CreateAndFreeWidget(QWidget* parent) = 0;
 
-    /// filePathName must be ABSOLUTE file path on file system and NOT :archive:.
+    /// filePathName must be ABSOLUTE file path on file system and NOT :ArchiveName:.
     /// FileViewManager that uses this class knows this fact.
     /// Must clear the widget before showing the new data for the sake of itself, unless encounters
     /// error. If successful, must return true; otherwise must return false and doesn't have to

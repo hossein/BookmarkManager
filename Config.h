@@ -89,6 +89,10 @@ class Config
 public:
     Config()
     {
+        //// CONFIGURATIONS
+        currentFileArchiveForAddingFiles = ":arch0:";
+
+        //// CONSTANTS
         nominalDatabaseVersion = 1;
         nominalDatabasetFileName = "bmmgr.sqlite";
 
@@ -103,6 +107,11 @@ public:
     }
     ~Config() { }
 
+    //// CONFIGURATIONS
+    QString currentFileArchiveForAddingFiles;
+
+
+    //// CONSTANTS
     int nominalDatabaseVersion;
     QString nominalDatabasetFileName;
 
