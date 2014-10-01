@@ -13,7 +13,7 @@ public:
     bool ClearSandBox();
 
     /// Archive Type
-    virtual ArchiveType GetArchiveType()
+    ArchiveType GetArchiveType()
     {
         return AT_SandBox;
     }

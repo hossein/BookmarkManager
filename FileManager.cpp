@@ -42,10 +42,8 @@ bool FileManager::InitializeFileArchives()
                 dialogParent, conf, ":sandbox:",
                 QDir::currentPath() + "/" + conf->nominalFileSandBoxDirName, &filesTransaction);
     fileArchives[":sandbox:"] = fsbm;
-}
 
-bool FileManager::InitializeFilesDirectory()
-{
+    //TODO: Separate function?
     bool success = true;
     foreach (IArchiveManager* iam, fileArchives)
         //Use `success &=` to initialize the rest of the dirs even if one encountered error.

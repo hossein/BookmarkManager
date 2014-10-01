@@ -11,7 +11,7 @@ public:
     ~FileArchiveManager();
 
     /// Archive Type
-    virtual ArchiveType GetArchiveType()
+    ArchiveType GetArchiveType()
     {
         return AT_FileArchive;
     }
