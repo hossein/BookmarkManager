@@ -66,7 +66,7 @@ public:
     /// it returns ":arch0:/Index.html". Must be called on ATTACHED files ONLY.
     QString GetUserReadableArchiveFilePath(const BookmarkFile& bf);
     //TODO: Save :archive:, etc in the file too? Then we can have :archive1: on disk,
-    //  :archive2: on shared network, :sanbox:, :trash:, etc and unify many functions here!
+    //  :archive2: on shared network, :sandbox:, :trash:, etc and unify many functions here!
     QString GetFullArchiveFilePath(const QString& fileArchiveURL);
     static QString GetFileNameOnlyFromOriginalNameField(const QString& originalName);
     static QString ChangeOriginalNameField(const QString& originalName, const QString& newName);

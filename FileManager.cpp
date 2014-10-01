@@ -28,31 +28,6 @@ FileManager::~FileManager()
 
 bool FileManager::InitializeFileArchives()
 {
-    /**
-    //TODO: Get from DB.
-    FileArchiveManager* fam = new FileArchiveManager(
-                dialogParent, conf, conf->fileArchivePrefix,
-                QDir::currentPath() + "/" + conf->nominalFileArchiveDirName, &filesTransaction);
-    fileArchives[conf->fileArchivePrefix] = fam;
-
-    fam = new FileArchiveManager(
-                dialogParent, conf, conf->fileTrashPrefix,
-                QDir::currentPath() + "/" + conf->nominalFileTrashDirName, &filesTransaction);
-    fileArchives[conf->fileTrashPrefix] = fam;
-
-    FileSandBoxManager* fsbm = new FileSandBoxManager(
-                dialogParent, conf, ":sandbox:",
-                QDir::currentPath() + "/" + conf->nominalFileSandBoxDirName, &filesTransaction);
-    fileArchives[":sandbox:"] = fsbm;
-
-    //TODO: Separate function?
-    bool success = true;
-    foreach (IArchiveManager* iam, fileArchives)
-        //Use `success &=` to initialize the rest of the dirs even if one encountered error.
-        success &= iam->InitializeFilesDirectory();
-    return success;
-    **/
-
     bool success = true;
     success &= PopulateAndRegisterFileArchives();
     success &= DoFileArchiveInitializations();
@@ -61,9 +36,9 @@ bool FileManager::InitializeFileArchives()
 
 ///bool FileManager::IsInsideFileArchive(const QString& userReadablePath)
 ///{
-///    int faPrefixLength = conf->fileArchivePrefix.length();
+///    int faPrefixLength = conf->fileArchiveNamePATTERN.arg(whatever).length();
 ///    if (userReadablePath.length() > faPrefixLength &&
-///        userReadablePath.left(faPrefixLength) == conf->fileArchivePrefix &&
+///        userReadablePath.left(faPrefixLength) == conf->fileArchiveNamePATTERN.arg(whatever) &&
 ///        (userReadablePath[faPrefixLength] == '/' || userReadablePath[faPrefixLength] == '\\'))
 ///        return true;
 ///    return false;
@@ -264,15 +239,16 @@ bool FileManager::UpdateBookmarkFiles(long long BID,
 bool FileManager::ClearSandBox()
 {
     //dynamic_cast as an assertion.
-    FileSandBoxManager* fsbm = dynamic_cast<FileSandBoxManager*>(fileArchives[":sandbox:"]);
+    FileSandBoxManager* fsbm =
+            dynamic_cast<FileSandBoxManager*>(fileArchives[conf->sandboxArchiveName]);
     return fsbm->ClearSandBox();
 }
 
 QString FileManager::CopyFileToSandBoxAndGetAddress(const QString& filePathName)
 {
-    //TODO: Constant for ":sandbox:" everywhere.
     QString fileArchiveURL;
-    bool success = fileArchives[":sandbox:"]->AddFileToArchive(filePathName, false, fileArchiveURL);
+    bool success = fileArchives[conf->sandboxArchiveName]
+            ->AddFileToArchive(filePathName, false, fileArchiveURL);
     if (!success)
         return QString();
 
@@ -282,7 +258,7 @@ QString FileManager::CopyFileToSandBoxAndGetAddress(const QString& filePathName)
 QString FileManager::CopyFileToSandBoxAndGetAddress(long long FID)
 {
     QString fileArchiveURL;
-    bool success = CopyFile(FID, ":sandbox:", fileArchiveURL);
+    bool success = CopyFile(FID, conf->sandboxArchiveName, fileArchiveURL);
     if (!success)
         return QString();
 
@@ -408,7 +384,7 @@ bool FileManager::TrashFile(long long FID)
     //First move the physical file
     //TODO: Set an error prefix or re-design some aspects?
     QString newFileArchiveURL;
-    bool success = MoveFile(FID, conf->fileTrashPrefix, newFileArchiveURL);
+    bool success = MoveFile(FID, conf->trashArchiveName, newFileArchiveURL);
     if (!success)
         return false;
 
@@ -547,8 +523,11 @@ bool FileManager::PopulateAndRegisterFileArchives()
 
     //Check if all default required archives are present. They are :arch0:, :trash: and :sandbox:.
     QString archiveNotPresentError = "The required file archive '%1' does not exist in the database.";
-    QStringList requiredArchiveNames; //TODO: arch0
-    requiredArchiveNames << ":archive:" << ":trash:" << ":sandbox:";
+    QStringList requiredArchiveNames;
+    requiredArchiveNames
+            << conf->fileArchiveNamePATTERN.arg(0)
+            << conf->trashArchiveName
+            << conf->sandboxArchiveName;
     foreach (const QString& requiredArchiveName, requiredArchiveNames)
         if (!fileArchives.keys().contains(requiredArchiveName))
             return Error(archiveNotPresentError.arg(requiredArchiveName));
@@ -602,19 +581,19 @@ void FileManager::CreateDefaultArchives(QSqlQuery& query)
 
     //TODO: ':arch0:'
     query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES (?, ?, ?);");
-    query.addBindValue(conf->fileArchivePrefix);
+    query.addBindValue(conf->fileArchiveNamePATTERN.arg(0));
     query.addBindValue((int)IArchiveManager::AT_FileArchive);
     query.addBindValue(path_arch0);
     query.exec();
 
     query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES (?, ?, ?);");
-    query.addBindValue(conf->fileTrashPrefix);
+    query.addBindValue(conf->trashArchiveName);
     query.addBindValue((int)IArchiveManager::AT_FileArchive);
     query.addBindValue(path_trash);
     query.exec();
 
     query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES (?, ?, ?);");
-    query.addBindValue(":sandbox:");
+    query.addBindValue(conf->sandboxArchiveName);
     query.addBindValue((int)IArchiveManager::AT_SandBox);
     query.addBindValue(path_sandbox);
     query.exec();

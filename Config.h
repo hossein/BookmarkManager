@@ -93,12 +93,13 @@ public:
         nominalDatabasetFileName = "bmmgr.sqlite";
 
         nominalFileArchiveDirName = "FileArchive";
-        fileArchivePrefix = ":archive:";
+        fileArchiveNamePATTERN = ":arch%1:";
 
         nominalFileTrashDirName = "FileTrash";
-        fileTrashPrefix = ":trash:";
+        trashArchiveName = ":trash:";
 
         nominalFileSandBoxDirName = "FileSandBox";
+        sandboxArchiveName = ":sandbox:";
     }
     ~Config() { }
 
@@ -106,10 +107,11 @@ public:
     QString nominalDatabasetFileName;
 
     QString nominalFileArchiveDirName;
-    QString fileArchivePrefix;
+    QString fileArchiveNamePATTERN;
 
     QString nominalFileTrashDirName;
-    QString fileTrashPrefix;
+    QString trashArchiveName;
 
     QString nominalFileSandBoxDirName;
+    QString sandboxArchiveName;
 };
