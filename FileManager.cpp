@@ -28,6 +28,7 @@ FileManager::~FileManager()
 
 bool FileManager::InitializeFileArchives()
 {
+    /**
     //TODO: Get from DB.
     FileArchiveManager* fam = new FileArchiveManager(
                 dialogParent, conf, conf->fileArchivePrefix,
@@ -49,6 +50,12 @@ bool FileManager::InitializeFileArchives()
     foreach (IArchiveManager* iam, fileArchives)
         //Use `success &=` to initialize the rest of the dirs even if one encountered error.
         success &= iam->InitializeFilesDirectory();
+    return success;
+    **/
+
+    bool success = true;
+    success &= PopulateAndRegisterFileArchives();
+    success &= DoFileArchiveInitializations();
     return success;
 }
 
@@ -526,11 +533,6 @@ bool FileManager::PopulateAndRegisterFileArchives()
     int faidx_Type = record.indexOf("Type");
     int faidx_Path = record.indexOf("Path");
 
-    FileArchiveManager* fam = new FileArchiveManager(
-                dialogParent, conf, conf->fileArchivePrefix,
-                QDir::currentPath() + "/" + conf->nominalFileArchiveDirName, &filesTransaction);
-    fileArchives[conf->fileArchivePrefix] = fam;
-
     ArchiveManagerFactory archiveManFactory(dialogParent, conf, &filesTransaction);
     while (query.next())
     {
@@ -545,8 +547,8 @@ bool FileManager::PopulateAndRegisterFileArchives()
 
     //Check if all default required archives are present. They are :arch0:, :trash: and :sandbox:.
     QString archiveNotPresentError = "The required file archive '%1' does not exist in the database.";
-    QStringList requiredArchiveNames;
-    requiredArchiveNames << ":arch0:" << ":trash:" << ":sandbox:";
+    QStringList requiredArchiveNames; //TODO: arch0
+    requiredArchiveNames << ":archive:" << ":trash:" << ":sandbox:";
     foreach (const QString& requiredArchiveName, requiredArchiveNames)
         if (!fileArchives.keys().contains(requiredArchiveName))
             return Error(archiveNotPresentError.arg(requiredArchiveName));
@@ -556,7 +558,11 @@ bool FileManager::PopulateAndRegisterFileArchives()
 
 bool FileManager::DoFileArchiveInitializations()
 {
-
+    bool success = true;
+    foreach (IArchiveManager* iam, fileArchives)
+        //Use `success &=` to initialize the rest of the dirs even if one encountered error.
+        success &= iam->InitializeFilesDirectory();
+    return success;
 }
 
 void FileManager::CreateTables()
@@ -590,21 +596,28 @@ void FileManager::CreateDefaultArchives(QSqlQuery& query)
             path_sandbox = QDir::currentPath() + "/" + conf->nominalFileSandBoxDirName;
 
     //Insert multiple values at once requires SQLite 3.7.11+: stackoverflow.com/a/5009740/656366
-    query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES "
-                  "('%1','%2','%3'),('%4','%5','%6'),('%7','%8','%9');");
+    //So we don't do it.
+    //query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES "
+    //              "(?, ?, ?), (?, ?, ?), (?, ?, ?);");
 
     //TODO: ':arch0:'
+    query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES (?, ?, ?);");
     query.addBindValue(conf->fileArchivePrefix);
     query.addBindValue((int)IArchiveManager::AT_FileArchive);
     query.addBindValue(path_arch0);
+    query.exec();
 
+    query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES (?, ?, ?);");
     query.addBindValue(conf->fileTrashPrefix);
     query.addBindValue((int)IArchiveManager::AT_FileArchive);
     query.addBindValue(path_trash);
+    query.exec();
 
+    query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES (?, ?, ?);");
     query.addBindValue(":sandbox:");
     query.addBindValue((int)IArchiveManager::AT_SandBox);
     query.addBindValue(path_sandbox);
+    query.exec();
 }
 
 
