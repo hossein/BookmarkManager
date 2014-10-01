@@ -2,12 +2,10 @@
 
 #include "Config.h"
 #include "IArchiveManager.h"
-#include "FileArchiveManager.h"
+//#include "FileArchiveManager.h"
 #include "FileSandBoxManager.h"
 
-//TODO: Remove these includes later. ALSO remove util, winfuncs, conf, non-abstract archives, etc if not needed later.
 #include <QDir>
-#include <QFile>
 #include <QFileInfo>
 
 #include <QtSql/QSqlQuery>
@@ -34,16 +32,6 @@ bool FileManager::InitializeFileArchives()
     return success;
 }
 
-///bool FileManager::IsInsideFileArchive(const QString& userReadablePath)
-///{
-///    int faPrefixLength = conf->fileArchiveNamePATTERN.arg(whatever).length();
-///    if (userReadablePath.length() > faPrefixLength &&
-///        userReadablePath.left(faPrefixLength) == conf->fileArchiveNamePATTERN.arg(whatever) &&
-///        (userReadablePath[faPrefixLength] == '/' || userReadablePath[faPrefixLength] == '\\'))
-///        return true;
-///    return false;
-///}
-
 QString FileManager::GetUserReadableArchiveFilePath(const FileManager::BookmarkFile& bf)
 {
     QString archiveName = GetArchiveNameOfFile(bf.ArchiveURL);
@@ -65,7 +53,7 @@ QString FileManager::GetFullArchiveFilePath(const QString& fileArchiveURL)
         }
     }
 
-    //TODO: If not fonnd return what? or do the error handling where?
+    //TODO: If not found return what? or do the error handling where?
     return QString();
 }
 
@@ -246,6 +234,7 @@ bool FileManager::ClearSandBox()
 
 QString FileManager::CopyFileToSandBoxAndGetAddress(const QString& filePathName)
 {
+    //FileSandBoxManager archive doesn't need transactions for its `AddFileToArchive`.
     QString fileArchiveURL;
     bool success = fileArchives[conf->sandboxArchiveName]
             ->AddFileToArchive(filePathName, false, fileArchiveURL);
@@ -570,9 +559,10 @@ void FileManager::PopulateModels()
 
 void FileManager::CreateDefaultArchives(QSqlQuery& query)
 {
-    QString path_arch0   = QDir::currentPath() + "/" + conf->nominalFileArchiveDirName,
-            path_trash   = QDir::currentPath() + "/" + conf->nominalFileTrashDirName,
-            path_sandbox = QDir::currentPath() + "/" + conf->nominalFileSandBoxDirName;
+    QString currentPath = QDir::currentPath() + "/";
+    QString path_arch0   = currentPath + conf->nominalFileArchiveDirName,
+            path_trash   = currentPath + conf->nominalFileTrashDirName,
+            path_sandbox = currentPath + conf->nominalFileSandBoxDirName;
 
     //Insert multiple values at once requires SQLite 3.7.11+: stackoverflow.com/a/5009740/656366
     //So we don't do it.

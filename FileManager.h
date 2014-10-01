@@ -58,15 +58,10 @@ public:
 
     bool InitializeFileArchives();
 
-    /// //Files in file archive: Name convenience functions.
-    /// bool IsInsideFileArchive(const QString& userReadablePath);
-    //NOTE: The following two functions can have equivalent 'TrashFile' sisters.
     /// Get a path that only contains the Archive name and the file name, e.g for a file
     /// with ArchiveURL of ":arch0:/F/FA/FA3D4FBE.html" and OriginalName of "Index.html",
     /// it returns ":arch0:/Index.html". Must be called on ATTACHED files ONLY.
     QString GetUserReadableArchiveFilePath(const BookmarkFile& bf);
-    //TODO: Save :archive:, etc in the file too? Then we can have :arch1: on disk,
-    //  :arch2: on shared network, :sandbox:, :trash:, etc and unify many functions here!
     QString GetFullArchiveFilePath(const QString& fileArchiveURL);
     static QString GetFileNameOnlyFromOriginalNameField(const QString& originalName);
     static QString ChangeOriginalNameField(const QString& originalName, const QString& newName);

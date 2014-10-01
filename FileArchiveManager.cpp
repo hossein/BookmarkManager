@@ -7,8 +7,6 @@
 #include <QFile>
 #include <QFileInfo>
 
-//NOTE: In the process of I/FileArchiveManager'izing, the key phrases to search for are
-//      the `conf->nominal/prefix` and `QDir::current` thingies.
 FileArchiveManager::FileArchiveManager(QWidget* dialogParent, Config* conf,
                                        const QString& archiveName, const QString& archiveRoot,
                                        TransactionalFileOperator* filesTransaction)
