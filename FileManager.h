@@ -157,6 +157,11 @@ private:
     /// it returns exists or not.
     QString GetArchiveNameOfFile(const QString& fileArchiveURL);
 
+private:
+    //Initialization
+    bool PopulateAndRegisterFileArchives();
+    bool DoFileArchiveInitializations();
+
 protected:
     // ISubManager interface
     void CreateTables();

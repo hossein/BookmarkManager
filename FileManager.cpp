@@ -1,10 +1,11 @@
 #include "FileManager.h"
 
 #include "Config.h"
+#include "IArchiveManager.h"
 #include "FileArchiveManager.h"
 #include "FileSandBoxManager.h"
 
-//TODO: Remove these includes later. ALSO remove util, winfuncs, conf, etc if not needed later.
+//TODO: Remove these includes later. ALSO remove util, winfuncs, conf, non-abstract archives, etc if not needed later.
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -126,8 +127,8 @@ bool FileManager::RollBackFilesTransaction()
 bool FileManager::RetrieveBookmarkFilesModel(long long BID, QSqlQueryModel& filesModel)
 {
     QString retrieveError =
-            "Could not get attached files information for the bookmark "
-            "from the database.";
+            "Could not get attached files information for the bookmark from the database.";
+
     QSqlQuery query(db);
     query.prepare(StandardIndexedBookmarkFileByBIDQuery());
     query.addBindValue(BID);
@@ -511,6 +512,53 @@ QString FileManager::GetArchiveNameOfFile(const QString& fileArchiveURL)
     return fileArchiveName;
 }
 
+bool FileManager::PopulateAndRegisterFileArchives()
+{
+    QString retrieveError = "Could not get file archives information from the database.";
+
+    QSqlQuery query(db);
+    query.prepare("SELECT * FROM FileArchive");
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    const QSqlRecord record = query.record();
+    int faidx_Name = record.indexOf("Name");
+    int faidx_Type = record.indexOf("Type");
+    int faidx_Path = record.indexOf("Path");
+
+    FileArchiveManager* fam = new FileArchiveManager(
+                dialogParent, conf, conf->fileArchivePrefix,
+                QDir::currentPath() + "/" + conf->nominalFileArchiveDirName, &filesTransaction);
+    fileArchives[conf->fileArchivePrefix] = fam;
+
+    ArchiveManagerFactory archiveManFactory(dialogParent, conf, &filesTransaction);
+    while (query.next())
+    {
+        IArchiveManager::ArchiveType aType =
+                static_cast<IArchiveManager::ArchiveType>(query.value(faidx_Type).toInt());
+        QString aName = query.value(faidx_Name).toString();
+        QString aPath = query.value(faidx_Path).toString();
+
+        IArchiveManager* archiveMan = archiveManFactory.CreateArchiveManager(aType, aName, aPath);
+        fileArchives[aName] = archiveMan;
+    }
+
+    //Check if all default required archives are present. They are :arch0:, :trash: and :sandbox:.
+    QString archiveNotPresentError = "The required file archive '%1' does not exist in the database.";
+    QStringList requiredArchiveNames;
+    requiredArchiveNames << ":arch0:" << ":trash:" << ":sandbox:";
+    foreach (const QString& requiredArchiveName, requiredArchiveNames)
+        if (!fileArchives.keys().contains(requiredArchiveName))
+            return Error(archiveNotPresentError.arg(requiredArchiveName));
+
+    return true;
+}
+
+bool FileManager::DoFileArchiveInitializations()
+{
+
+}
+
 void FileManager::CreateTables()
 {
     QSqlQuery query(db);
@@ -519,8 +567,8 @@ void FileManager::CreateTables()
                "( FID INTEGER PRIMARY KEY AUTOINCREMENT, OriginalName TEXT, ArchiveURL TEXT, "
                "  ModifyDate INTEGER, Size Integer, MD5 BLOB )");
 
-    query.exec("CREATE TABLE FileArchive "
-               "( FAID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Type INTEGER, URL TEXT )");
+    query.exec("CREATE TABLE FileArchive"
+               "( FAID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Type INTEGER, Path TEXT )");
     CreateDefaultArchives(query);
 
     query.exec("CREATE TABLE BookmarkFile"
@@ -542,7 +590,7 @@ void FileManager::CreateDefaultArchives(QSqlQuery& query)
             path_sandbox = QDir::currentPath() + "/" + conf->nominalFileSandBoxDirName;
 
     //Insert multiple values at once requires SQLite 3.7.11+: stackoverflow.com/a/5009740/656366
-    query.prepare("INSERT INTO FileArchive(Name, Type, URL) VALUES "
+    query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES "
                   "('%1','%2','%3'),('%4','%5','%6'),('%7','%8','%9');");
 
     //TODO: ':arch0:'
