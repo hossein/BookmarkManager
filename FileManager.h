@@ -161,6 +161,8 @@ protected:
     // ISubManager interface
     void CreateTables();
     void PopulateModels();
+private:
+    void CreateDefaultArchives(QSqlQuery& query);
 };
 
 inline bool operator==(const FileManager::BookmarkFile& lhs, const FileManager::BookmarkFile& rhs);

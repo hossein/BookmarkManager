@@ -519,6 +519,10 @@ void FileManager::CreateTables()
                "( FID INTEGER PRIMARY KEY AUTOINCREMENT, OriginalName TEXT, ArchiveURL TEXT, "
                "  ModifyDate INTEGER, Size Integer, MD5 BLOB )");
 
+    query.exec("CREATE TABLE FileArchive "
+               "( FAID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Type INTEGER, URL TEXT )");
+    CreateDefaultArchives(query);
+
     query.exec("CREATE TABLE BookmarkFile"
                "( BFID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, FID INTEGER )");
 
@@ -530,6 +534,31 @@ void FileManager::PopulateModels()
 {
     //FileManager does not have a model.
 }
+
+void FileManager::CreateDefaultArchives(QSqlQuery& query)
+{
+    QString path_arch0   = QDir::currentPath() + "/" + conf->nominalFileArchiveDirName,
+            path_trash   = QDir::currentPath() + "/" + conf->nominalFileTrashDirName,
+            path_sandbox = QDir::currentPath() + "/" + conf->nominalFileSandBoxDirName;
+
+    //Insert multiple values at once requires SQLite 3.7.11+: stackoverflow.com/a/5009740/656366
+    query.prepare("INSERT INTO FileArchive(Name, Type, URL) VALUES "
+                  "('%1','%2','%3'),('%4','%5','%6'),('%7','%8','%9');");
+
+    //TODO: ':arch0:'
+    query.addBindValue(conf->fileArchivePrefix);
+    query.addBindValue((int)IArchiveManager::AT_FileArchive);
+    query.addBindValue(path_arch0);
+
+    query.addBindValue(conf->fileTrashPrefix);
+    query.addBindValue((int)IArchiveManager::AT_FileArchive);
+    query.addBindValue(path_trash);
+
+    query.addBindValue(":sandbox:");
+    query.addBindValue((int)IArchiveManager::AT_SandBox);
+    query.addBindValue(path_sandbox);
+}
+
 
 
 bool operator==(const FileManager::BookmarkFile& lhs, const FileManager::BookmarkFile& rhs)
