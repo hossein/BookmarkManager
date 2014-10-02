@@ -83,6 +83,15 @@
 ///   - Show at most THREE important digits after the slash, i.e if digits before dot are less than
 ///     three, show more digits to the right.
 ///     E.g 1.00 KiB, 10.0 KiB, 110 KiB, 1.00 MiB, 10.0 MiB, 110 MiB and so on.
+///   - Drag & drop attached files into Explorer to copy them!
+///   - Show Shell menu for attached files, e.g with ctrl+right click or something.
+///   - For installability, support creating both the database and file archive folders on a data
+///     path (We have usually used `QDir::currentPath()` in such places; but it is MORE WRONG! If we
+///     want the application path we need to use `QApplication::applicationDirPath()`; the current
+///     working directory might be different from that. Read comments at
+///     `FileManager::CreateDefaultArchives` for more info).
+///   - If a file is removed manually from the file archive without program's consent, at least show
+///     some warning the next time!
 
 class Config
 {

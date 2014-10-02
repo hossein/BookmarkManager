@@ -504,7 +504,7 @@ bool FileManager::PopulateAndRegisterFileArchives()
         IArchiveManager::ArchiveType aType =
                 static_cast<IArchiveManager::ArchiveType>(query.value(faidx_Type).toInt());
         QString aName = query.value(faidx_Name).toString();
-        QString aPath = query.value(faidx_Path).toString();
+        QString aPath = GetAbsoluteFileArchivePath(query.value(faidx_Path).toString());
 
         IArchiveManager* archiveMan = archiveManFactory.CreateArchiveManager(aType, aName, aPath);
         fileArchives[aName] = archiveMan;
@@ -557,9 +557,27 @@ void FileManager::PopulateModels()
     //FileManager does not have a model.
 }
 
+QString FileManager::GetAbsoluteFileArchivePath(const QString& fileArchivePathWithVars)
+{
+    //Read `FileManager::CreateDefaultArchives` comments to know why we use special variables
+    //  in FileArchive paths.
+    QString reprPath = fileArchivePathWithVars;
+
+    //It is mentioned in the program plan that we'd better use QApplication::applicationDirPath()
+    //  for this!
+    QString varValue_appdir = QDir::currentPath();
+    reprPath.replace("%appdir%", varValue_appdir, Qt::CaseInsensitive);
+    return reprPath;
+}
+
 void FileManager::CreateDefaultArchives(QSqlQuery& query)
 {
-    QString currentPath = QDir::currentPath() + "/";
+    //It's important that for portability and easy copy-pasting the program and its data, we use
+    //  some representing variable instead of the absolute path of the executable. We could also
+    //  use relative path names, but that's prone to errors (e.g user starting the executable in
+    //  a working folder other than executable's own).
+    //QString currentPath = QDir::currentPath() + "/";
+    QString currentPath = "%appdir%/";
     QString path_arch0   = currentPath + conf->nominalFileArchiveDirName,
             path_trash   = currentPath + conf->nominalFileTrashDirName,
             path_sandbox = currentPath + conf->nominalFileSandBoxDirName;

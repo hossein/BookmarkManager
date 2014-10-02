@@ -162,6 +162,7 @@ protected:
     void CreateTables();
     void PopulateModels();
 private:
+    QString GetAbsoluteFileArchivePath(const QString& fileArchivePathWithVars);
     void CreateDefaultArchives(QSqlQuery& query);
 };
 

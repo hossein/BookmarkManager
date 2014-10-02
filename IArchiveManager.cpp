@@ -28,6 +28,9 @@ bool IArchiveManager::InitializeFilesDirectory()
 
 bool IArchiveManager::CreateLocalFileDirectory(const QString& faDirPath)
 {
+    //Not specifying the QDir::currentPath() is the same as specifying it wrt relative path names!
+    //  However by not specifying we actually let relative creation, too; although other parts
+    //  call this function only with absolute paths.
     //QString faDirPath = QDir::currentPath() + "/" + archiveFolderName;
     QFileInfo faDirInfo(faDirPath);
 
