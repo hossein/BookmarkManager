@@ -31,8 +31,6 @@ private:
     bool fileTransactionStarted;
     QList<FileOp> fileOps;
 
-    //TODO: Return error in all functions if transaction is not started.
-
 public:
     TransactionalFileOperator();
 
@@ -40,6 +38,9 @@ public:
     bool CommitTransaction();
     bool RollBackTransaction();
 
+    bool isTransactionStarted();
+
+    /// The following functions return `false` if either transaction is not started, or they fail.
 public:
     bool MakePath(const QString& basePath, const QString& pathToMake);
     /// Rename can be used for BOTH renaming and MOVING AS LONG AS the files are on the same volume.

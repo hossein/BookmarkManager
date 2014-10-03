@@ -23,12 +23,18 @@ bool TransactionalFileOperator::BeginTransaction()
 
 bool TransactionalFileOperator::CommitTransaction()
 {
+    if (!fileTransactionStarted)
+        return false;
+
     EndTransaction();
     return true;
 }
 
 bool TransactionalFileOperator::RollBackTransaction()
 {
+    if (!fileTransactionStarted)
+        return false;
+
     bool overallResult = true;
     foreach (const FileOp& fileOp, fileOps)
     {
@@ -62,8 +68,16 @@ bool TransactionalFileOperator::RollBackTransaction()
     return overallResult;
 }
 
+bool TransactionalFileOperator::isTransactionStarted()
+{
+    return fileTransactionStarted;
+}
+
 bool TransactionalFileOperator::MakePath(const QString& basePath, const QString& pathToMake)
 {
+    if (!fileTransactionStarted)
+        return false;
+
     QDir baseDir(basePath);
     bool result = baseDir.mkpath(pathToMake);
 
@@ -76,6 +90,9 @@ bool TransactionalFileOperator::MakePath(const QString& basePath, const QString&
 
 bool TransactionalFileOperator::RenameFile(const QString& oldName, const QString& newName)
 {
+    if (!fileTransactionStarted)
+        return false;
+
     bool result = QFile::rename(oldName, newName);
 
     if (result)
@@ -86,6 +103,9 @@ bool TransactionalFileOperator::RenameFile(const QString& oldName, const QString
 
 bool TransactionalFileOperator::CopyFile(const QString& oldPath, const QString& newPath)
 {
+    if (!fileTransactionStarted)
+        return false;
+
     bool result = QFile::copy(oldPath, newPath);
 
     if (result)
@@ -96,6 +116,9 @@ bool TransactionalFileOperator::CopyFile(const QString& oldPath, const QString& 
 
 bool TransactionalFileOperator::MoveFile(const QString& oldPath, const QString& newPath)
 {
+    if (!fileTransactionStarted)
+        return false;
+
     bool result = QFile::copy(oldPath, newPath);
 
     if (result)
@@ -109,6 +132,9 @@ bool TransactionalFileOperator::MoveFile(const QString& oldPath, const QString& 
 
 bool TransactionalFileOperator::SystemTrashFile(const QString& filePath)
 {
+    if (!fileTransactionStarted)
+        return false;
+
     QString backUpFilePath;
     bool result = backupFileInTemp(filePath, backUpFilePath);
 
@@ -123,6 +149,9 @@ bool TransactionalFileOperator::SystemTrashFile(const QString& filePath)
 
 bool TransactionalFileOperator::DeleteFile(const QString& filePath)
 {
+    if (!fileTransactionStarted)
+        return false;
+
     QString backUpFilePath;
     bool result = backupFileInTemp(filePath, backUpFilePath);
 
