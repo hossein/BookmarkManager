@@ -352,11 +352,14 @@ void MainWindow::RefreshTVBookmarksModelView()
 
 void MainWindow::NewBookmark()
 {
-    //TODO: Make all these modal dialogs non-pointer, if it's okay with message loops.
-    BookmarkEditDialog::OutParams outParams;
-    BookmarkEditDialog* bmEditDialog = new BookmarkEditDialog(&dbm, &conf, -1, &outParams, this);
+    //I hesitated at allocating the modal dialog on stack, but look here for a nice discussion
+    //  about message loop of modal dialogs:
+    //  http://qt-project.org/forums/viewthread/15361
 
-    int result = bmEditDialog->exec();
+    BookmarkEditDialog::OutParams outParams;
+    BookmarkEditDialog bmEditDialog(&dbm, &conf, -1, &outParams, this);
+
+    int result = bmEditDialog.exec();
     if (result != QDialog::Accepted)
         return;
 
@@ -391,12 +394,12 @@ void MainWindow::SelectBookmarkWithID(long long bookmarkId)
 
 void MainWindow::ViewSelectedBookmark()
 {
-    BookmarkViewDialog* bmViewDialog = new BookmarkViewDialog(&dbm, GetSelectedBookmarkID(), this);
+    BookmarkViewDialog bmViewDialog(&dbm, GetSelectedBookmarkID(), this);
 
-    if (!bmViewDialog->canShow())
+    if (!bmViewDialog.canShow())
         return; //In case of errors a message is already shown.
 
-    bmViewDialog->exec();
+    bmViewDialog.exec();
 
     //No need to refresh UI display.
 }
@@ -405,12 +408,12 @@ void MainWindow::EditSelectedBookmark()
 {
     BookmarkEditDialog::OutParams outParams;
     const long long BID = GetSelectedBookmarkID();
-    BookmarkEditDialog* bmEditDialog = new BookmarkEditDialog(&dbm, &conf, BID, &outParams, this);
+    BookmarkEditDialog bmEditDialog(&dbm, &conf, BID, &outParams, this);
 
-    if (!bmEditDialog->canShow())
+    if (!bmEditDialog.canShow())
         return; //In case of errors a message is already shown.
 
-    int result = bmEditDialog->exec();
+    int result = bmEditDialog.exec();
     if (result != QDialog::Accepted)
         return;
 
