@@ -23,6 +23,10 @@ FileArchiveManager::~FileArchiveManager()
 bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
                                           QString& fileArchiveURL)
 {
+    //This is like an assert.
+    if (!filesTransaction->isTransactionStarted())
+        return Error("No file transaction was started before adding files to archive.");
+
     //Check if file is valid.
     QFileInfo fi(filePathName);
     if (!fi.exists())
@@ -74,6 +78,10 @@ bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool syst
 
 bool FileArchiveManager::RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash)
 {
+    //This is like an assert.
+    if (!filesTransaction->isTransactionStarted())
+        return Error("No file transaction was started before removing files from archive.");
+
     bool success;
     QString fileOperationError = "Unable to remove a file from the FileArchive.";
 
