@@ -306,7 +306,8 @@ void MainWindow::RefreshTVBookmarksModelView()
     bool allTagsOrNoneOfTheTags = (m_allTagsChecked == TCSR_AllChecked
                                 || m_allTagsChecked == TCSR_NoneChecked);
 
-    //TODO: Neede everytime?
+    //TODO: Needed everytime? if we're changing the model each time in the lines below, we should
+    //  reconnect the signal as well, like what we are doing right now. Can it be eliminated?
     filteredBookmarksModel.setSourceModel(&dbm.bms.model);
     if (allTagsOrNoneOfTheTags)
     {
@@ -345,7 +346,7 @@ void MainWindow::RefreshTVBookmarksModelView()
     QHeaderView* vh = ui->tvBookmarks->verticalHeader();
     vh->setResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
 
-    //TODO: Connect everytime?
+    //Need to connect everytime we change the model.
     connect(ui->tvBookmarks->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
             this, SLOT(tvBookmarksCurrentRowChanged(QModelIndex,QModelIndex)));
 }

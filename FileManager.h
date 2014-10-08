@@ -79,7 +79,6 @@ public:
     bool RetrieveBookmarkFiles(long long BID, QList<BookmarkFile>& bookmarkFiles);
 
     //Bookmark updating: involves BOTH adding and deleting.
-    //NOTE: "Shar"e and "Multiple" and "Two" are keywords for file sharing between multiple bookmarks.
     /// Although the interface currently doesn't allow sharing a file between multiple bookmarks,
     ///     this function uses BFID for its calculations and allows it.
     /// IMPORTANT: Do NOT make `editedBookmarkFiles` non-const; in transactions where consecutive

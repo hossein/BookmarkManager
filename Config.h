@@ -35,7 +35,7 @@
 ///   x Make the changes that we need to require multiple file attaching and do it.
 ///   x Manage tag saving as comma separated integers/string or a separate table? (Done: the latter)
 ///   - Show files information on double click in BOTH add/edit and view bookmark dialogs.
-///   - When user opens a file, CAN HE CHANGE IT? And should we save Changes? YES AND ALSO CHANGES
+///   x When user opens a file, CAN HE CHANGE IT? And should we save Changes? YES AND ALSO CHANGES
 ///     MUST BE SAVED IN THE DB TOO! Also, user should be warned against "changing changes multiple
 ///     files too". Add this last one as a note when you implemented file changing before multiple
 ///     file sharing.
@@ -48,7 +48,9 @@
 ///   x Filter by tags
 ///   - "Delete" moves the bookmarks or archivefiles to a "Trash", never deletes them!
 ///   - Search
+///   - Bookmark extra info table.
 ///   - Import Firefox bookmarks (by both browsing the json file and selecting profile!)
+///   - Linking Bookmarks to each other.
 ///   x Extension Association Edit Dialog: For each extension, show the list of Open With (but not
 ///     the system default Open dialog, because we want to be system-independent and not use
 ///     Windows' registry CLASSES, etc) and let user (only!) Remove the apps he needs. Also a
@@ -74,6 +76,11 @@
 ///                        file-from-recycle-bin?forum=csharpgeneral
 ///     (ANOTHER PROJECT) http://www.codeproject.com/Articles/2783/
 ///                       How-to-programmatically-use-the-Recycle-Bin
+///   - Sharing files between two or multiple bookmarks. Note: There is already some support for it
+///     in the manager classes. In all places in the code, "Shar"e and "Multiple" and "Two" are
+///     keywords for file sharing between multiple bookmarks.
+///     Also if user edits a shared file, he should be shown a warning and given the options to 'fork'
+///     and edit the file only for the specific bookmark he is working on, or for all bookmarks.
 ///   - Zoom in/out, real size, fit size, rotate cw/ccw buttons for image viewer, support dragging
 ///     and wheel zooming.
 ///   - Encoding and word-wrap selector for text viewer. Font selection option and wheel zooming.
