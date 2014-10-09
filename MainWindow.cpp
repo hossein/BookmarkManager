@@ -44,6 +44,11 @@ MainWindow::MainWindow(QWidget *parent) :
     btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
     ui->mainToolBar->addWidget(btn);
 
+    filteredBookmarksModel.setSourceModel(&dbm.bms.model);
+    filteredBookmarksModel.sort(dbm.bms.bidx.Name, Qt::AscendingOrder);
+    ui->tvBookmarks->setModel(&filteredBookmarksModel);
+    ui->tvBookmarks->sortByColumn(dbm.bms.bidx.Name, Qt::AscendingOrder);
+
     // Load the application and logic
     LoadDatabaseAndUI();
 
@@ -129,6 +134,8 @@ void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
     //Note: Instead of just `RefreshTVBookmarksModelView()` we use the full Refresh below.
     //  It's more standard for this task; we want to save selection, and also update status labels.
     //  We don't populate the data again though.
+    //20141009: A new save selection method now saves selection upon filtering by tags.
+    //  Read the comments in the following function at the place where selection is restored.
     RefreshUIDataDisplay(false, RA_SaveSelAndFocus, -1,
                          (RefreshAction)(RA_SaveSelAndScroll | RA_NoRefreshView));
 }
@@ -175,9 +182,12 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
     int hTagsScrollPos = 0, hBScrollPos = 0, vBScrollPos = 0;
 
     //Save required things.
+    //This is required to be a persistent model for saving selections after filtering.
+    QPersistentModelIndex selectedBRowIndex;
     if (bookmarksAction & RA_SaveSel) //[SavingSelectedBookmarkAndTag]
         if (ui->tvBookmarks->selectionModel()->selectedIndexes().size() > 0)
-            selectedBRow = ui->tvBookmarks->selectionModel()->selectedIndexes()[0].row();
+            //!selectedBRow = ui->tvBookmarks->selectionModel()->selectedIndexes()[0].row();
+            selectedBRowIndex = ui->tvBookmarks->selectionModel()->selectedIndexes()[0];
     if (tagsAction & RA_SaveSel) //[SavingSelectedBookmarkAndTag]
         selectedTId = GetSelectedTagID();
     if (bookmarksAction & RA_SaveScrollPos)
@@ -237,9 +247,17 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
     RefreshStatusLabels();
 
     //Pour out saved selections, scrolls, etc.
+    //Note on 20141009:
+    //  To make selection compatible with sorting, we couldn't just select rows. We use ModelIndexes.
+    //  With the new Bookmark selection saving method, when filtering by tags, instead of selecting
+    //  something ourselves, we could not select anything and let the TableView do it itself!
+    //  But if a bookmark is selected and then its tag is deselected, the bookmark disappears.
+    //  If TableWidget manages selections, it just selects the nearest bookmark, but with our custom
+    //  selecting, selection is cleared and we prefer it.
     if (bookmarksAction & RA_SaveSel)
-        if (selectedBRow != -1)
-            ui->tvBookmarks->setCurrentIndex(filteredBookmarksModel.index(selectedBRow, 0));
+        //if (selectedBRow != -1)
+            //!ui->tvBookmarks->setCurrentIndex(filteredBookmarksModel.index(selectedBRow, 0));
+            ui->tvBookmarks->setCurrentIndex(selectedBRowIndex);
     if (tagsAction & RA_SaveSel)
         if (selectedTId != -1)
             SelectTagWithID(selectedTId);
@@ -308,7 +326,7 @@ void MainWindow::RefreshTVBookmarksModelView()
 
     //TODO: Needed everytime? if we're changing the model each time in the lines below, we should
     //  reconnect the signal as well, like what we are doing right now. Can it be eliminated?
-    filteredBookmarksModel.setSourceModel(&dbm.bms.model);
+    //!!filteredBookmarksModel.setSourceModel(&dbm.bms.model);
     if (allTagsOrNoneOfTheTags)
     {
         filteredBookmarksModel.ClearFilters();
@@ -325,9 +343,11 @@ void MainWindow::RefreshTVBookmarksModelView()
         filteredBookmarksModel.FilterSpecificTagIDs(tagIDs);
     }
 
-    ui->tvBookmarks->setModel(&filteredBookmarksModel);
+    //!!ui->tvBookmarks->setModel(&filteredBookmarksModel);
 
     QHeaderView* hh = ui->tvBookmarks->horizontalHeader();
+    Qt::SortOrder sortOrder = hh->sortIndicatorOrder();
+    int sortColumn = hh->sortIndicatorSection();
 
     BookmarkManager::BookmarkIndexes const& bidx = dbm.bms.bidx;
     if (hh->count() > 0) //This can happen on database errors.
@@ -342,6 +362,10 @@ void MainWindow::RefreshTVBookmarksModelView()
         //TODO: How to show tags? hh->resizeSection(dbm.bidx.Tags, 100);
         hh->resizeSection(bidx.Rating, 50);
     }
+
+    //ui->tvBookmarks->sortByColumn(sortColumn);
+    filteredBookmarksModel.sort(sortColumn, sortOrder);
+    //hh->setSortIndicator(sortColumn, sortOrder);
 
     QHeaderView* vh = ui->tvBookmarks->verticalHeader();
     vh->setResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
