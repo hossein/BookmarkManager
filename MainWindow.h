@@ -49,7 +49,8 @@ private:
         RA_Focus = 0x08, //Make the selection vivid blue! Instead of gray.
         RA_SaveSelAndFocus = RA_SaveSel | RA_Focus,
         RA_SaveScrollPosAndFocus = RA_SaveScrollPos | RA_Focus,
-        RA_SaveSelAndScrollAndFocus = RA_SaveSelAndScroll | RA_Focus,
+        RA_SaveSelAndScrollAndFocus = RA_SaveSel | RA_SaveScrollPosAndFocus,
+        RA_CustomSelAndSaveScrollAndFocus = RA_CustomSelect | RA_SaveScrollPosAndFocus,
         RA_CustomSelectAndFocus = RA_CustomSelect | RA_Focus,
         RA_SaveCheckState = 0x10, //Only for Tags
         RA_SaveSelAndScrollAndCheck = RA_SaveSelAndScroll | RA_SaveCheckState,

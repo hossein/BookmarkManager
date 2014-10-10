@@ -44,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
     btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
     ui->mainToolBar->addWidget(btn);
 
+    //Note: Maybe move these to their own one-time-called function too?
     filteredBookmarksModel.setSourceModel(&dbm.bms.model);
     filteredBookmarksModel.sort(dbm.bms.bidx.Name, Qt::AscendingOrder);
     ui->tvBookmarks->setModel(&filteredBookmarksModel);
@@ -254,6 +255,9 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
     //  But if a bookmark is selected and then its tag is deselected, the bookmark disappears.
     //  If TableWidget manages selections, it just selects the nearest bookmark, but with our custom
     //  selecting, selection is cleared and we prefer it.
+    //Important: This selecting is only useful for filtering, as all other actions manage the
+    //  selections themselves, but Edit must manually select now, too; as model indices (even
+    //  persistent ones) are invalid after a model reset.
     if (bookmarksAction & RA_SaveSel)
         //if (selectedBRow != -1)
             //!ui->tvBookmarks->setCurrentIndex(filteredBookmarksModel.index(selectedBRow, 0));
@@ -442,7 +446,8 @@ void MainWindow::EditSelectedBookmark()
     if (result != QDialog::Accepted)
         return;
 
-    RefreshUIDataDisplay(true, RA_SaveSelAndScrollAndFocus, -1, RA_SaveSelAndScrollAndCheck,
+    //20141009: The model is reset so we should do the selection manually ourselves.
+    RefreshUIDataDisplay(true, RA_CustomSelAndSaveScrollAndFocus, BID, RA_SaveSelAndScrollAndCheck,
                          -1, outParams.associatedTIDs);
 }
 
@@ -464,6 +469,7 @@ void MainWindow::DeleteSelectedBookmark()
     if (!success)
         return;
 
+    //After delete, no item remains selected.
     RefreshUIDataDisplay(true, RA_SaveScrollPosAndFocus, -1, RA_SaveSelAndScrollAndCheck);
 }
 
