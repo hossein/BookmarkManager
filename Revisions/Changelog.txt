@@ -39,3 +39,4 @@
 2014-09-29  41  File management unification more tries and almost complete.
 2014-10-01  34  File archive management unification done.
 2014-10-07  30  Use relative paths for FileArchive paths, bugfixes and improvements.
+2014-10-09  29  Enable sorting, correct save selection behaviour for sorting.

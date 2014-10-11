@@ -44,13 +44,8 @@ MainWindow::MainWindow(QWidget *parent) :
     btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
     ui->mainToolBar->addWidget(btn);
 
-    //Note: Maybe move these to their own one-time-called function too?
-    filteredBookmarksModel.setSourceModel(&dbm.bms.model);
-    filteredBookmarksModel.sort(dbm.bms.bidx.Name, Qt::AscendingOrder);
-    ui->tvBookmarks->setModel(&filteredBookmarksModel);
-    ui->tvBookmarks->sortByColumn(dbm.bms.bidx.Name, Qt::AscendingOrder);
-
     // Load the application and logic
+    PreAssignModels();
     LoadDatabaseAndUI();
 
     // Additional sub-parts initialization. NOTE: We don't check their return value.
@@ -139,6 +134,15 @@ void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
     //  Read the comments in the following function at the place where selection is restored.
     RefreshUIDataDisplay(false, RA_SaveSelAndFocus, -1,
                          (RefreshAction)(RA_SaveSelAndScroll | RA_NoRefreshView));
+}
+
+void MainWindow::PreAssignModels()
+{
+    //Note: Sorting won't work here, as sorting is done when populating proxy model and tvBookmarks.
+    filteredBookmarksModel.setSourceModel(&dbm.bms.model);
+    //filteredBookmarksModel.sort(dbm.bms.bidx.Name, Qt::AscendingOrder);
+    ui->tvBookmarks->setModel(&filteredBookmarksModel);
+    //ui->tvBookmarks->sortByColumn(dbm.bms.bidx.Name, Qt::AscendingOrder);
 }
 
 void MainWindow::LoadDatabaseAndUI()

@@ -22,7 +22,12 @@ protected:
     {
     }
 
+    /// Called only upon creating the database.
     virtual void CreateTables() = 0;
+
+    /// Execute queries on models and populate them. Called multiple times when refreshing by program.
+    /// Subclasses must NEVER assign to their models, as the models are assigned upon program loading
+    ///   to proxy models and UI elements and must change after that.
     virtual void PopulateModels() = 0;
 
     void setSqlDatabase(QSqlDatabase& db_)

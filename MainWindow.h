@@ -37,8 +37,11 @@ private slots:
     void lwTagsItemChanged(QListWidgetItem* item);
 
 private:
+    /// Initialization functions, to be called JUST ONCE for loading.
+    void PreAssignModels();
     void LoadDatabaseAndUI();
 
+    /// Master functions for data refresh and display.
     enum RefreshAction
     {
         RA_None = 0x00,
