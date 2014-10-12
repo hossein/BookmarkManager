@@ -96,6 +96,39 @@ void MainWindow::tvBookmarksCurrentRowChanged(const QModelIndex& current, const 
     ui->btnDelete->setEnabled(valid);
 }
 
+void MainWindow::tvBookmarksHeaderClicked(int logicalIndex)
+{
+    //We use this slot to allow the user to clear the sort and to restore the default order,
+    //  i.e BID which must be roughly equivalent to adding date, or adding order in browsers.
+    qDebug() << "Section clicked: " << logicalIndex;
+
+    QHeaderView* hh = ui->tvBookmarks->horizontalHeader();
+    int currentSectionIndex = (hh->isSortIndicatorShown() ? hh->sortIndicatorSection() : -1);
+    Qt::SortOrder currentSortOrder = hh->sortIndicatorOrder();
+
+    if (logicalIndex == currentSectionIndex) //logicalIndex is never -1 here.
+    {
+        //Important: This is the value AFTER the Qt changes the sort order.
+        if (currentSortOrder == Qt::DescendingOrder)
+        {
+            hh->setSortIndicator(currentSectionIndex, Qt::DescendingOrder);
+            hh->setSortIndicatorShown(true);
+            filteredBookmarksModel.sort(logicalIndex, Qt::DescendingOrder);
+        }
+        else
+        {
+            hh->setSortIndicatorShown(false);
+            filteredBookmarksModel.sort(dbm.bms.bidx.BID, Qt::AscendingOrder);
+        }
+    }
+    else
+    {
+        hh->setSortIndicator(logicalIndex, Qt::AscendingOrder);
+        hh->setSortIndicatorShown(true);
+        filteredBookmarksModel.sort(logicalIndex, Qt::AscendingOrder);
+    }
+}
+
 void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
 {
     //Disconnect this signal-slot connection to make sure ItemChanged
@@ -155,6 +188,10 @@ void MainWindow::LoadDatabaseAndUI()
         return;
 
     RefreshUIDataDisplay(true, RA_Focus);
+
+    //First time connections.
+    QHeaderView* hh = ui->tvBookmarks->horizontalHeader();
+    connect(hh, SIGNAL(sectionClicked(int)), this, SLOT(tvBookmarksHeaderClicked(int)));
 }
 
 void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
@@ -354,9 +391,11 @@ void MainWindow::RefreshTVBookmarksModelView()
     //!!ui->tvBookmarks->setModel(&filteredBookmarksModel);
 
     QHeaderView* hh = ui->tvBookmarks->horizontalHeader();
+    //TODO: Sorts must be here?
     Qt::SortOrder sortOrder = hh->sortIndicatorOrder();
     int sortColumn = hh->sortIndicatorSection();
 
+    //TODO: Seems this can be done only once, like the signal connection.
     BookmarkManager::BookmarkIndexes const& bidx = dbm.bms.bidx;
     if (hh->count() > 0) //This can happen on database errors.
     {

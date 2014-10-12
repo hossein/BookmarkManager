@@ -34,6 +34,7 @@ private slots:
     void on_btnDelete_clicked();
     void on_tvBookmarks_activated(const QModelIndex &index);
     void tvBookmarksCurrentRowChanged(const QModelIndex& current, const QModelIndex& previous);
+    void tvBookmarksHeaderClicked(int logicalIndex);
     void lwTagsItemChanged(QListWidgetItem* item);
 
 private:
