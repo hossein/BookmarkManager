@@ -22,6 +22,8 @@ private:
     DatabaseManager dbm;
     QHash<long long, QListWidgetItem*> tagItems;
     BookmarksFilteredByTagsSortProxyModel filteredBookmarksModel;
+    int sortNextLogicalIndex;
+    Qt::SortOrder sortNextOrder;
 
 public:
     explicit MainWindow(QWidget *parent = 0);
@@ -34,6 +36,7 @@ private slots:
     void on_btnDelete_clicked();
     void on_tvBookmarks_activated(const QModelIndex &index);
     void tvBookmarksCurrentRowChanged(const QModelIndex& current, const QModelIndex& previous);
+    void tvBookmarksHeaderPressed(int logicalIndex);
     void tvBookmarksHeaderClicked(int logicalIndex);
     void lwTagsItemChanged(QListWidgetItem* item);
 

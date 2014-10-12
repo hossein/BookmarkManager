@@ -96,11 +96,12 @@ void MainWindow::tvBookmarksCurrentRowChanged(const QModelIndex& current, const 
     ui->btnDelete->setEnabled(valid);
 }
 
-void MainWindow::tvBookmarksHeaderClicked(int logicalIndex)
+void MainWindow::tvBookmarksHeaderPressed(int logicalIndex)
 {
     //We use this slot to allow the user to clear the sort and to restore the default order,
     //  i.e BID which must be roughly equivalent to adding date, or adding order in browsers.
-    qDebug() << "Section clicked: " << logicalIndex;
+    //We can't use the section clicked slot only, as its values are AFTER Qt changes the sort
+    //  order itself. We use both pressed and clicked slots to acheive what we want.
 
     QHeaderView* hh = ui->tvBookmarks->horizontalHeader();
     int currentSectionIndex = (hh->isSortIndicatorShown() ? hh->sortIndicatorSection() : -1);
@@ -108,25 +109,35 @@ void MainWindow::tvBookmarksHeaderClicked(int logicalIndex)
 
     if (logicalIndex == currentSectionIndex) //logicalIndex is never -1 here.
     {
-        //Important: This is the value AFTER the Qt changes the sort order.
-        if (currentSortOrder == Qt::DescendingOrder)
+        if (currentSortOrder == Qt::AscendingOrder)
         {
-            hh->setSortIndicator(currentSectionIndex, Qt::DescendingOrder);
-            hh->setSortIndicatorShown(true);
-            filteredBookmarksModel.sort(logicalIndex, Qt::DescendingOrder);
+            sortNextLogicalIndex = logicalIndex;
+            sortNextOrder = Qt::DescendingOrder;
         }
         else
         {
-            hh->setSortIndicatorShown(false);
-            filteredBookmarksModel.sort(dbm.bms.bidx.BID, Qt::AscendingOrder);
+            sortNextLogicalIndex = -1;
         }
     }
     else
     {
-        hh->setSortIndicator(logicalIndex, Qt::AscendingOrder);
-        hh->setSortIndicatorShown(true);
-        filteredBookmarksModel.sort(logicalIndex, Qt::AscendingOrder);
+        sortNextLogicalIndex = logicalIndex;
+        sortNextOrder = Qt::AscendingOrder;
     }
+}
+
+void MainWindow::tvBookmarksHeaderClicked(int logicalIndex)
+{
+    Q_UNUSED(logicalIndex);
+
+    QHeaderView* hh = ui->tvBookmarks->horizontalHeader();
+    hh->setSortIndicatorShown(sortNextLogicalIndex != -1);
+    hh->setSortIndicator(sortNextLogicalIndex, sortNextOrder);
+
+    if (sortNextLogicalIndex == -1)
+        filteredBookmarksModel.sort(dbm.bms.bidx.BID, Qt::AscendingOrder);
+    else
+        filteredBookmarksModel.sort(logicalIndex, sortNextOrder);
 }
 
 void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
@@ -191,6 +202,7 @@ void MainWindow::LoadDatabaseAndUI()
 
     //First time connections.
     QHeaderView* hh = ui->tvBookmarks->horizontalHeader();
+    connect(hh, SIGNAL(sectionPressed(int)), this, SLOT(tvBookmarksHeaderPressed(int)));
     connect(hh, SIGNAL(sectionClicked(int)), this, SLOT(tvBookmarksHeaderClicked(int)));
 }
 
@@ -199,8 +211,6 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
                                       MainWindow::RefreshAction tagsAction, long long selectTID,
                                       const QList<long long>& newTIDsToCheck)
 {
-    //TODO: What about sorting?
-
     //Calling this function after changes is needed, even for the bookmarks list.
     //  The model does NOT automatically update its view. Actually calliong `PopulateModels`
     //  DOES invalidate the selection, etc, but the tableView is not updated.

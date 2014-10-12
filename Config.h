@@ -99,6 +99,7 @@
 ///     `FileManager::CreateDefaultArchives` for more info).
 ///   - If a file is removed manually from the file archive without program's consent, at least show
 ///     some warning the next time!
+///   - When sorting bookmarks by URL, disregard the protocol name in sorting.
 
 class Config
 {
