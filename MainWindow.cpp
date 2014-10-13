@@ -14,9 +14,15 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow), conf(), dbm(this, &conf),
-    filteredBookmarksModel(&dbm, this, &conf, this), m_allTagsChecked(TCSR_NoneChecked)
+    m_allTagsChecked(TCSR_NoneChecked)
 {
     ui->setupUi(this);
+
+    // Initialize important controls
+    ui->bv->Initialize(&dbm, &conf);
+    connect(ui->bv, SIGNAL(activated(long long)), this, SLOT(bvActivated(long long)));
+    connect(ui->bv, SIGNAL(currentRowChanged(long long,long long)),
+            this, SLOT(bvCurrentRowChanged(long long,long long)));
 
     // Set size and position
     int dWidth = QApplication::desktop()->availableGeometry().width();
@@ -81,63 +87,19 @@ void MainWindow::on_btnDelete_clicked()
     DeleteSelectedBookmark();
 }
 
-void MainWindow::on_tvBookmarks_activated(const QModelIndex &index)
+void MainWindow::bvActivated(long long BID)
 {
-    Q_UNUSED(index);
+    Q_UNUSED(BID);
     ViewSelectedBookmark();
 }
 
-void MainWindow::tvBookmarksCurrentRowChanged(const QModelIndex& current, const QModelIndex& previous)
+void MainWindow::bvCurrentRowChanged(long long currentBID, long long previousBID)
 {
-    Q_UNUSED(previous);
-    register bool valid = current.isValid();
+    Q_UNUSED(previousBID);
+    register bool valid = (currentBID != -1);
     ui->btnView->setEnabled(valid);
     ui->btnEdit->setEnabled(valid);
     ui->btnDelete->setEnabled(valid);
-}
-
-void MainWindow::tvBookmarksHeaderPressed(int logicalIndex)
-{
-    //We use this slot to allow the user to clear the sort and to restore the default order,
-    //  i.e BID which must be roughly equivalent to adding date, or adding order in browsers.
-    //We can't use the section clicked slot only, as its values are AFTER Qt changes the sort
-    //  order itself. We use both pressed and clicked slots to acheive what we want.
-
-    QHeaderView* hh = ui->tvBookmarks->horizontalHeader();
-    int currentSectionIndex = (hh->isSortIndicatorShown() ? hh->sortIndicatorSection() : -1);
-    Qt::SortOrder currentSortOrder = hh->sortIndicatorOrder();
-
-    if (logicalIndex == currentSectionIndex) //logicalIndex is never -1 here.
-    {
-        if (currentSortOrder == Qt::AscendingOrder)
-        {
-            sortNextLogicalIndex = logicalIndex;
-            sortNextOrder = Qt::DescendingOrder;
-        }
-        else
-        {
-            sortNextLogicalIndex = -1;
-        }
-    }
-    else
-    {
-        sortNextLogicalIndex = logicalIndex;
-        sortNextOrder = Qt::AscendingOrder;
-    }
-}
-
-void MainWindow::tvBookmarksHeaderClicked(int logicalIndex)
-{
-    Q_UNUSED(logicalIndex);
-
-    QHeaderView* hh = ui->tvBookmarks->horizontalHeader();
-    hh->setSortIndicatorShown(sortNextLogicalIndex != -1);
-    hh->setSortIndicator(sortNextLogicalIndex, sortNextOrder);
-
-    if (sortNextLogicalIndex == -1)
-        filteredBookmarksModel.sort(dbm.bms.bidx.BID, Qt::AscendingOrder);
-    else
-        filteredBookmarksModel.sort(logicalIndex, sortNextOrder);
 }
 
 void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
@@ -183,9 +145,10 @@ void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
 void MainWindow::PreAssignModels()
 {
     //Note: Sorting won't work here, as sorting is done when populating proxy model and tvBookmarks.
-    filteredBookmarksModel.setSourceModel(&dbm.bms.model);
+    ui->bv->setModel(&dbm.bms.model);
+    //filteredBookmarksModel.setSourceModel(&dbm.bms.model);
     //filteredBookmarksModel.sort(dbm.bms.bidx.Name, Qt::AscendingOrder);
-    ui->tvBookmarks->setModel(&filteredBookmarksModel);
+    //ui->tvBookmarks->setModel(&filteredBookmarksModel);
     //ui->tvBookmarks->sortByColumn(dbm.bms.bidx.Name, Qt::AscendingOrder);
 }
 
@@ -199,11 +162,6 @@ void MainWindow::LoadDatabaseAndUI()
         return;
 
     RefreshUIDataDisplay(true, RA_Focus);
-
-    //First time connections.
-    QHeaderView* hh = ui->tvBookmarks->horizontalHeader();
-    connect(hh, SIGNAL(sectionPressed(int)), this, SLOT(tvBookmarksHeaderPressed(int)));
-    connect(hh, SIGNAL(sectionClicked(int)), this, SLOT(tvBookmarksHeaderClicked(int)));
 }
 
 void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
@@ -230,24 +188,24 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
     //  We connect it at function's end.
     ui->lwTags->disconnect(SIGNAL(itemChanged(QListWidgetItem*)));
 
-    int selectedTId = -1, selectedBRow = -1;
+    int selectedTId = -1;
     int hTagsScrollPos = 0, hBScrollPos = 0, vBScrollPos = 0;
 
     //Save required things.
     //This is required to be a persistent model for saving selections after filtering.
     QPersistentModelIndex selectedBRowIndex;
     if (bookmarksAction & RA_SaveSel) //[SavingSelectedBookmarkAndTag]
-        if (ui->tvBookmarks->selectionModel()->selectedIndexes().size() > 0)
+        if (ui->bv->selectionModel()->selectedIndexes().size() > 0)
             //!selectedBRow = ui->tvBookmarks->selectionModel()->selectedIndexes()[0].row();
-            selectedBRowIndex = ui->tvBookmarks->selectionModel()->selectedIndexes()[0];
+            selectedBRowIndex = ui->bv->selectionModel()->selectedIndexes()[0];
     if (tagsAction & RA_SaveSel) //[SavingSelectedBookmarkAndTag]
         selectedTId = GetSelectedTagID();
     if (bookmarksAction & RA_SaveScrollPos)
     {
-        if (ui->tvBookmarks->horizontalScrollBar() != NULL)
-            hBScrollPos = ui->tvBookmarks->horizontalScrollBar()->value();
-        if (ui->tvBookmarks->verticalScrollBar() != NULL)
-            vBScrollPos = ui->tvBookmarks->verticalScrollBar()->value();
+        if (ui->bv->horizontalScrollBar() != NULL)
+            hBScrollPos = ui->bv->horizontalScrollBar()->value();
+        if (ui->bv->verticalScrollBar() != NULL)
+            vBScrollPos = ui->bv->verticalScrollBar()->value();
     }
     if (tagsAction & RA_SaveScrollPos)
         if (ui->lwTags->verticalScrollBar() != NULL)
@@ -310,18 +268,18 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
     //  selections themselves, but Edit must manually select now, too; as model indices (even
     //  persistent ones) are invalid after a model reset.
     if (bookmarksAction & RA_SaveSel)
+        ui->bv->setCurrentIndex(selectedBRowIndex);
         //if (selectedBRow != -1)
             //!ui->tvBookmarks->setCurrentIndex(filteredBookmarksModel.index(selectedBRow, 0));
-            ui->tvBookmarks->setCurrentIndex(selectedBRowIndex);
     if (tagsAction & RA_SaveSel)
         if (selectedTId != -1)
             SelectTagWithID(selectedTId);
     if (bookmarksAction & RA_SaveScrollPos)
     {
-        if (ui->tvBookmarks->horizontalScrollBar() != NULL)
-            ui->tvBookmarks->horizontalScrollBar()->setValue(hBScrollPos);
-        if (ui->tvBookmarks->verticalScrollBar() != NULL)
-            ui->tvBookmarks->verticalScrollBar()->setValue(vBScrollPos);
+        if (ui->bv->horizontalScrollBar() != NULL)
+            ui->bv->horizontalScrollBar()->setValue(hBScrollPos);
+        if (ui->bv->verticalScrollBar() != NULL)
+            ui->bv->verticalScrollBar()->setValue(vBScrollPos);
     }
     if (tagsAction & RA_SaveScrollPos)
         if (ui->lwTags->verticalScrollBar() != NULL)
@@ -330,14 +288,14 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
     //[RestoringScrollPositionProceedsCustomSelection]
     if (bookmarksAction & RA_CustomSelect)
         if (selectBID != -1)
-            SelectBookmarkWithID(selectBID);
+            ui->bv->SelectBookmarkWithID(selectBID);
     if (tagsAction & RA_CustomSelect)
         if (selectTID != -1)
             SelectTagWithID(selectTID);
 
     //Focusing comes last anyway
     if (bookmarksAction & RA_Focus)
-        ui->tvBookmarks->setFocus();
+        ui->bv->setFocus();
     if (tagsAction & RA_Focus)
         ui->lwTags->setFocus();
 
@@ -367,8 +325,8 @@ void MainWindow::RefreshStatusLabels()
 
         ui->lblFilter->setText("Filtering By Tags: " + checkedTagsNameList);
         ui->lblBMCount->setText(QString("%1/%2 Bookmarks")
-                                .arg(filteredBookmarksModel.rowCount())
-                                .arg(dbm.bms.model.rowCount()));
+                                .arg(ui->bv->GetDisplayedBookmarksCount())
+                                .arg(ui->bv->GetTotalBookmarksCount()));
     }
 }
 
@@ -384,7 +342,8 @@ void MainWindow::RefreshTVBookmarksModelView()
     //!!filteredBookmarksModel.setSourceModel(&dbm.bms.model);
     if (allTagsOrNoneOfTheTags)
     {
-        filteredBookmarksModel.ClearFilters();
+        //filteredBookmarksModel.ClearFilters();
+        ui->bv->ClearFilters();
     }
     else
     {
@@ -395,41 +354,13 @@ void MainWindow::RefreshTVBookmarksModelView()
             if (it.value()->checkState() == Qt::Checked)
                 tagIDs.insert(it.key());
 
-        filteredBookmarksModel.FilterSpecificTagIDs(tagIDs);
+        //filteredBookmarksModel.FilterSpecificTagIDs(tagIDs);
+        ui->bv->FilterSpecificTagIDs(tagIDs);
     }
 
     //!!ui->tvBookmarks->setModel(&filteredBookmarksModel);
 
-    QHeaderView* hh = ui->tvBookmarks->horizontalHeader();
-    //TODO: Sorts must be here?
-    Qt::SortOrder sortOrder = hh->sortIndicatorOrder();
-    int sortColumn = hh->sortIndicatorSection();
-
-    //TODO: Seems this can be done only once, like the signal connection.
-    BookmarkManager::BookmarkIndexes const& bidx = dbm.bms.bidx;
-    if (hh->count() > 0) //This can happen on database errors.
-    {
-        hh->hideSection(bidx.BID);
-        hh->hideSection(bidx.Desc);
-        hh->hideSection(bidx.DefBFID);
-        hh->hideSection(bidx.AddDate);
-
-        hh->setResizeMode(bidx.Name, QHeaderView::Stretch);
-        hh->resizeSection(bidx.URL, 200);
-        //TODO: How to show tags? hh->resizeSection(dbm.bidx.Tags, 100);
-        hh->resizeSection(bidx.Rating, 50);
-    }
-
-    //ui->tvBookmarks->sortByColumn(sortColumn);
-    filteredBookmarksModel.sort(sortColumn, sortOrder);
-    //hh->setSortIndicator(sortColumn, sortOrder);
-
-    QHeaderView* vh = ui->tvBookmarks->verticalHeader();
-    vh->setResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
-
-    //Need to connect everytime we change the model.
-    connect(ui->tvBookmarks->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-            this, SLOT(tvBookmarksCurrentRowChanged(QModelIndex,QModelIndex)));
+    ui->bv->ResetHeadersAndSort();
 }
 
 void MainWindow::NewBookmark()
@@ -449,34 +380,9 @@ void MainWindow::NewBookmark()
                          -1, outParams.associatedTIDs);
 }
 
-long long MainWindow::GetSelectedBookmarkID()
-{
-    if (!ui->tvBookmarks->currentIndex().isValid())
-        return -1;
-
-    int selRow = ui->tvBookmarks->currentIndex().row();
-    int selectedBId =
-            filteredBookmarksModel.data(filteredBookmarksModel.index(selRow, dbm.bms.bidx.BID))
-                                  .toLongLong();
-    return selectedBId;
-}
-
-void MainWindow::SelectBookmarkWithID(long long bookmarkId)
-{
-    QModelIndexList matches = filteredBookmarksModel.match(
-                filteredBookmarksModel.index(0, dbm.bms.bidx.BID), Qt::DisplayRole,
-                bookmarkId, 1, Qt::MatchExactly);
-
-    if (matches.length() != 1)
-        return; //Not found for some reason, e.g filtered out.
-
-    ui->tvBookmarks->setCurrentIndex(matches[0]);
-    ui->tvBookmarks->scrollTo(matches[0], QAbstractItemView::EnsureVisible);
-}
-
 void MainWindow::ViewSelectedBookmark()
 {
-    BookmarkViewDialog bmViewDialog(&dbm, GetSelectedBookmarkID(), this);
+    BookmarkViewDialog bmViewDialog(&dbm, ui->bv->GetSelectedBookmarkID(), this);
 
     if (!bmViewDialog.canShow())
         return; //In case of errors a message is already shown.
@@ -489,7 +395,7 @@ void MainWindow::ViewSelectedBookmark()
 void MainWindow::EditSelectedBookmark()
 {
     BookmarkEditDialog::OutParams outParams;
-    const long long BID = GetSelectedBookmarkID();
+    const long long BID = ui->bv->GetSelectedBookmarkID();
     BookmarkEditDialog bmEditDialog(&dbm, &conf, BID, &outParams, this);
 
     if (!bmEditDialog.canShow())
@@ -506,10 +412,7 @@ void MainWindow::EditSelectedBookmark()
 
 void MainWindow::DeleteSelectedBookmark()
 {
-    int selRow = ui->tvBookmarks->currentIndex().row();
-    QString selectedBookmarkName =
-            filteredBookmarksModel.data(filteredBookmarksModel.index(selRow, dbm.bms.bidx.Name))
-                                  .toString();
+    QString selectedBookmarkName = ui->bv->GetSelectedBookmarkName();
 
     if (QMessageBox::Yes !=
         QMessageBox::question(this, "Delete Bookmark",
@@ -518,7 +421,7 @@ void MainWindow::DeleteSelectedBookmark()
                               QMessageBox::Yes | QMessageBox::No, QMessageBox::No))
         return;
 
-    int success = dbm.bms.DeleteBookmark(GetSelectedBookmarkID());
+    int success = dbm.bms.DeleteBookmark(ui->bv->GetSelectedBookmarkID());
     if (!success)
         return;
 

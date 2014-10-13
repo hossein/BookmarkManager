@@ -4,10 +4,8 @@
 #include "Config.h"
 #include "DatabaseManager.h"
 #include "FileManager.h"
-#include "BookmarksFilteredByTagsSortProxyModel.h"
 
 #include <QHash>
-#include <QModelIndex>
 
 class QListWidgetItem;
 namespace Ui { class MainWindow; }
@@ -21,9 +19,6 @@ private:
     Config conf;
     DatabaseManager dbm;
     QHash<long long, QListWidgetItem*> tagItems;
-    BookmarksFilteredByTagsSortProxyModel filteredBookmarksModel;
-    int sortNextLogicalIndex;
-    Qt::SortOrder sortNextOrder;
 
 public:
     explicit MainWindow(QWidget *parent = 0);
@@ -34,10 +29,8 @@ private slots:
     void on_btnView_clicked();
     void on_btnEdit_clicked();
     void on_btnDelete_clicked();
-    void on_tvBookmarks_activated(const QModelIndex &index);
-    void tvBookmarksCurrentRowChanged(const QModelIndex& current, const QModelIndex& previous);
-    void tvBookmarksHeaderPressed(int logicalIndex);
-    void tvBookmarksHeaderClicked(int logicalIndex);
+    void bvActivated(long long BID);
+    void bvCurrentRowChanged(long long currentBID, long long previousBID);
     void lwTagsItemChanged(QListWidgetItem* item);
 
 private:
@@ -71,8 +64,6 @@ private:
 
     void RefreshTVBookmarksModelView();
     void NewBookmark();
-    long long GetSelectedBookmarkID();
-    void SelectBookmarkWithID(long long bookmarkId);
     void ViewSelectedBookmark();
     void EditSelectedBookmark();
     void DeleteSelectedBookmark();
