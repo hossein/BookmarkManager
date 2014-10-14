@@ -26,6 +26,9 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long 
     ui->setupUi(this);
     ui->leTags->setModel(&dbm->tags.model);
     ui->leTags->setModelColumn(dbm->tags.tidx.TagName);
+    ui->bvLinkedBookmarks->Initialize(dbm, conf, BookmarksView::LM_NameDisplayOnly);
+    ui->bvLinkedBookmarks->setModel(&dbm->bms.model);
+    ui->bvLinkedBookmarks->ResetHeadersAndSort();
 
     InitializeFilesUI();
 
