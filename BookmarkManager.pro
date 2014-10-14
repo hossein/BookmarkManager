@@ -12,6 +12,11 @@ TARGET = BookmarkManager
 TEMPLATE = app
 LIBS += Shell32.lib User32.lib Version.lib
 
+#To generate header file dependency:
+#https://qt-project.org/forums/viewreply/82432/
+LOCAL_INCLUDE_DIRS = $$_PRO_FILE_PWD_
+DEPENDPATH *= $$(LOCAL_INCLUDE_DIRS)
+
 SOURCES += main.cpp\
         MainWindow.cpp \
     DatabaseManager.cpp \
