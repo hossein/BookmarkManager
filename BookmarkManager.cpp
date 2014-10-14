@@ -110,6 +110,57 @@ bool BookmarkManager::DeleteBookmark(long long BID)
     return true;
 }
 
+bool BookmarkManager::LinkBookmarksTogether(long long BID1, long long BID2)
+{
+    if (BID1 == BID2 || BID1 == -1 || BID2 == -1) //A simple check before doing anything.
+        return true;
+
+    QString retrieveError = "Could not get information for linking bookmarks from database.";
+    QSqlQuery query(db);
+    query.prepare("SELECT * FROM BookmarkLink WHERE "
+                  "(BID1 = ? AND BID2 = ?) OR (BID1 = ? AND BID2 = ?)");
+    query.addBindValue(BID1);
+    query.addBindValue(BID2);
+    query.addBindValue(BID2);
+    query.addBindValue(BID1);
+
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    if (query.first()) //Already linked.
+        return true;
+
+    QString linkError = "Could not set bookmark linking information in database.";
+    query.prepare("INSERT INTO BookmarkLink(BID1, BID2) VALUES (?, ?)");
+    query.addBindValue(BID1);
+    query.addBindValue(BID2);
+
+    if (!query.exec())
+        return Error(linkError, query.lastError());
+
+    return true;
+}
+
+bool BookmarkManager::GetLinkedBookmarks(long long BID, QList<long long>& linkedBIDs)
+{
+    QString retrieveError = "Could not retrieve linked bookmark information from database.";
+    QSqlQuery query(db);
+    query.prepare("SELECT BID1 AS BID FROM BookmarkLink WHERE BID2 = ? "
+                  "UNION "
+                  "SELECT BID2 AS BID FROM BookmarkLink WHERE BID1 = ? ");
+    query.addBindValue(BID);
+    query.addBindValue(BID);
+
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    linkedBIDs.clear(); //Do it for caller.
+    while (query.next())
+        linkedBIDs.append(query.value(0).toLongLong());
+
+    return true;
+}
+
 void BookmarkManager::CreateTables()
 {
     QSqlQuery query(db);
@@ -121,6 +172,9 @@ void BookmarkManager::CreateTables()
     query.exec("CREATE TABLE BookmarkTrash"
                "( BID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, URL TEXT, "
                "  Desc TEXT, DefBFID INTEGER, Rating INTEGER, AddDate INTEGER )");
+
+    query.exec("CREATE Table BookmarkLink"
+               "( BLID INTEGER PRIMARY KEY AUTOINCREMENT, BID1 INTEGER, BID2 INTEGER )");
 }
 
 void BookmarkManager::PopulateModels()

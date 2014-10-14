@@ -51,6 +51,9 @@ public:
     bool SetBookmarkDefBFID(long long BID, long long BFID);
     bool DeleteBookmark(long long BID);
 
+    bool LinkBookmarksTogether(long long BID1, long long BID2);
+    bool GetLinkedBookmarks(long long BID, QList<long long>& linkedBIDs);
+
 protected:
     // ISubManager interface
     void CreateTables();
