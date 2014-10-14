@@ -41,7 +41,7 @@
 ///     file sharing.
 ///   x Save the selection/scroll position on add/edit/delete.
 ///   x View bookmark dialog
-///   - In MainWindow, sort BMs by their adding date.
+///   x In MainWindow, sort BMs by their adding date.
 ///   - Context menu which shows a brief info and has options edit/view/show in browser, etc etc
 ///     (much like how Word 2010 allows changing font and formatting as well as context-menu via
 ///     right-click)

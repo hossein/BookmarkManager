@@ -12,11 +12,12 @@ BookmarksView::BookmarksView(QWidget *parent)
 {
 }
 
-void BookmarksView::Initialize(DatabaseManager* dbm, Config* conf)
+void BookmarksView::Initialize(DatabaseManager* dbm, Config* conf, ListMode listMode)
 {
     //Class members
     this->dbm = dbm;
     this->conf = conf;
+    this->m_listMode = listMode;
 
     filteredBookmarksModel = new BookmarksFilteredByTagsSortProxyModel(dbm, dialogParent, conf, this);
 
@@ -27,17 +28,20 @@ void BookmarksView::Initialize(DatabaseManager* dbm, Config* conf)
     tvBookmarks->setSelectionBehavior(QAbstractItemView::SelectRows);
     tvBookmarks->setWordWrap(false);
 
-    tvBookmarks->horizontalHeader()->setHighlightSections(false);
-    tvBookmarks->verticalHeader()->setVisible(false);
-    tvBookmarks->verticalHeader()->setHighlightSections(false);
+    QHeaderView* hh = tvBookmarks->horizontalHeader();
+    QHeaderView* vh = tvBookmarks->verticalHeader();
+    hh->setVisible(listMode != LM_NameDisplayOnly);
+    hh->setHighlightSections(false);
+    vh->setVisible(false);
+    vh->setHighlightSections(false);
 
     QHBoxLayout* myLayout = new QHBoxLayout();
     myLayout->addWidget(tvBookmarks);
+    myLayout->setContentsMargins(0, 0, 0, 0);
     this->setLayout(myLayout);
 
     //First time connections.
     connect(tvBookmarks, SIGNAL(activated(QModelIndex)), this, SLOT(tvBookmarksActivated(QModelIndex)));
-    QHeaderView* hh = tvBookmarks->horizontalHeader();
     connect(hh, SIGNAL(sectionPressed(int)), this, SLOT(tvBookmarksHeaderPressed(int)));
     connect(hh, SIGNAL(sectionClicked(int)), this, SLOT(tvBookmarksHeaderClicked(int)));
 }
@@ -139,7 +143,13 @@ void BookmarksView::ResetHeadersAndSort()
         hh->hideSection(bidx.DefBFID);
         hh->hideSection(bidx.AddDate);
 
+        if (m_listMode <= LM_LimitedDisplayOnly)
+            hh->hideSection(bidx.URL);
+        if (m_listMode <= LM_NameDisplayOnly)
+            hh->hideSection(bidx.Rating);
+
         hh->setResizeMode(bidx.Name, QHeaderView::Stretch);
+
         hh->resizeSection(bidx.URL, 200);
         //TODO: How to show tags? hh->resizeSection(dbm.bidx.Tags, 100);
         hh->resizeSection(bidx.Rating, 50);

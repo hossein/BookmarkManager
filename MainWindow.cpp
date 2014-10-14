@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     // Initialize important controls
-    ui->bv->Initialize(&dbm, &conf);
+    ui->bv->Initialize(&dbm, &conf, BookmarksView::LM_FullInformationAndEdit);
     connect(ui->bv, SIGNAL(activated(long long)), this, SLOT(bvActivated(long long)));
     connect(ui->bv, SIGNAL(currentRowChanged(long long,long long)),
             this, SLOT(bvCurrentRowChanged(long long,long long)));
