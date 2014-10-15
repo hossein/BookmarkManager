@@ -24,11 +24,10 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long 
     originalEditBId(editBId), editBId(editBId) //[why-two-editbids]
 {
     ui->setupUi(this);
-    ui->leTags->setModel(&dbm->tags.model);
-    ui->leTags->setModelColumn(dbm->tags.tidx.TagName);
 
-    InitializeLinkedBookmarksUI();
+    InitializeTagsUI();
     InitializeFilesUI();
+    InitializeLinkedBookmarksUI();
 
     if (editBId == -1)
     {
@@ -220,6 +219,12 @@ void BookmarkEditDialog::on_dialRating_dialReleased()
     //This only applies to moving with mouse.
     //Required
     ui->dialRating->setValue((ui->dialRating->value() / 10) * 10);
+}
+
+void BookmarkEditDialog::InitializeTagsUI()
+{
+    ui->leTags->setModel(&dbm->tags.model);
+    ui->leTags->setModelColumn(dbm->tags.tidx.TagName);
 }
 
 void BookmarkEditDialog::PopulateUITags()
