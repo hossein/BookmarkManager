@@ -4,6 +4,7 @@
 #include "Config.h"
 #include "FileManager.h"
 #include "FileViewManager.h"
+#include "QuickBookmarkSelectDialog.h"
 #include "Util.h"
 
 #include <QDebug>
@@ -662,7 +663,7 @@ QString BookmarkEditDialog::GetAttachedFileFullPathName(int filesListIdx)
 
 void BookmarkEditDialog::InitializeLinkedBookmarksUI()
 {
-    ui->bvLinkedBookmarks->Initialize(dbm, conf, BookmarksView::LM_NameDisplayOnly);
+    ui->bvLinkedBookmarks->Initialize(dbm, conf, BookmarksView::LM_LimitedDisplayWithoutHeaders);
     ui->bvLinkedBookmarks->setModel(&dbm->bms.model);
     connect(ui->bvLinkedBookmarks, SIGNAL(currentRowChanged(long long,long long)),
             this, SLOT(bvLinkedBookmarksCurrentRowChanged(long long,long long)));
@@ -682,7 +683,20 @@ void BookmarkEditDialog::bvLinkedBookmarksCurrentRowChanged(long long currentBID
 
 void BookmarkEditDialog::on_btnLinkBookmark_clicked()
 {
+    QuickBookmarkSelectDialog::OutParams bsOutParams;
+    QuickBookmarkSelectDialog dlgBookmarkSelect(dbm, conf, true, &bsOutParams, this);
 
+    int result = dlgBookmarkSelect.exec();
+    if (result != QDialog::Accepted)
+        return;
+
+    //QuickBookmarkSelectDialog will not return -1.
+    if (!editedLinkedBookmarks.contains(bsOutParams.selectedBId))
+        editedLinkedBookmarks.append(bsOutParams.selectedBId);
+
+    PopulateLinkedBookmarks();
+    //Select the new linked bookmark, whether new or re-selected.
+    ui->bvLinkedBookmarks->SelectBookmarkWithID(bsOutParams.selectedBId);
 }
 
 void BookmarkEditDialog::on_btnRemoveLink_clicked()
