@@ -144,6 +144,11 @@ void BookmarkEditDialog::accept()
         if (!success)
             return DoRollBackAction();
 
+        success = dbm->bms.UpdateLinkedBookmarks(editBId, editOriginalBData.Ex_LinkedBookmarksList,
+                                                 editedLinkedBookmarks);
+        if (!success)
+            return DoRollBackAction();
+
         success = dbm->tags.SetBookmarkTags(editBId, tagsList, associatedTIDs);
         if (!success)
             return DoRollBackAction();
