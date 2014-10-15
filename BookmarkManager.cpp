@@ -4,6 +4,8 @@
 #include <QtSql/QSqlRecord>
 #include <QtSql/QSqlResult>
 
+#include "Util.h"
+
 BookmarkManager::BookmarkManager(QWidget* dialogParent, Config* conf)
     : ISubManager(dialogParent, conf)
 {
@@ -110,6 +112,47 @@ bool BookmarkManager::DeleteBookmark(long long BID)
     return true;
 }
 
+bool BookmarkManager::RetrieveLinkedBookmarks(long long BID, QList<long long>& linkedBIDs)
+{
+    QString retrieveError = "Could not retrieve linked bookmark information from database.";
+    QSqlQuery query(db);
+    query.prepare("SELECT BID1 AS BID FROM BookmarkLink WHERE BID2 = ? "
+                  "UNION "
+                  "SELECT BID2 AS BID FROM BookmarkLink WHERE BID1 = ? ");
+    query.addBindValue(BID);
+    query.addBindValue(BID);
+
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    linkedBIDs.clear(); //Do it for caller.
+    while (query.next())
+        linkedBIDs.append(query.value(0).toLongLong());
+
+    return true;
+}
+
+bool BookmarkManager::UpdateLinkedBookmarks(long long BID, const QList<long long>& originalLinkedBIDs,
+                                            const QList<long long>& editedLinkedBIDs)
+{
+    //Remaining original BIDs that were not in the edited BIDs must be removed.
+    QList<long long> removeLinkedBIDs = originalLinkedBIDs;
+    //New edited BIDs that were not in original BIDs are the new links that we have to add.
+    QList<long long> addLinkedBIDs = editedLinkedBIDs;
+
+    UtilT::ListDifference<long long>(removeLinkedBIDs, addLinkedBIDs);
+
+    foreach (long long removeBID, removeLinkedBIDs)
+        if (!RemoveBookmarksLink(BID, removeBID))
+            return false;
+
+    foreach (long long addBID, addLinkedBIDs)
+        if (!LinkBookmarksTogether(BID, addBID))
+            return false;
+
+    return true;
+}
+
 bool BookmarkManager::LinkBookmarksTogether(long long BID1, long long BID2)
 {
     if (BID1 == BID2 || BID1 == -1 || BID2 == -1) //A simple check before doing anything.
@@ -141,22 +184,19 @@ bool BookmarkManager::LinkBookmarksTogether(long long BID1, long long BID2)
     return true;
 }
 
-bool BookmarkManager::RetrieveLinkedBookmarks(long long BID, QList<long long>& linkedBIDs)
+bool BookmarkManager::RemoveBookmarksLink(long long BID1, long long BID2)
 {
-    QString retrieveError = "Could not retrieve linked bookmark information from database.";
+    QString deleteError = "Could not alter information for linking bookmarks in database.";
     QSqlQuery query(db);
-    query.prepare("SELECT BID1 AS BID FROM BookmarkLink WHERE BID2 = ? "
-                  "UNION "
-                  "SELECT BID2 AS BID FROM BookmarkLink WHERE BID1 = ? ");
-    query.addBindValue(BID);
-    query.addBindValue(BID);
+    query.prepare("DELETE FROM BookmarkLink WHERE "
+                  "(BID1 = ? AND BID2 = ?) OR (BID1 = ? AND BID2 = ?)");
+    query.addBindValue(BID1);
+    query.addBindValue(BID2);
+    query.addBindValue(BID2);
+    query.addBindValue(BID1);
 
     if (!query.exec())
-        return Error(retrieveError, query.lastError());
-
-    linkedBIDs.clear(); //Do it for caller.
-    while (query.next())
-        linkedBIDs.append(query.value(0).toLongLong());
+        return Error(deleteError, query.lastError());
 
     return true;
 }

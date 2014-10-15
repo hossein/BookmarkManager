@@ -52,8 +52,12 @@ public:
     bool SetBookmarkDefBFID(long long BID, long long BFID);
     bool DeleteBookmark(long long BID);
 
-    bool LinkBookmarksTogether(long long BID1, long long BID2);
     bool RetrieveLinkedBookmarks(long long BID, QList<long long>& linkedBIDs);
+    bool UpdateLinkedBookmarks(long long BID, const QList<long long>& originalLinkedBIDs,
+                               const QList<long long>& editedLinkedBIDs);
+    bool LinkBookmarksTogether(long long BID1, long long BID2);
+    bool RemoveBookmarksLink(long long BID1, long long BID2);
+
 
 protected:
     // ISubManager interface
