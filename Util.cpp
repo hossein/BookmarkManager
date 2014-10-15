@@ -99,12 +99,12 @@ void Util::CaseInsensitiveStringListDifference(QStringList& list1, QStringList& 
     //  loop is faster.
     QList<int> removeList = removeSet1.toList();
     qSort(removeList.begin(), removeList.end());
-    for (int r = removeList.size(); r >= 0; r--)
+    for (int r = removeList.size() - 1; r >= 0; r--)
         list1.removeAt(removeList[r]);
 
     removeList = removeSet2.toList();
     qSort(removeList.begin(), removeList.end());
-    for (int r = removeList.size(); r >= 0; r--)
+    for (int r = removeList.size() - 1; r >= 0; r--)
         list2.removeAt(removeList[r]);
 }
 
