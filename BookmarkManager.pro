@@ -42,7 +42,8 @@ SOURCES += main.cpp\
     FileArchiveManager.cpp \
     FileSandBoxManager.cpp \
     IArchiveManager.cpp \
-    BookmarksView.cpp
+    BookmarksView.cpp \
+    QuickBookmarkSelectDialog.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -71,12 +72,14 @@ HEADERS  += MainWindow.h \
     FileArchiveManager.h \
     IArchiveManager.h \
     FileSandBoxManager.h \
-    BookmarksView.h
+    BookmarksView.h \
+    QuickBookmarkSelectDialog.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \
     BookmarkViewDialog.ui \
-    OpenWithDialog.ui
+    OpenWithDialog.ui \
+    QuickBookmarkSelectDialog.ui
 
 RESOURCES += \
     BookmarkManager.qrc
