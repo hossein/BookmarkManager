@@ -30,7 +30,7 @@ void BookmarksView::Initialize(DatabaseManager* dbm, Config* conf, ListMode list
 
     QHeaderView* hh = tvBookmarks->horizontalHeader();
     QHeaderView* vh = tvBookmarks->verticalHeader();
-    hh->setVisible(listMode != LM_NameDisplayOnly);
+    hh->setVisible(listMode != LM_LimitedDisplayWithoutHeaders);
     hh->setHighlightSections(false);
     vh->setVisible(false);
     vh->setHighlightSections(false);
@@ -148,9 +148,7 @@ void BookmarksView::ResetHeadersAndSort()
         hh->hideSection(bidx.DefBFID);
         hh->hideSection(bidx.AddDate);
 
-        if (m_listMode <= LM_LimitedDisplayOnly)
-            hh->hideSection(bidx.URL);
-        if (m_listMode <= LM_NameDisplayOnly)
+        if (m_listMode <= LM_LimitedDisplayWithHeaders)
             hh->hideSection(bidx.Rating);
 
         hh->setResizeMode(bidx.Name, QHeaderView::Stretch);

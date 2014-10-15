@@ -144,6 +144,8 @@ void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
 
 void MainWindow::PreAssignModels()
 {
+    //TODO: Why they are at reverse sort order on startup?
+
     //Note: Sorting won't work here, as sorting is done when populating proxy model and tvBookmarks.
     ui->bv->setModel(&dbm.bms.model);
     //filteredBookmarksModel.setSourceModel(&dbm.bms.model);

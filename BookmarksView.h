@@ -32,8 +32,8 @@ private:
 public:
     enum ListMode
     {
-        LM_NameDisplayOnly,
-        LM_LimitedDisplayOnly,
+        LM_LimitedDisplayWithoutHeaders,
+        LM_LimitedDisplayWithHeaders,
         LM_FullInformationAndEdit,
     };
 private:
