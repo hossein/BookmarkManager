@@ -30,6 +30,7 @@ private:
     //The contents of this MUST NOT CHANGE during data editing in the dialog.
     BookmarkManager::BookmarkData editOriginalBData;
 
+    QList<long long> editedLinkedBookmarks;
     QList<FileManager::BookmarkFile> editedFilesList;
     //Note: We don't use this, since new files that will be added all have BFID=-1 so we use a
     //      field inside the `FileManager::BookmarkFile` struct instead.
@@ -97,9 +98,15 @@ private slots:
     void af_rename();
     void af_remove();
     void af_properties();
+    /// Unlike its name, this function gets both attached and non-attached files full path.
+    /// This is why it's there!
     QString GetAttachedFileFullPathName(int filesListIdx);
 
     /// Linked Bookmarks Section //////////////////////////////////////////////////////////////////
     void InitializeLinkedBookmarksUI();
     void PopulateLinkedBookmarks();
+
+    void bvLinkedBookmarksCurrentRowChanged(long long currentBID, long long previousBID);
+    void on_btnLinkBookmark_clicked();
+    void on_btnRemoveLink_clicked();
 };

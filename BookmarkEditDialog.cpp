@@ -46,6 +46,7 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long 
 
         canShowTheDialog = dbm->bms.RetrieveLinkedBookmarks
                 (editBId, editOriginalBData.Ex_LinkedBookmarksList);
+        editedLinkedBookmarks = editOriginalBData.Ex_LinkedBookmarksList;
         if (!canShowTheDialog)
             return;
 
@@ -63,7 +64,7 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long 
         if (!canShowTheDialog)
             return;
 
-        //Additional bookmark variables.
+        //Additional file variables.
         editedFilesList = editOriginalBData.Ex_FilesList;
         SetDefaultBFID(editOriginalBData.DefBFID); //Needed; retrieving functions don't set this.
 
@@ -653,10 +654,29 @@ void BookmarkEditDialog::InitializeLinkedBookmarksUI()
 {
     ui->bvLinkedBookmarks->Initialize(dbm, conf, BookmarksView::LM_NameDisplayOnly);
     ui->bvLinkedBookmarks->setModel(&dbm->bms.model);
+    connect(ui->bvLinkedBookmarks, SIGNAL(currentRowChanged(long long,long long)),
+            this, SLOT(bvLinkedBookmarksCurrentRowChanged(long long,long long)));
 }
 
 void BookmarkEditDialog::PopulateLinkedBookmarks()
 {
-    ui->bvLinkedBookmarks->FilterSpecificBookmarkIDs(editOriginalBData.Ex_LinkedBookmarksList);
+    ui->bvLinkedBookmarks->FilterSpecificBookmarkIDs(editedLinkedBookmarks);
     ui->bvLinkedBookmarks->ResetHeadersAndSort();
+}
+
+void BookmarkEditDialog::bvLinkedBookmarksCurrentRowChanged(long long currentBID, long long previousBID)
+{
+    Q_UNUSED(previousBID);
+    ui->btnRemoveLink->setEnabled(currentBID != -1);
+}
+
+void BookmarkEditDialog::on_btnLinkBookmark_clicked()
+{
+
+}
+
+void BookmarkEditDialog::on_btnRemoveLink_clicked()
+{
+    editedLinkedBookmarks.removeAll(ui->bvLinkedBookmarks->GetSelectedBookmarkID());
+    PopulateLinkedBookmarks();
 }
