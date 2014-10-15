@@ -26,10 +26,8 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long 
     ui->setupUi(this);
     ui->leTags->setModel(&dbm->tags.model);
     ui->leTags->setModelColumn(dbm->tags.tidx.TagName);
-    ui->bvLinkedBookmarks->Initialize(dbm, conf, BookmarksView::LM_NameDisplayOnly);
-    ui->bvLinkedBookmarks->setModel(&dbm->bms.model);
-    ui->bvLinkedBookmarks->ResetHeadersAndSort();
 
+    InitializeLinkedBookmarksUI();
     InitializeFilesUI();
 
     if (editBId == -1)
@@ -43,6 +41,11 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long 
         //`canShowTheDialog` a.k.a `bool success;`
 
         canShowTheDialog = dbm->bms.RetrieveBookmark(editBId, editOriginalBData);
+        if (!canShowTheDialog)
+            return;
+
+        canShowTheDialog = dbm->bms.RetrieveLinkedBookmarks
+                (editBId, editOriginalBData.Ex_LinkedBookmarksList);
         if (!canShowTheDialog)
             return;
 
@@ -71,6 +74,7 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long 
         ui->dialRating->setValue(editOriginalBData.Rating);
         PopulateUITags();
         PopulateUIFiles(false);
+        PopulateLinkedBookmarks();
     }
 }
 
@@ -643,4 +647,16 @@ QString BookmarkEditDialog::GetAttachedFileFullPathName(int filesListIdx)
                            editedFilesList[filesListIdx].ArchiveURL);
 
     return fullFilePathName;
+}
+
+void BookmarkEditDialog::InitializeLinkedBookmarksUI()
+{
+    ui->bvLinkedBookmarks->Initialize(dbm, conf, BookmarksView::LM_NameDisplayOnly);
+    ui->bvLinkedBookmarks->setModel(&dbm->bms.model);
+}
+
+void BookmarkEditDialog::PopulateLinkedBookmarks()
+{
+    ui->bvLinkedBookmarks->FilterSpecificBookmarkIDs(editOriginalBData.Ex_LinkedBookmarksList);
+    ui->bvLinkedBookmarks->ResetHeadersAndSort();
 }

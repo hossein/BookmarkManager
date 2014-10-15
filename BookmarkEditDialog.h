@@ -98,4 +98,8 @@ private slots:
     void af_remove();
     void af_properties();
     QString GetAttachedFileFullPathName(int filesListIdx);
+
+    /// Linked Bookmarks Section //////////////////////////////////////////////////////////////////
+    void InitializeLinkedBookmarksUI();
+    void PopulateLinkedBookmarks();
 };
