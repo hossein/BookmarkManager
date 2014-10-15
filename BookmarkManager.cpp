@@ -141,7 +141,7 @@ bool BookmarkManager::LinkBookmarksTogether(long long BID1, long long BID2)
     return true;
 }
 
-bool BookmarkManager::GetLinkedBookmarks(long long BID, QList<long long>& linkedBIDs)
+bool BookmarkManager::RetrieveLinkedBookmarks(long long BID, QList<long long>& linkedBIDs)
 {
     QString retrieveError = "Could not retrieve linked bookmark information from database.";
     QSqlQuery query(db);
