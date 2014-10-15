@@ -86,6 +86,11 @@ void BookmarksView::ClearFilters()
     filteredBookmarksModel->ClearFilters();
 }
 
+bool BookmarksView::FilterSpecificBookmarkIDs(const QList<long long>& BIDs)
+{
+    return filteredBookmarksModel->FilterSpecificBookmarkIDs(BIDs);
+}
+
 bool BookmarksView::FilterSpecificTagIDs(const QSet<long long>& tagIDs)
 {
     return filteredBookmarksModel->FilterSpecificTagIDs(tagIDs);

@@ -11,7 +11,7 @@ class BookmarksFilteredByTagsSortProxyModel : public QSortFilterProxyModel, publ
 
 private:
     DatabaseManager* dbm;
-    bool allowAllTags;
+    bool allowAllBookmarks;
     QSet<long long> filteredBookmarkIDs;
 
 public:
@@ -24,6 +24,7 @@ public:
     //  be caught by the view using this model, causing it to update itself.
     //  Without `layoutChanged()` the Bookmarks view doesn't update itself.
     void ClearFilters();
+    bool FilterSpecificBookmarkIDs(const QList<long long>& BIDs);
     bool FilterSpecificTagIDs(const QSet<long long>& tagIDs);
 
 private:

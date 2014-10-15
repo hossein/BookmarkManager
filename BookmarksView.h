@@ -53,6 +53,7 @@ public:
     void SelectBookmarkWithID(long long bookmarkId);
 
     void ClearFilters();
+    bool FilterSpecificBookmarkIDs(const QList<long long>& BIDs);
     bool FilterSpecificTagIDs(const QSet<long long>& tagIDs);
 
     int GetTotalBookmarksCount() const;

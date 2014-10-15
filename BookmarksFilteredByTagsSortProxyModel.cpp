@@ -6,21 +6,31 @@
 
 BookmarksFilteredByTagsSortProxyModel::BookmarksFilteredByTagsSortProxyModel
     (DatabaseManager* dbm, QWidget* dialogParent, Config* conf, QObject* parent)
-    : QSortFilterProxyModel(parent), IManager(dialogParent, conf), dbm(dbm), allowAllTags(true)
+    : QSortFilterProxyModel(parent), IManager(dialogParent, conf), dbm(dbm), allowAllBookmarks(true)
 {
 
 }
 
 void BookmarksFilteredByTagsSortProxyModel::ClearFilters()
 {
-    allowAllTags = true;
+    allowAllBookmarks = true;
     filteredBookmarkIDs.clear();
     invalidateFilter(); //Read function header docs
 }
 
+bool BookmarksFilteredByTagsSortProxyModel::FilterSpecificBookmarkIDs(const QList<long long>& BIDs)
+{
+    allowAllBookmarks = false;
+    filteredBookmarkIDs.clear();
+    foreach (long long BID, BIDs)
+        filteredBookmarkIDs.insert(BID);
+    invalidateFilter(); //Read function header docs
+    return true;
+}
+
 bool BookmarksFilteredByTagsSortProxyModel::FilterSpecificTagIDs(const QSet<long long>& tagIDs)
 {
-    allowAllTags = false;
+    allowAllBookmarks = false;
     bool populateSuccess = populateValidBookmarkIDs(tagIDs);
     invalidateFilter(); //Read function header docs
     return populateSuccess;
@@ -65,7 +75,7 @@ bool BookmarksFilteredByTagsSortProxyModel::filterAcceptsRow
 {
     Q_UNUSED(source_parent);
 
-    if (allowAllTags)
+    if (allowAllBookmarks)
         return true;
 
     if (filteredBookmarkIDs.contains(
