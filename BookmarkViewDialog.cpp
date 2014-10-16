@@ -9,9 +9,9 @@
 #include <QUrl>
 #include <QDesktopServices>
 
-BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, QWidget *parent) :
+BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, Config* conf, long long viewBId, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkViewDialog),
-    dbm(dbm), canShowTheDialog(false)
+    dbm(dbm), conf(conf), canShowTheDialog(false)
 {
     ui->setupUi(this);
 
@@ -27,8 +27,13 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
     ui->fvsRating->setStarSize(ui->lblName->sizeHint().height());
 
     InitializeFilesUI();
+    InitializeLinkedBookmarksUI();
 
     canShowTheDialog = dbm->bms.RetrieveBookmark(viewBId, viewBData);
+    if (!canShowTheDialog)
+        return;
+
+    canShowTheDialog = dbm->bms.RetrieveLinkedBookmarks(viewBId, viewBData.Ex_LinkedBookmarksList);
     if (!canShowTheDialog)
         return;
 
@@ -61,6 +66,16 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
         this->setFixedHeight(ui->widTopPane->height() + thisMargins + layoutMargins);
     }
 
+    if (viewBData.Ex_LinkedBookmarksList.size() == 0)
+    {
+        ui->grpRelatedBookmarks->close();
+    }
+
+    if (viewBData.Ex_FilesList.size() == 0 && viewBData.Ex_LinkedBookmarksList.size() == 0)
+    {
+        ui->scrlFileData->close();
+    }
+
     //Additional bookmark variables.
     SetDefaultBFID(viewBData.DefBFID); //Needed; retrieving functions don't set this.
 
@@ -74,6 +89,7 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
     ui->leURL     ->setText(viewBData.URL);
     PopulateUITags();
     PopulateUIFiles(false);
+    PopulateLinkedBookmarks();
 
     //Select the default file, preview it.
     //`DefaultFileIndex()` must be called AFTER the `SetDefaultBFID(...)` call above.
@@ -285,6 +301,25 @@ QString BookmarkViewDialog::GetAttachedFileFullPathName(int filesListIdx)
     QString fullFilePathName = dbm->files.GetFullArchiveFilePath(
                                viewBData.Ex_FilesList[filesListIdx].ArchiveURL);
     return fullFilePathName;
+}
+
+void BookmarkViewDialog::InitializeLinkedBookmarksUI()
+{
+    ui->bvLinkedBookmarks->Initialize(dbm, conf, BookmarksView::LM_NameOnlyDisplayWithoutHeaders);
+    ui->bvLinkedBookmarks->setModel(&dbm->bms.model);
+    connect(ui->bvLinkedBookmarks, SIGNAL(activated(long long)),
+            this, SLOT(bvLinkedBookmarksActivated(long long)));
+}
+
+void BookmarkViewDialog::PopulateLinkedBookmarks()
+{
+    ui->bvLinkedBookmarks->FilterSpecificBookmarkIDs(viewBData.Ex_LinkedBookmarksList);
+    ui->bvLinkedBookmarks->ResetHeadersAndSort();
+}
+
+void BookmarkViewDialog::bvLinkedBookmarksActivated(long long BID)
+{
+
 }
 
 void BookmarkViewDialog::PreviewFile(int index)

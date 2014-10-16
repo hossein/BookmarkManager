@@ -696,11 +696,12 @@ void BookmarkEditDialog::on_btnLinkBookmark_clicked()
 
     PopulateLinkedBookmarks();
     //Select the new linked bookmark, whether new or re-selected.
-    ui->bvLinkedBookmarks->SelectBookmarkWithID(bsOutParams.selectedBId);
+    ui->bvLinkedBookmarks->SelectBookmarkWithID(bsOutParams.selectedBId);//TODO: Make it blue, it's gray now!
 }
 
 void BookmarkEditDialog::on_btnRemoveLink_clicked()
 {
+    //TODO: Confirmation message
     editedLinkedBookmarks.removeAll(ui->bvLinkedBookmarks->GetSelectedBookmarkID());
     PopulateLinkedBookmarks();
 }

@@ -384,7 +384,7 @@ void MainWindow::NewBookmark()
 
 void MainWindow::ViewSelectedBookmark()
 {
-    BookmarkViewDialog bmViewDialog(&dbm, ui->bv->GetSelectedBookmarkID(), this);
+    BookmarkViewDialog bmViewDialog(&dbm, &conf, ui->bv->GetSelectedBookmarkID(), this);
 
     if (!bmViewDialog.canShow())
         return; //In case of errors a message is already shown.

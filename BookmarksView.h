@@ -32,6 +32,7 @@ private:
 public:
     enum ListMode
     {
+        LM_NameOnlyDisplayWithoutHeaders, //TODO: Use suitable tooltips WHICH SHOW URL in this mode. For BMViewDlg.
         LM_LimitedDisplayWithoutHeaders,
         LM_LimitedDisplayWithHeaders,
         LM_FullInformationAndEdit,

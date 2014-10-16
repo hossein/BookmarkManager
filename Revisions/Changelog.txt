@@ -42,3 +42,4 @@
 2014-10-09  29  Enable sorting, correct save selection behaviour for sorting.
 2014-10-13  30  Can sort by both the headers and by BID.
 2014-10-14  32  Separated the bookmarks table view and implemented linking tables and UI.
+2014-10-15  34  Bookmark Linking support in BMEditDlg complete and working. Added QuickBMSelDlg.

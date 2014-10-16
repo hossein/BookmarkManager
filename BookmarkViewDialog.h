@@ -3,6 +3,7 @@
 
 #include "DatabaseManager.h"
 
+class Config;
 class QTableWidgetItem;
 namespace Ui { class BookmarkViewDialog; }
 
@@ -13,13 +14,14 @@ class BookmarkViewDialog : public QDialog
 private:
     Ui::BookmarkViewDialog *ui;
     DatabaseManager* dbm;
+    Config* conf;
     bool canShowTheDialog;
 
     BookmarkManager::BookmarkData viewBData;
 
 public:
-    explicit BookmarkViewDialog(DatabaseManager* dbm, long long viewBId = -1,
-                                   QWidget *parent = 0);
+    explicit BookmarkViewDialog(DatabaseManager* dbm, Config* conf, long long viewBId = -1,
+                                QWidget *parent = 0);
     ~BookmarkViewDialog();
 
 public:
@@ -50,6 +52,12 @@ private slots:
     void af_openWith();
     void af_properties();
     QString GetAttachedFileFullPathName(int filesListIdx);
+
+    /// Linked Bookmarks Section //////////////////////////////////////////////////////////////////
+    void InitializeLinkedBookmarksUI();
+    void PopulateLinkedBookmarks();
+
+    void bvLinkedBookmarksActivated(long long BID);
 
     /// File Preview Section //////////////////////////////////////////////////////////////////////
     void PreviewFile(int index);
