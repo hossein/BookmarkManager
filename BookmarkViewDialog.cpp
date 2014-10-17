@@ -4,6 +4,7 @@
 #include "Util.h"
 
 #include <QApplication>
+#include <QScrollBar>
 #include <QMenu>
 
 #include <QUrl>
@@ -229,12 +230,43 @@ void BookmarkViewDialog::PopulateUIFiles(bool saveSelection)
         ui->twAttachedFiles->setItem(rowIdx, 1, sizeItem);
     }
 
-    ui->twAttachedFiles->resizeColumnsToContents();
-
     if (saveSelection && selectedRow != -1)
         if (selectedRow < ui->twAttachedFiles->rowCount())
             ui->twAttachedFiles->selectRow(selectedRow);
 
+    //Must do before calculating sizes later.
+    ui->twAttachedFiles->resizeColumnsToContents();
+    ui->twAttachedFiles->resizeRowsToContents();
+
+    //Make the height as small as needed. This size is very exact, at least with Windows style,
+    //  i.e the scrollbar appears if it's one pixel less!
+    //  Of course we turn off the vertical scrollbar of the twAttachedFiles so it doesn't scroll
+    //  on small errors anyway. (We could do it via UI properties too but we are very explicit!)
+    //  However user can see small 'jumps' in case of these small errors.
+    ui->twAttachedFiles->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    int hackedSuitableHeightForTwAttachedFiles =
+            ui->twAttachedFiles->frameWidth() * 2 +
+            ui->twAttachedFiles->horizontalHeader()->sizeHint().height() +
+            //The row height includes the grid; no need to `rowHeight+1`.
+            ui->twAttachedFiles->rowHeight(0) * viewBData.Ex_FilesList.size();
+
+    //Maybe horizontall scroll bar is needed, this way we need to leave room for it.
+    //  But we CAN'T know whether it is shown here or not; also the dialog is resizable, so we check for,
+    //  and leave room for it if required it in resizeEvent.
+    //Use another hack to see if the horizontal scrollbar will be needed,
+    //  and leave room for it if yes.
+    //We can't use `ui->twAttachedFiles->horizontalScrollBar()->isVisible()`
+    //  as it always returns false in here. It needs to wait for parent sizing, etc.
+    int widthForAllColumns = 0;
+    for (int i = 0; i < ui->twAttachedFiles->columnCount(); i++)
+        widthForAllColumns += ui->twAttachedFiles->columnWidth(i);
+
+    qDebug() << widthForAllColumns << ui->twAttachedFiles->frameSize() << ui->twAttachedFiles->sizeHint() << ui->twAttachedFiles->size();
+
+    //NOT ui->twAttachedFiles->horizontalScrollBar()->height().
+    hackedSuitableHeightForTwAttachedFiles += ui->twAttachedFiles->horizontalScrollBar()->sizeHint().height();
+
+    ui->twAttachedFiles->setFixedHeight(hackedSuitableHeightForTwAttachedFiles);
 }
 
 void BookmarkViewDialog::SetDefaultBFID(long long BFID)
