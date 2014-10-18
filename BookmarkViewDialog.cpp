@@ -100,11 +100,37 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, Config* conf, long 
         ui->twAttachedFiles->selectRow(defFileIndex);
         //The above line causes: PreviewFile(defFileIndex);
     }
+
+    //Needed to make sure if the file list needs a horizontal scrollbar it will have its room.
+    qApp->postEvent(this, new QResizeEvent(this->size(), this->size()));
 }
 
 BookmarkViewDialog::~BookmarkViewDialog()
 {
     delete ui;
+}
+
+void BookmarkViewDialog::resizeEvent(QResizeEvent* event)
+{
+    //Do BEFORE anything.
+    QDialog::resizeEvent(event);
+
+    //TODO: But there is still a 1px error! Maybe should calculate column width ourselves or catch tw's resize event?
+    /** int widthForAllColumns = 0;
+    for (int i = 0; i < ui->twAttachedFiles->columnCount(); i++)
+        widthForAllColumns += ui->twAttachedFiles->columnWidth(i);
+    qDebug() << widthForAllColumns << ui->twAttachedFiles->frameSize() << ui->twAttachedFiles->sizeHint() << ui->twAttachedFiles->size();*/
+
+    //Don't use `ui->twAttachedFiles->isVisible()` as condition, maybe it's destroyed.
+    if (viewBData.Ex_FilesList.size() > 0)
+    {
+        //We don't need to sum column widths and compare to size, etc.
+        int twAttachedFilesHeight = twAttachedFilesRequiredHeight;
+        if (ui->twAttachedFiles->horizontalScrollBar()->isVisible())
+            //NOT += ui->twAttachedFiles->horizontalScrollBar()->height(). It's 30!
+            twAttachedFilesHeight += ui->twAttachedFiles->horizontalScrollBar()->sizeHint().height();
+        ui->twAttachedFiles->setFixedHeight(twAttachedFilesHeight);
+    }
 }
 
 bool BookmarkViewDialog::canShow()
@@ -253,20 +279,9 @@ void BookmarkViewDialog::PopulateUIFiles(bool saveSelection)
     //Maybe horizontall scroll bar is needed, this way we need to leave room for it.
     //  But we CAN'T know whether it is shown here or not; also the dialog is resizable, so we check for,
     //  and leave room for it if required it in resizeEvent.
-    //Use another hack to see if the horizontal scrollbar will be needed,
-    //  and leave room for it if yes.
-    //We can't use `ui->twAttachedFiles->horizontalScrollBar()->isVisible()`
-    //  as it always returns false in here. It needs to wait for parent sizing, etc.
-    int widthForAllColumns = 0;
-    for (int i = 0; i < ui->twAttachedFiles->columnCount(); i++)
-        widthForAllColumns += ui->twAttachedFiles->columnWidth(i);
 
-    qDebug() << widthForAllColumns << ui->twAttachedFiles->frameSize() << ui->twAttachedFiles->sizeHint() << ui->twAttachedFiles->size();
-
-    //NOT ui->twAttachedFiles->horizontalScrollBar()->height().
-    hackedSuitableHeightForTwAttachedFiles += ui->twAttachedFiles->horizontalScrollBar()->sizeHint().height();
-
-    ui->twAttachedFiles->setFixedHeight(hackedSuitableHeightForTwAttachedFiles);
+    twAttachedFilesRequiredHeight = hackedSuitableHeightForTwAttachedFiles;
+    ui->twAttachedFiles->setFixedHeight(twAttachedFilesRequiredHeight);
 }
 
 void BookmarkViewDialog::SetDefaultBFID(long long BFID)

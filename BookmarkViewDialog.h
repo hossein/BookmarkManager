@@ -16,6 +16,7 @@ private:
     DatabaseManager* dbm;
     Config* conf;
     bool canShowTheDialog;
+    int twAttachedFilesRequiredHeight;
 
     BookmarkManager::BookmarkData viewBData;
 
@@ -23,6 +24,9 @@ public:
     explicit BookmarkViewDialog(DatabaseManager* dbm, Config* conf, long long viewBId = -1,
                                 QWidget *parent = 0);
     ~BookmarkViewDialog();
+
+protected:
+    void resizeEvent(QResizeEvent* event);
 
 public:
     bool canShow();
