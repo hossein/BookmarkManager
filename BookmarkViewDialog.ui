@@ -174,7 +174,7 @@
            <height>200</height>
           </rect>
          </property>
-         <layout class="QVBoxLayout" name="vlScrlFileDataWidget">
+         <layout class="QVBoxLayout" name="vlScrlFileDataWidget" stretch="0,0,1">
           <property name="leftMargin">
            <number>0</number>
           </property>
@@ -264,7 +264,7 @@
            </widget>
           </item>
           <item>
-           <spacer name="verticalSpacer">
+           <spacer name="vlSqueezeTheOtherTwo">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
