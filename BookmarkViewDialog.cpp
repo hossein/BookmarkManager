@@ -357,6 +357,7 @@ QString BookmarkViewDialog::GetAttachedFileFullPathName(int filesListIdx)
 void BookmarkViewDialog::InitializeLinkedBookmarksUI()
 {
     ui->bvLinkedBookmarks->Initialize(dbm, conf, BookmarksView::LM_NameOnlyDisplayWithoutHeaders);
+    ui->bvLinkedBookmarks->setShrinkHeight(true);
     ui->bvLinkedBookmarks->setModel(&dbm->bms.model);
     connect(ui->bvLinkedBookmarks, SIGNAL(activated(long long)),
             this, SLOT(bvLinkedBookmarksActivated(long long)));

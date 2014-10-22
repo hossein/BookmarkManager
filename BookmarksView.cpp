@@ -1,5 +1,6 @@
 #include "BookmarksView.h"
 
+#include <QDebug>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QTableView>
@@ -18,8 +19,10 @@ void BookmarksView::Initialize(DatabaseManager* dbm, Config* conf, ListMode list
     this->dbm = dbm;
     this->conf = conf;
     this->m_listMode = listMode;
+    this->m_shrinkHeight = false;
 
     filteredBookmarksModel = new BookmarksFilteredByTagsSortProxyModel(dbm, dialogParent, conf, this);
+    connect(filteredBookmarksModel, SIGNAL(layoutChanged()), this, SLOT(modelLayoutChanged()));
 
     //UI
     tvBookmarks = new QTableView(this);
@@ -171,6 +174,29 @@ void BookmarksView::ResetHeadersAndSort()
     //Need to connect everytime we change the model.
     connect(tvBookmarks->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
             this, SLOT(tvBookmarksCurrentRowChanged(QModelIndex,QModelIndex)));
+}
+
+void BookmarksView::modelLayoutChanged()
+{
+    tvBookmarks->resizeColumnsToContents();
+    tvBookmarks->resizeRowsToContents();
+
+    if (m_shrinkHeight)
+    {
+        //Calculate the minimum required height.
+        int hackedSuitableHeightForTvBookmarks =
+                tvBookmarks->frameWidth() * 2 +
+                //The row height includes the grid; no need to `rowHeight+1`.
+                tvBookmarks->rowHeight(0) * GetDisplayedBookmarksCount();
+
+        if (tvBookmarks->horizontalHeader()->isVisible())
+            hackedSuitableHeightForTvBookmarks += tvBookmarks->horizontalHeader()->sizeHint().height();
+
+        //Note: Although the hscrollbar may ruin the size it it's needed to disregard it; but it seems
+        //  that it doesn't show up automatically, it switched to text eliding (`...`).
+        this->setFixedHeight(hackedSuitableHeightForTvBookmarks);
+    }
+
 }
 
 void BookmarksView::tvBookmarksActivated(const QModelIndex& index)

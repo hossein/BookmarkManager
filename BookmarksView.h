@@ -20,6 +20,8 @@ class BookmarksView : public QWidget
 {
     Q_OBJECT
 
+    Q_PROPERTY(bool shrinkHeight READ shrinkHeight WRITE setShrinkHeight)
+
 private:
     QWidget* dialogParent;
     QTableView* tvBookmarks;
@@ -28,6 +30,7 @@ private:
     BookmarksFilteredByTagsSortProxyModel* filteredBookmarksModel;
     int sortNextLogicalIndex;
     Qt::SortOrder sortNextOrder;
+    bool m_shrinkHeight;
 
 public:
     enum ListMode
@@ -40,7 +43,6 @@ public:
 private:
     ListMode m_listMode;
 
-    //Constructor, initialization
 public:
     explicit BookmarksView(QWidget* parent = 0);
 
@@ -71,6 +73,11 @@ public:
     QScrollBar* horizontalScrollBar() const;
     QScrollBar* verticalScrollBar() const;
 
+    //ShrinkHeight property
+public:
+    bool shrinkHeight() const        { return m_shrinkHeight;  }
+public slots:
+    void setShrinkHeight(bool value) { m_shrinkHeight = value; }
 
 public slots:
     /// Must be called after each model update, sort, etc. These were formerly at the bottom of
@@ -81,6 +88,7 @@ public slots:
 
     //Private slots to make things work.
 private slots:
+    void modelLayoutChanged();
     void tvBookmarksActivated(const QModelIndex &index);
     void tvBookmarksCurrentRowChanged(const QModelIndex& current, const QModelIndex& previous);
     void tvBookmarksHeaderPressed(int logicalIndex);
