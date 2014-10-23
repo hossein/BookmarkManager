@@ -76,4 +76,37 @@ public:
         for (int r = removeList.size() - 1; r >= 0; r--)
             list2.removeAt(removeList[r]);
     }
+
+    template <typename T>
+    static void ListDifference(QList<T>& list1, QList<T>& list2, bool (*equals)(const T& v1, const T& v2))
+    {
+        //Copied from Util::CaseInsensitiveStringListDifference and may be optimized;
+        //  read the notes there.
+
+        int len1 = list1.length();
+        int len2 = list2.length();
+
+        QSet<int> removeSet1, removeSet2;
+        for (int i1 = 0; i1 < len1; i1++)
+        {
+            for (int i2 = 0; i2 < len2; i2++)
+            {
+                if (equals(list1[i1], list2[i2]))
+                {
+                    removeSet1.insert(i1);
+                    removeSet2.insert(i2);
+                }
+            }
+        }
+
+        QList<int> removeList = removeSet1.toList();
+        qSort(removeList.begin(), removeList.end());
+        for (int r = removeList.size() - 1; r >= 0; r--)
+            list1.removeAt(removeList[r]);
+
+        removeList = removeSet2.toList();
+        qSort(removeList.begin(), removeList.end());
+        for (int r = removeList.size() - 1; r >= 0; r--)
+            list2.removeAt(removeList[r]);
+    }
 };
