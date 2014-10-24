@@ -42,6 +42,23 @@ public:
         QList<FileManager::BookmarkFile> Ex_FilesList;
     };
 
+    struct BookmarkExtraInfoData
+    {
+        //These are JSON's basic non-array types.
+        enum DataType
+        {
+            Type_Null = 0,
+            Type_Text = 1,
+            Type_Number = 2,
+            Type_Boolean = 3
+        };
+
+        long long BEIID;
+        QString Name;
+        DataType Type;
+        QString Value;
+    };
+
 public:
     BookmarkManager(QWidget* dialogParent, Config* conf);
 
@@ -58,6 +75,9 @@ public:
     bool LinkBookmarksTogether(long long BID1, long long BID2);
     bool RemoveBookmarksLink(long long BID1, long long BID2);
 
+    bool RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkExtraInfoData>& extraInfos);
+    bool UpdateBookmarkExtraInfos(long long BID, const QList<BookmarkExtraInfoData>& extraInfos,
+                                  const QList<BookmarkExtraInfoData>& originalExtraInfos);
 
 protected:
     // ISubManager interface

@@ -201,6 +201,104 @@ bool BookmarkManager::RemoveBookmarksLink(long long BID1, long long BID2)
     return true;
 }
 
+bool BookmarkManager::RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkManager::BookmarkExtraInfoData>& extraInfos)
+{
+    QString retrieveError = "Could not get bookmarks' extra information from database.";
+    QSqlQuery query(db);
+    query.prepare("SELECT * FROM BookmarkExtraInfo WHERE BID = ?");
+    query.addBindValue(BID);
+
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    bool indexesCalculated = false;
+    int beiidx_BEIID, beiidx_Name, beiidx_Type, beiidx_Value;
+
+    extraInfos.clear(); //Do it for caller
+    while (query.next())
+    {
+        if (!indexesCalculated)
+        {
+            const QSqlRecord& record = query.record();
+            beiidx_BEIID = record.indexOf("BEIID");
+            beiidx_Name  = record.indexOf("Name" );
+            beiidx_Type  = record.indexOf("Type" );
+            beiidx_Value = record.indexOf("Value");
+            indexesCalculated = true;
+        }
+
+        BookmarkExtraInfoData exInfo;
+        exInfo.BEIID = query.value(beiidx_BEIID).toLongLong();
+        exInfo.Name  = query.value(beiidx_Name).toString();
+        exInfo.Type  = static_cast<BookmarkExtraInfoData::DataType>(query.value(beiidx_Type).toInt());
+        exInfo.Value = query.value(beiidx_Value).toString();
+
+        extraInfos.append(exInfo);
+    }
+
+    return true;
+}
+
+static bool BookmarkExtraInfoNameEquals(const BookmarkManager::BookmarkExtraInfoData& exInfo1,
+                                        const BookmarkManager::BookmarkExtraInfoData& exInfo2)
+{
+    return 0 == QString::compare(exInfo1.Name, exInfo2.Name, Qt::CaseSensitive);
+}
+
+bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, const QList<BookmarkManager::BookmarkExtraInfoData>& extraInfos,
+                                               const QList<BookmarkManager::BookmarkExtraInfoData>& originalExtraInfos)
+{
+    //Remaining extraInfo Names that were not in the edited extraInfos must be removed.
+    QList<BookmarkExtraInfoData> removeExtraInfos = originalExtraInfos;
+    //New edited extraInfo Names that were not in original extraInfos are the new extraInfos that we have to add.
+    QList<BookmarkExtraInfoData> addExtraInfos = extraInfos;
+
+    //Calculate the difference
+    UtilT::ListDifference<BookmarkExtraInfoData>(removeExtraInfos, addExtraInfos, BookmarkExtraInfoNameEquals);
+
+    QString deleteError = "Could not alter bookmark extra information in database.";
+    QString addError = "Could not add bookmark extra information to database.";
+    QSqlQuery query(db);
+
+    //Remove the un-useds
+    int removeCount = 0;
+    QString BEIIDsToRemove;
+    foreach (const BookmarkExtraInfoData& removeExtraInfo, removeExtraInfos)
+    {
+        if (removeCount > 0)
+            BEIIDsToRemove.append(",");
+        BEIIDsToRemove.append(QString::number(removeExtraInfo.BEIID));
+        removeCount++;
+    }
+
+    if (removeCount > 0)
+    {
+        query.prepare(QString("DELETE FROM BookmarkExtraInfo WHERE BEIID IN (%1)").arg(BEIIDsToRemove));
+        query.addBindValue(BEIIDsToRemove);
+
+        if (!query.exec())
+            return Error(deleteError, query.lastError());
+    }
+
+    //Add new extra infos
+    //  We could use multiple-insert notation to make this more outside-of-transaction-friendly.
+    //  But then again, for SQLite < 3.7.11 there is a limit of 500 compound select statements, etc
+    //  which makes situation complicated.
+    foreach (const BookmarkExtraInfoData& addExtraInfo, addExtraInfos)
+    {
+        query.prepare("INSERT INTO BookmarkExtraInfo(BID, Name, Type, Value) VALUE (?, ?, ?, ?)");
+        query.addBindValue(BID); //Don't use addExtraInfo's one. More error-proof.
+        query.addBindValue(addExtraInfo.Name);
+        query.addBindValue(static_cast<int>(addExtraInfo.Type));
+        query.addBindValue(addExtraInfo.Value);
+
+        if (!query.exec())
+            return Error(addError, query.lastError());
+    }
+
+    return true;
+}
+
 void BookmarkManager::CreateTables()
 {
     QSqlQuery query(db);
@@ -215,6 +313,9 @@ void BookmarkManager::CreateTables()
 
     query.exec("CREATE Table BookmarkLink"
                "( BLID INTEGER PRIMARY KEY AUTOINCREMENT, BID1 INTEGER, BID2 INTEGER )");
+
+    query.exec("CREATE Table BookmarkExtraInfo"
+               "( BEIID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, Name TEXT, Type TEXT, Value TEXT )");
 }
 
 void BookmarkManager::PopulateModels()

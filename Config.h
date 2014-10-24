@@ -50,7 +50,7 @@
 ///   - Search
 ///   - Bookmark extra info table.
 ///   - Import Firefox bookmarks (by both browsing the json file and selecting profile!)
-///   - Linking Bookmarks to each other.
+///   x Linking Bookmarks to each other.
 ///   x Extension Association Edit Dialog: For each extension, show the list of Open With (but not
 ///     the system default Open dialog, because we want to be system-independent and not use
 ///     Windows' registry CLASSES, etc) and let user (only!) Remove the apps he needs. Also a
@@ -100,6 +100,7 @@
 ///   - If a file is removed manually from the file archive without program's consent, at least show
 ///     some warning the next time!
 ///   - When sorting bookmarks by URL, disregard the protocol name in sorting.
+///   - Save bookmark extra data as whole JSON files and edit them using a JSON editor.
 
 class Config
 {
