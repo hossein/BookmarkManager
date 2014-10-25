@@ -31,6 +31,7 @@ private:
     BookmarkManager::BookmarkData editOriginalBData;
 
     QList<long long> editedLinkedBookmarks;
+    QList<BookmarkManager::BookmarkExtraInfoData> editedExtraInfos;
     QList<FileManager::BookmarkFile> editedFilesList;
     //Note: We don't use this, since new files that will be added all have BFID=-1 so we use a
     //      field inside the `FileManager::BookmarkFile` struct instead.
@@ -110,4 +111,11 @@ private slots:
     void bvLinkedBookmarksCurrentRowChanged(long long currentBID, long long previousBID);
     void on_btnLinkBookmark_clicked();
     void on_btnRemoveLink_clicked();
+
+    /// Extra Info Section ////////////////////////////////////////////////////////////////////////
+    void InitializeExtraInfosUI();
+    void PopulateExtraInfos();
+
+    void on_btnAddExtraInfo_clicked();
+    void on_btnRemoveExtraInfo_clicked();
 };

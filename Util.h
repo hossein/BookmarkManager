@@ -77,6 +77,7 @@ public:
             list2.removeAt(removeList[r]);
     }
 
+    //Decided not to generalize this function, e.g typename EqualsFunc. http://stackoverflow.com/a/5853295/656366.
     template <typename T>
     static void ListDifference(QList<T>& list1, QList<T>& list2, bool (*equals)(const T& v1, const T& v2))
     {

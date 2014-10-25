@@ -12,6 +12,8 @@
 #include <QtGui/QInputDialog>
 #include <QtGui/QMenu>
 
+#include <QtSql/QSqlTableModel>
+
 //[KeepDefaultFile-1]
 //Note: On remove, if defBFID was removed we should set editedDefBFID to -1 so that user has to
 //      choose it again or it will be automatically choosed or remained -1 if no files are
@@ -29,6 +31,7 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long 
     InitializeTagsUI();
     InitializeFilesUI();
     InitializeLinkedBookmarksUI();
+    InitializeExtraInfosUI();
 
     if (editBId == -1)
     {
@@ -47,6 +50,11 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long 
         canShowTheDialog = dbm->bms.RetrieveLinkedBookmarks
                 (editBId, editOriginalBData.Ex_LinkedBookmarksList);
         editedLinkedBookmarks = editOriginalBData.Ex_LinkedBookmarksList;
+        if (!canShowTheDialog)
+            return;
+
+        canShowTheDialog = dbm->bms.RetrieveBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosList);
+        editedExtraInfos = editOriginalBData.Ex_ExtraInfosList;
         if (!canShowTheDialog)
             return;
 
@@ -76,6 +84,7 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long 
         PopulateUITags();
         PopulateUIFiles(false);
         PopulateLinkedBookmarks();
+        PopulateExtraInfos();
     }
 }
 
@@ -146,6 +155,11 @@ void BookmarkEditDialog::accept()
 
         success = dbm->bms.UpdateLinkedBookmarks(editBId, editOriginalBData.Ex_LinkedBookmarksList,
                                                  editedLinkedBookmarks);
+        if (!success)
+            return DoRollBackAction();
+
+        success = dbm->bms.UpdateBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosList,
+                                                    editedExtraInfos);
         if (!success)
             return DoRollBackAction();
 
@@ -704,4 +718,54 @@ void BookmarkEditDialog::on_btnRemoveLink_clicked()
     //TODO: Confirmation message
     editedLinkedBookmarks.removeAll(ui->bvLinkedBookmarks->GetSelectedBookmarkID());
     PopulateLinkedBookmarks();
+}
+
+void BookmarkEditDialog::InitializeExtraInfosUI()
+{
+    //TODO: Connections
+}
+
+void BookmarkEditDialog::PopulateExtraInfos()
+{
+
+    /* PREVIOUS MODEL-VIEW BASED THING:
+    ui->tvAttachedFiles->setModel(&editOriginalBData.Ex_FilesModel);
+
+    QHeaderView* hh = ui->tvAttachedFiles->horizontalHeader();
+
+    FileManager::BookmarkFileIndexes const& bfidx = dbm->files.bfidx;
+
+    //Hide everything except OriginalName and Size.
+    hh->hideSection(bfidx.BFID        );
+    hh->hideSection(bfidx.BID         );
+    hh->hideSection(bfidx.FID         );
+  //hh->hideSection(bfidx.OriginalName);
+    hh->hideSection(bfidx.ArchiveURL  );
+    hh->hideSection(bfidx.ModifyDate  );
+  //hh->hideSection(bfidx.Size        );
+    hh->hideSection(bfidx.MD5         );
+
+    hh->setResizeMode(bfidx.OriginalName, QHeaderView::Stretch);
+    hh->setResizeMode(bfidx.Size        , QHeaderView::Fixed  );
+    hh->resizeSection(bfidx.Size, 60);
+
+    QHeaderView* vh = ui->tvAttachedFiles->verticalHeader();
+    vh->setResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
+
+    //This function is just called once from the constructor, so this connection is one-time and fine.
+    connect(ui->tvAttachedFiles->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
+            this, SLOT(tvAttachedFilesCurrentRowChanged(QModelIndex,QModelIndex)));
+
+    NOW BOLD AND HIGHLIGHT THE DefBFID.
+    */
+}
+
+void BookmarkEditDialog::on_btnAddExtraInfo_clicked()
+{
+
+}
+
+void BookmarkEditDialog::on_btnRemoveExtraInfo_clicked()
+{
+
 }
