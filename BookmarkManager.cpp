@@ -3,6 +3,7 @@
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
 #include <QtSql/QSqlResult>
+#include <QtSql/QSqlTableModel>
 
 #include "Util.h"
 
@@ -201,9 +202,53 @@ bool BookmarkManager::RemoveBookmarksLink(long long BID1, long long BID2)
     return true;
 }
 
+bool BookmarkManager::RetrieveBookmarkExtraInfosModel(long long BID, QSqlTableModel& extraInfosModel)
+{
+    QString retrieveError = "Could not get bookmark extra information from database.";
+
+    //Since the query is already executed, we think no errors happened in here.
+    extraInfosModel.setTable("BookmarkExtraInfo");
+    extraInfosModel.setFilter("BID = " + QString::number(BID));
+    if (!extraInfosModel.select())
+        return Error(retrieveError, extraInfosModel.lastError());
+
+    while (extraInfosModel.canFetchMore())
+        extraInfosModel.fetchMore();
+
+    SetBookmarkExtraInfoIndexes(extraInfosModel.record());
+    extraInfosModel.setHeaderData(beiidx.BEIID, Qt::Horizontal, "BEIID");
+    extraInfosModel.setHeaderData(beiidx.BID  , Qt::Horizontal, "BID"  );
+    extraInfosModel.setHeaderData(beiidx.Name , Qt::Horizontal, "Name" );
+    extraInfosModel.setHeaderData(beiidx.Type , Qt::Horizontal, "Type" );
+    extraInfosModel.setHeaderData(beiidx.Value, Qt::Horizontal, "Value");
+
+    //Important: Prevent changes to the database while the user is editing.
+    //  Database changes must ONLY be made during a TRANSACTION and with appropriate PREPROCESSING
+    //  done in the appropriate function for updating the extra infos using the model.
+    extraInfosModel.setEditStrategy(QSqlTableModel::OnManualSubmit);
+
+    return true;
+}
+
+bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, QSqlTableModel& extraInfosModel)
+{
+    //It is IMPORTANT that we set BIDs before submitting.
+    const int rowCount = extraInfosModel.rowCount();
+    for (int row = 0; row < rowCount; row++)
+        extraInfosModel.setData(extraInfosModel.index(row, beiidx.BID), BID);
+
+    //Submit and check for errors
+    bool success = extraInfosModel.submitAll();
+
+    if (!success)
+        return Error("Could not update bookmark extra information in database.", extraInfosModel.lastError());
+
+    return true;
+}
+
 bool BookmarkManager::RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkManager::BookmarkExtraInfoData>& extraInfos)
 {
-    QString retrieveError = "Could not get bookmarks' extra information from database.";
+    QString retrieveError = "Could not get bookmark extra information from database.";
     QSqlQuery query(db);
     query.prepare("SELECT * FROM BookmarkExtraInfo WHERE BID = ?");
     query.addBindValue(BID);
@@ -211,8 +256,9 @@ bool BookmarkManager::RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkMa
     if (!query.exec())
         return Error(retrieveError, query.lastError());
 
+    SetBookmarkExtraInfoIndexes(query.record()); //TODO: Does this populate correctly when query doesn't have values?
     bool indexesCalculated = false;
-    int beiidx_BEIID, beiidx_Name, beiidx_Type, beiidx_Value;
+    int beiidx_BEIID, beiidx_BID, beiidx_Name, beiidx_Type, beiidx_Value;
 
     extraInfos.clear(); //Do it for caller
     while (query.next())
@@ -221,6 +267,7 @@ bool BookmarkManager::RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkMa
         {
             const QSqlRecord& record = query.record();
             beiidx_BEIID = record.indexOf("BEIID");
+            beiidx_BID   = record.indexOf("BID"  );
             beiidx_Name  = record.indexOf("Name" );
             beiidx_Type  = record.indexOf("Type" );
             beiidx_Value = record.indexOf("Value");
@@ -229,6 +276,7 @@ bool BookmarkManager::RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkMa
 
         BookmarkExtraInfoData exInfo;
         exInfo.BEIID = query.value(beiidx_BEIID).toLongLong();
+        exInfo.BID   = query.value(beiidx_BID).toLongLong();
         exInfo.Name  = query.value(beiidx_Name).toString();
         exInfo.Type  = static_cast<BookmarkExtraInfoData::DataType>(query.value(beiidx_Type).toInt());
         exInfo.Value = query.value(beiidx_Value).toString();
@@ -245,8 +293,8 @@ static bool BookmarkExtraInfoNameEquals(const BookmarkManager::BookmarkExtraInfo
     return 0 == QString::compare(exInfo1.Name, exInfo2.Name, Qt::CaseSensitive);
 }
 
-bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, const QList<BookmarkManager::BookmarkExtraInfoData>& extraInfos,
-                                               const QList<BookmarkManager::BookmarkExtraInfoData>& originalExtraInfos)
+bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, const QList<BookmarkManager::BookmarkExtraInfoData>& originalExtraInfos,
+                                               const QList<BookmarkManager::BookmarkExtraInfoData>& extraInfos)
 {
     //Remaining extraInfo Names that were not in the edited extraInfos must be removed.
     QList<BookmarkExtraInfoData> removeExtraInfos = originalExtraInfos;
@@ -297,6 +345,15 @@ bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, const QList<Bookma
     }
 
     return true;
+}
+
+void BookmarkManager::SetBookmarkExtraInfoIndexes(const QSqlRecord& record)
+{
+    beiidx.BEIID = record.indexOf("BEIID");
+    beiidx.BID   = record.indexOf("BID"  );
+    beiidx.Name  = record.indexOf("Name" );
+    beiidx.Type  = record.indexOf("Type" );
+    beiidx.Value = record.indexOf("Value");
 }
 
 void BookmarkManager::CreateTables()

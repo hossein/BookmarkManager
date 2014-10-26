@@ -44,3 +44,4 @@
 2014-10-14  32  Separated the bookmarks table view and implemented linking tables and UI.
 2014-10-15  34  Bookmark Linking support in BMEditDlg complete and working. Added QuickBMSelDlg.
 2014-10-26  39  BMViewDlg shows linked bookmarks
+2014-10-27  40  Introduced BookmarkExtraInfo tables and UI and initial code.

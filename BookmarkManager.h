@@ -3,6 +3,7 @@
 #include "FileManager.h"
 #include <QStringList>
 #include <QtSql/QSqlQueryModel>
+#include <QtSql/QSqlTableModel>
 
 class DatabaseManager;
 
@@ -12,6 +13,33 @@ class BookmarkManager : public ISubManager
 
 public:
     QSqlQueryModel model;
+
+    struct BookmarkExtraInfoIndexes
+    {
+        int BEIID;
+        int BID;
+        int Name;
+        int Type;
+        int Value;
+    } beiidx;
+
+    struct BookmarkExtraInfoData
+    {
+        //These are JSON's basic non-array types.
+        enum DataType
+        {
+            Type_Null = 0,
+            Type_Text = 1,
+            Type_Number = 2,
+            Type_Boolean = 3
+        };
+
+        long long BEIID;
+        long long BID;
+        QString Name;
+        DataType Type;
+        QString Value;
+    };
 
     struct BookmarkIndexes
     {
@@ -37,26 +65,11 @@ public:
         /// The following members ARE NOT filled by the `RetrieveBookmark` function.
         /// and ARE NOT saved by the `AddOrEditBookmark` function.
         QList<long long> Ex_LinkedBookmarksList;
+        QSqlTableModel Ex_ExtraInfosModel;
+        QList<BookmarkExtraInfoData> Ex_ExtraInfosList;
         QStringList Ex_TagsList;
         QSqlQueryModel Ex_FilesModel;
         QList<FileManager::BookmarkFile> Ex_FilesList;
-    };
-
-    struct BookmarkExtraInfoData
-    {
-        //These are JSON's basic non-array types.
-        enum DataType
-        {
-            Type_Null = 0,
-            Type_Text = 1,
-            Type_Number = 2,
-            Type_Boolean = 3
-        };
-
-        long long BEIID;
-        QString Name;
-        DataType Type;
-        QString Value;
     };
 
 public:
@@ -75,9 +88,21 @@ public:
     bool LinkBookmarksTogether(long long BID1, long long BID2);
     bool RemoveBookmarksLink(long long BID1, long long BID2);
 
+    //Extra Infos with model
+    /// The returned model has its EditStrategy set to OnManualSubmit,
+    /// and client code must NEVER call submit()/submitAll() on it!
+    /// Submitting must be done via the update function below, which does extra jobs.
+    bool RetrieveBookmarkExtraInfosModel(long long BID, QSqlTableModel& extraInfosModel);
+    /// Sets the BID on all rows BEFORE submitting.
+    bool UpdateBookmarkExtraInfos(long long BID, QSqlTableModel& extraInfosModel);
+
+    //Extra Infos with custom item lists
     bool RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkExtraInfoData>& extraInfos);
-    bool UpdateBookmarkExtraInfos(long long BID, const QList<BookmarkExtraInfoData>& extraInfos,
-                                  const QList<BookmarkExtraInfoData>& originalExtraInfos);
+    bool UpdateBookmarkExtraInfos(long long BID, const QList<BookmarkExtraInfoData>& originalExtraInfos,
+                                  const QList<BookmarkExtraInfoData>& extraInfos);
+
+private:
+    void SetBookmarkExtraInfoIndexes(const QSqlRecord& record);
 
 protected:
     // ISubManager interface
