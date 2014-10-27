@@ -53,8 +53,10 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long 
         if (!canShowTheDialog)
             return;
 
-        canShowTheDialog = dbm->bms.RetrieveBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosList);
-        editedExtraInfos = editOriginalBData.Ex_ExtraInfosList;
+        //Unlike files, we do use models for extra info editing. They are much simpler.
+        //canShowTheDialog = dbm->bms.RetrieveBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosList);
+        canShowTheDialog = dbm->bms.RetrieveBookmarkExtraInfosModel(editBId, editOriginalBData.Ex_ExtraInfosModel);
+        //editedExtraInfos = editOriginalBData.Ex_ExtraInfosList;
         if (!canShowTheDialog)
             return;
 
@@ -158,8 +160,11 @@ void BookmarkEditDialog::accept()
         if (!success)
             return DoRollBackAction();
 
-        success = dbm->bms.UpdateBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosList,
-                                                    editedExtraInfos);
+        //We use models, this function is no longer necessary.
+        //success = dbm->bms.UpdateBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosList,
+        //                                            editedExtraInfos);
+        //DO NOT: success = editOriginalBData.Ex_ExtraInfosModel.submitAll(); Read docs
+        success = dbm->bms.UpdateBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosModel);
         if (!success)
             return DoRollBackAction();
 
@@ -727,37 +732,29 @@ void BookmarkEditDialog::InitializeExtraInfosUI()
 
 void BookmarkEditDialog::PopulateExtraInfos()
 {
+    ui->tvExtraInfos->setModel(&editOriginalBData.Ex_ExtraInfosModel);
 
-    /* PREVIOUS MODEL-VIEW BASED THING:
-    ui->tvAttachedFiles->setModel(&editOriginalBData.Ex_FilesModel);
+    QHeaderView* hh = ui->tvExtraInfos->horizontalHeader();
+    const BookmarkManager::BookmarkExtraInfoIndexes& beiidx = dbm->bms.beiidx;
+    hh->hideSection(beiidx.BEIID);
+    hh->hideSection(beiidx.BID);
+    hh->resizeSection(beiidx.Name, 100);
+    hh->resizeSection(beiidx.Type, 60);
+    hh->resizeSection(beiidx.Value, 200);
 
-    QHeaderView* hh = ui->tvAttachedFiles->horizontalHeader();
-
-    FileManager::BookmarkFileIndexes const& bfidx = dbm->files.bfidx;
-
-    //Hide everything except OriginalName and Size.
-    hh->hideSection(bfidx.BFID        );
-    hh->hideSection(bfidx.BID         );
-    hh->hideSection(bfidx.FID         );
-  //hh->hideSection(bfidx.OriginalName);
-    hh->hideSection(bfidx.ArchiveURL  );
-    hh->hideSection(bfidx.ModifyDate  );
-  //hh->hideSection(bfidx.Size        );
-    hh->hideSection(bfidx.MD5         );
-
-    hh->setResizeMode(bfidx.OriginalName, QHeaderView::Stretch);
-    hh->setResizeMode(bfidx.Size        , QHeaderView::Fixed  );
-    hh->resizeSection(bfidx.Size, 60);
-
-    QHeaderView* vh = ui->tvAttachedFiles->verticalHeader();
+    QHeaderView* vh = ui->tvExtraInfos->verticalHeader();
     vh->setResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
 
-    //This function is just called once from the constructor, so this connection is one-time and fine.
-    connect(ui->tvAttachedFiles->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-            this, SLOT(tvAttachedFilesCurrentRowChanged(QModelIndex,QModelIndex)));
+    connect(ui->tvExtraInfos->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
+            this, SLOT(tvExtraInfosCurrentRowChanged(QModelIndex,QModelIndex)));
 
-    NOW BOLD AND HIGHLIGHT THE DefBFID.
-    */
+    //TODO: ScrollPerPixel all of the {table|list|tree}{view|widget}s.
+}
+
+void BookmarkEditDialog::tvExtraInfosCurrentRowChanged(const QModelIndex& current, const QModelIndex& previous)
+{
+    Q_UNUSED(previous)
+    ui->btnRemoveExtraInfo->setEnabled(current.isValid());
 }
 
 void BookmarkEditDialog::on_btnAddExtraInfo_clicked()

@@ -31,7 +31,7 @@ private:
     BookmarkManager::BookmarkData editOriginalBData;
 
     QList<long long> editedLinkedBookmarks;
-    QList<BookmarkManager::BookmarkExtraInfoData> editedExtraInfos;
+    //QList<BookmarkManager::BookmarkExtraInfoData> editedExtraInfos; We use model instead.
     QList<FileManager::BookmarkFile> editedFilesList;
     //Note: We don't use this, since new files that will be added all have BFID=-1 so we use a
     //      field inside the `FileManager::BookmarkFile` struct instead.
@@ -116,6 +116,7 @@ private slots:
     void InitializeExtraInfosUI();
     void PopulateExtraInfos();
 
+    void tvExtraInfosCurrentRowChanged(const QModelIndex& current, const QModelIndex& previous);
     void on_btnAddExtraInfo_clicked();
     void on_btnRemoveExtraInfo_clicked();
 };
