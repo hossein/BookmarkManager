@@ -43,6 +43,10 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, Config* conf, long 
     if (!canShowTheDialog)
         return;
 
+    canShowTheDialog = dbm->bms.RetrieveBookmarkExtraInfos(viewBId, viewBData.Ex_ExtraInfosList);
+    if (!canShowTheDialog)
+        return;
+
     canShowTheDialog = dbm->tags.RetrieveBookmarkTags(viewBId, viewBData.Ex_TagsList);
     if (!canShowTheDialog)
         return;
@@ -96,6 +100,7 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, Config* conf, long 
     PopulateUITags();
     PopulateUIFiles(false);
     PopulateLinkedBookmarks();
+    PopulateExtraInfos();
 
     //Select the default file, preview it.
     //`DefaultFileIndex()` must be called AFTER the `SetDefaultBFID(...)` call above.
@@ -372,6 +377,41 @@ void BookmarkViewDialog::PopulateLinkedBookmarks()
 
 void BookmarkViewDialog::bvLinkedBookmarksActivated(long long BID)
 {
+
+}
+
+void BookmarkViewDialog::PopulateExtraInfos()
+{
+    if (viewBData.Ex_ExtraInfosList.isEmpty())
+        return;
+
+    QString propertiesHTML;
+
+    if (!ui->txtDesc->toPlainText().isEmpty())
+        propertiesHTML = "<br/><br/>";
+
+    //Sort the properties by lower-case names. We use insertMulti to allow multiple properties with
+    //  the same name, or properties that their name only differs in casing. QMap::values treats
+    //  them correctly and returns all of the values for a single key.
+    QMap<QString, BookmarkManager::BookmarkExtraInfoData> sortedExInfos;
+    foreach (const BookmarkManager::BookmarkExtraInfoData& exInfo, viewBData.Ex_ExtraInfosList)
+        sortedExInfos.insertMulti(exInfo.Name.toLower(), exInfo);
+
+    //Now show the sorted additional information.
+    QString paddingStyle = "padding: 2px 8px 2px 2px;";
+    QString alternateBackColorStyle = "background-color: #DDDDDD;";
+    propertiesHTML += "<table>";
+    propertiesHTML += QString("<tr><td colspan=\"2\" style=\"%1\"><strong>Additional Properties:</strong></td></tr>")
+                      .arg(paddingStyle + alternateBackColorStyle);
+    int i = 0;
+    foreach (const BookmarkManager::BookmarkExtraInfoData& exInfo, sortedExInfos.values())
+        propertiesHTML += QString("<tr><td style=\"%1\"><strong>%2</strong></td>"
+                                  "<td style=\"%1\">%3</td></tr>\n")
+                          .arg(paddingStyle + (i++ % 2 ? alternateBackColorStyle : QString()),
+                               exInfo.Name, exInfo.Value);
+    propertiesHTML += "</table>";
+
+    ui->txtDesc->insertHtml(propertiesHTML);
 
 }
 
