@@ -752,7 +752,7 @@ void BookmarkEditDialog::PopulateExtraInfos()
     vh->setResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
 
     //Set item delegate for editing the type.
-    QItemDelegate* delegate = new BookmarkExtraInfoTypeChooser(this);
+    QStyledItemDelegate* delegate = new BookmarkExtraInfoTypeChooser(this);
     ui->tvExtraInfos->setItemDelegateForColumn(beiidx.Type, delegate);
 
     //Selection changed signal connection

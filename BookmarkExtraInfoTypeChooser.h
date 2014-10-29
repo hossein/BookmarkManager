@@ -1,15 +1,19 @@
 #pragma once
-#include <QItemDelegate>
+#include <QStyledItemDelegate>
 #include <QComboBox>
 
-class BookmarkExtraInfoTypeChooser : public QItemDelegate
+class BookmarkExtraInfoTypeChooser : public QStyledItemDelegate
 {
     Q_OBJECT
 
-public:
-    BookmarkExtraInfoTypeChooser(QWidget* parent) : QItemDelegate(parent)
-    {
+private:
+    QStringList dataTypeNames;
 
+public:
+    BookmarkExtraInfoTypeChooser(QWidget* parent) : QStyledItemDelegate(parent)
+    {
+        //These must correspong to BookmarkManager::BookmarkExtraInfoData::DataType enum values.
+        dataTypeNames << "Null" << "Text" << "Number" << "Boolean";
     }
 
     // QAbstractItemDelegate interface
@@ -18,9 +22,8 @@ public:
         Q_UNUSED(option)
         Q_UNUSED(index)
 
-        //These must correspong to BookmarkManager::BookmarkExtraInfoData::DataType enum values.
         QComboBox* cboItems = new QComboBox(parent);
-        cboItems->addItems(QStringList() << "Null" << "Text" << "Number" << "Boolean");
+        cboItems->addItems(dataTypeNames);
 
         return cboItems;
     }
@@ -43,5 +46,19 @@ public:
     {
         Q_UNUSED(index);
         editor->setGeometry(option.rect);
+    }
+
+    // QStyledItemDelegate interface
+    QString displayText(const QVariant& value, const QLocale& locale) const
+    {
+        Q_UNUSED(locale)
+
+        bool okay;
+        int intValue = 0;
+        intValue = value.toInt(&okay);
+
+        if (!okay || intValue < 0 || intValue >= dataTypeNames.size())
+            return dataTypeNames[0]; //Supposed to be "NULL";
+        return dataTypeNames[intValue];
     }
 };
