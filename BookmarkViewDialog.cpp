@@ -4,6 +4,7 @@
 #include "Util.h"
 
 #include <QApplication>
+#include <QResizeEvent>
 #include <QScrollBar>
 #include <QMenu>
 
@@ -90,7 +91,7 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, Config* conf, long 
     ui->lblName   ->setToolTip(viewBData.Name);
     ui->fvsRating ->setValue(viewBData.Rating);
     ui->fvsRating ->setToolTip(QString::number(viewBData.Rating / (double)10.0));
-    ui->ptxDesc   ->setPlainText(viewBData.Desc);
+    ui->txtDesc   ->insertPlainText(viewBData.Desc); //Resists existense of HTML tags!
     ui->leURL     ->setText(viewBData.URL);
     PopulateUITags();
     PopulateUIFiles(false);
