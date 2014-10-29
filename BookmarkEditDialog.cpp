@@ -4,8 +4,10 @@
 #include "Config.h"
 #include "FileManager.h"
 #include "FileViewManager.h"
-#include "QuickBookmarkSelectDialog.h"
 #include "Util.h"
+
+#include "BookmarkExtraInfoAddEditDialog.h"
+#include "QuickBookmarkSelectDialog.h"
 
 #include <QDebug>
 #include <QtGui/QFileDialog>
@@ -759,7 +761,17 @@ void BookmarkEditDialog::tvExtraInfosCurrentRowChanged(const QModelIndex& curren
 
 void BookmarkEditDialog::on_btnAddExtraInfo_clicked()
 {
+    BookmarkExtraInfoAddEditDialog::EditedProperty prop;
+    prop.Type = BookmarkManager::BookmarkExtraInfoData::Type_Text;
 
+    BookmarkExtraInfoAddEditDialog bmeidlg(&prop, this);
+    int result = bmeidlg.exec();
+
+    if (result != QDialog::Accepted)
+        return;
+
+    dbm->bms.InsertBookmarkExtraInfoIntoModel(editOriginalBData.Ex_ExtraInfosModel, editBId,
+                                              prop.Name, prop.Type, prop.Value);
 }
 
 void BookmarkEditDialog::on_btnRemoveExtraInfo_clicked()

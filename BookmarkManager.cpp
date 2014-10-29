@@ -232,10 +232,19 @@ bool BookmarkManager::RetrieveBookmarkExtraInfosModel(long long BID, QSqlTableMo
 
 bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, QSqlTableModel& extraInfosModel)
 {
-    //It is IMPORTANT that we set BIDs before submitting.
+    //It is IMPORTANT that we set BIDs before submitting. This way we eliminate the need to connect to
+    //  e.g rowAboutToBeInserted and assign the BID value there.
+    //The same applies for the BEIID field's 'Generated' attribute.
+    //  Note that if client uses the utility functions provided in this class to insert the bookmarks,
+    //  BID and the BEIID generated are already set. But it's okay.
+
+    //Set BIDs and set BEIIDs generated to false.
     const int rowCount = extraInfosModel.rowCount();
     for (int row = 0; row < rowCount; row++)
+    {
+        extraInfosModel.record(row).setGenerated(beiidx.BEIID, false);
         extraInfosModel.setData(extraInfosModel.index(row, beiidx.BID), BID);
+    }
 
     //Submit and check for errors
     bool success = extraInfosModel.submitAll();
@@ -244,6 +253,24 @@ bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, QSqlTableModel& ex
         return Error("Could not update bookmark extra information in database.", extraInfosModel.lastError());
 
     return true;
+}
+
+void BookmarkManager::InsertBookmarkExtraInfoIntoModel(
+        QSqlTableModel& extraInfosModel, long long BID,
+        const QString& Name, BookmarkManager::BookmarkExtraInfoData::DataType Type, const QString& Value)
+{
+    QSqlRecord record;
+    //We don't set a BEIID value. Even if we do, it will be generated=false so no use in that.
+    //record.setValue("BID", BID);
+    //record.setValue("Name", Name);
+    //record.setValue("Type", static_cast<int>(Type));
+    //record.setValue("Value", Value);
+    record.setValue(beiidx.BID, BID);
+    record.setValue(beiidx.Name, Name);
+    record.setValue(beiidx.Type, static_cast<int>(Type));
+    record.setValue(beiidx.Value, Value);
+
+    extraInfosModel.insertRecord(-1, record);
 }
 
 bool BookmarkManager::RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkManager::BookmarkExtraInfoData>& extraInfos)
@@ -290,6 +317,7 @@ bool BookmarkManager::RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkMa
 static bool BookmarkExtraInfoNameEquals(const BookmarkManager::BookmarkExtraInfoData& exInfo1,
                                         const BookmarkManager::BookmarkExtraInfoData& exInfo2)
 {
+    //TODO: Must compare BEIID, not Name to allow same-name properties.
     return 0 == QString::compare(exInfo1.Name, exInfo2.Name, Qt::CaseSensitive);
 }
 
