@@ -15,11 +15,6 @@
 #include <QtGui/QInputDialog>
 #include <QtGui/QMenu>
 
-#include <QItemDelegate>
-#include <QItemEditorFactory>
-#include <QItemEditorCreatorBase>
-#include <QStandardItemEditorCreator>
-
 #include <QtSql/QSqlTableModel>
 
 //[KeepDefaultFile-1]
@@ -757,14 +752,8 @@ void BookmarkEditDialog::PopulateExtraInfos()
     vh->setResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
 
     //Set item delegate for editing the type.
-    QItemEditorFactory* factory = new QItemEditorFactory();
-    QItemEditorCreatorBase* typeChooserCreator = new QStandardItemEditorCreator<BookmarkExtraInfoTypeChooser>();
-    factory->registerEditor(QVariant::Int, typeChooserCreator);
-    QItemEditorFactory::setDefaultFactory(factory);
-    QItemDelegate* delegate = new QItemDelegate(this);
-    delegate->setItemEditorFactory(factory);
-    ui->tvExtraInfos->setItemDelegateForColumn(dbm->bms.beiidx.Type, delegate);
-
+    QItemDelegate* delegate = new BookmarkExtraInfoTypeChooser(this);
+    ui->tvExtraInfos->setItemDelegateForColumn(beiidx.Type, delegate);
 
     //Selection changed signal connection
     connect(ui->tvExtraInfos->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
