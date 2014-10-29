@@ -75,7 +75,8 @@ HEADERS  += MainWindow.h \
     FileSandBoxManager.h \
     BookmarksView.h \
     QuickBookmarkSelectDialog.h \
-    BookmarkExtraInfoAddEditDialog.h
+    BookmarkExtraInfoAddEditDialog.h \
+    BookmarkExtraInfoTypeChooser.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \

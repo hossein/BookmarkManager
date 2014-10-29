@@ -6,6 +6,7 @@
 #include "FileViewManager.h"
 #include "Util.h"
 
+#include "BookmarkExtraInfoTypeChooser.h"
 #include "BookmarkExtraInfoAddEditDialog.h"
 #include "QuickBookmarkSelectDialog.h"
 
@@ -13,6 +14,11 @@
 #include <QtGui/QFileDialog>
 #include <QtGui/QInputDialog>
 #include <QtGui/QMenu>
+
+#include <QItemDelegate>
+#include <QItemEditorFactory>
+#include <QItemEditorCreatorBase>
+#include <QStandardItemEditorCreator>
 
 #include <QtSql/QSqlTableModel>
 
@@ -729,13 +735,16 @@ void BookmarkEditDialog::on_btnRemoveLink_clicked()
 
 void BookmarkEditDialog::InitializeExtraInfosUI()
 {
-    //TODO: Connections
+    //No initialization code here.
+    //Everything, including the selection signal connection should be in populate code.
 }
 
 void BookmarkEditDialog::PopulateExtraInfos()
 {
+    //Set model :-)
     ui->tvExtraInfos->setModel(&editOriginalBData.Ex_ExtraInfosModel);
 
+    //Set the headers
     QHeaderView* hh = ui->tvExtraInfos->horizontalHeader();
     const BookmarkManager::BookmarkExtraInfoIndexes& beiidx = dbm->bms.beiidx;
     hh->hideSection(beiidx.BEIID);
@@ -747,6 +756,17 @@ void BookmarkEditDialog::PopulateExtraInfos()
     QHeaderView* vh = ui->tvExtraInfos->verticalHeader();
     vh->setResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
 
+    //Set item delegate for editing the type.
+    QItemEditorFactory* factory = new QItemEditorFactory();
+    QItemEditorCreatorBase* typeChooserCreator = new QStandardItemEditorCreator<BookmarkExtraInfoTypeChooser>();
+    factory->registerEditor(QVariant::Int, typeChooserCreator);
+    QItemEditorFactory::setDefaultFactory(factory);
+    QItemDelegate* delegate = new QItemDelegate(this);
+    delegate->setItemEditorFactory(factory);
+    ui->tvExtraInfos->setItemDelegateForColumn(dbm->bms.beiidx.Type, delegate);
+
+
+    //Selection changed signal connection
     connect(ui->tvExtraInfos->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
             this, SLOT(tvExtraInfosCurrentRowChanged(QModelIndex,QModelIndex)));
 

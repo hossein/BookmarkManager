@@ -28,6 +28,7 @@ public:
         //These are JSON's basic non-array types.
         enum DataType
         {
+            //Upon changing, BookmarkExtraInfoTypeChooser must be updated.
             Type_Null = 0,
             Type_Text = 1,
             Type_Number = 2,
