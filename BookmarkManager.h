@@ -98,6 +98,7 @@ public:
     /// The following two are just utility functions that ease modifying the model.
     void InsertBookmarkExtraInfoIntoModel(QSqlTableModel& extraInfosModel, long long BID,
                                           const QString& Name, BookmarkExtraInfoData::DataType Type, const QString& Value);
+    void RemoveBookmarkExtraInfoFromModel(QSqlTableModel& extraInfosModel, const QModelIndex& index);
 
     //Extra Infos with custom item lists
     bool RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkExtraInfoData>& extraInfos);

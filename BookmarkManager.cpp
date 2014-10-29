@@ -266,7 +266,14 @@ void BookmarkManager::InsertBookmarkExtraInfoIntoModel(
     record.setValue(beiidx.Type, static_cast<int>(Type));
     record.setValue(beiidx.Value, Value);
 
+    //[Return value not checked. Assume success.]
     extraInfosModel.insertRecord(-1, record);
+}
+
+void BookmarkManager::RemoveBookmarkExtraInfoFromModel(QSqlTableModel& extraInfosModel, const QModelIndex& index)
+{
+    //[Return value not checked. Assume success.]
+    extraInfosModel.removeRow(index.row());
 }
 
 bool BookmarkManager::RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkManager::BookmarkExtraInfoData>& extraInfos)
@@ -279,7 +286,7 @@ bool BookmarkManager::RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkMa
     if (!query.exec())
         return Error(retrieveError, query.lastError());
 
-    SetBookmarkExtraInfoIndexes(query.record()); //TODO: Does this populate correctly when query doesn't have values?
+    SetBookmarkExtraInfoIndexes(query.record()); //TODO: Does this populate correctly when query doesn't have values? Same code and placement is used for the MAIN THING: bookmarks too!
     bool indexesCalculated = false;
     int beiidx_BEIID, beiidx_BID, beiidx_Name, beiidx_Type, beiidx_Value;
 

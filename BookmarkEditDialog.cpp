@@ -776,5 +776,6 @@ void BookmarkEditDialog::on_btnAddExtraInfo_clicked()
 
 void BookmarkEditDialog::on_btnRemoveExtraInfo_clicked()
 {
-
+    dbm->bms.RemoveBookmarkExtraInfoFromModel(editOriginalBData.Ex_ExtraInfosModel,
+                                              ui->tvExtraInfos->currentIndex());
 }
