@@ -259,12 +259,8 @@ void BookmarkManager::InsertBookmarkExtraInfoIntoModel(
         QSqlTableModel& extraInfosModel, long long BID,
         const QString& Name, BookmarkManager::BookmarkExtraInfoData::DataType Type, const QString& Value)
 {
-    QSqlRecord record;
-    //We don't set a BEIID value. Even if we do, it will be generated=false so no use in that.
-    //record.setValue("BID", BID);
-    //record.setValue("Name", Name);
-    //record.setValue("Type", static_cast<int>(Type));
-    //record.setValue("Value", Value);
+    QSqlRecord record = extraInfosModel.record(); //Must do it! Otherwise setting values doesn't work.
+    record.setGenerated(beiidx.BEIID, false); //Dunno should set this or not. Better set it.
     record.setValue(beiidx.BID, BID);
     record.setValue(beiidx.Name, Name);
     record.setValue(beiidx.Type, static_cast<int>(Type));
