@@ -400,15 +400,28 @@ void BookmarkViewDialog::PopulateExtraInfos()
     //Now show the sorted additional information.
     QString paddingStyle = "padding: 2px 8px 2px 2px;";
     QString alternateBackColorStyle = "background-color: #DDDDDD;";
-    propertiesHTML += "<table>";
+
+    //Note: "style" doesn't set the width for table and td. Used "width=..." approach in both of them.
+    propertiesHTML += "<table style=\"width: 100%\" width=\"100%\">";
     propertiesHTML += QString("<tr><td colspan=\"2\" style=\"%1\"><strong>Additional Properties:</strong></td></tr>")
                       .arg(paddingStyle + alternateBackColorStyle);
+
     int i = 0;
+    QString rowText = "<tr><td style=\"%1\"><strong>%2</strong></td><td style=\"%1\" width=\"100%\">%3</td></tr>\n";
     foreach (const BookmarkManager::BookmarkExtraInfoData& exInfo, sortedExInfos.values())
-        propertiesHTML += QString("<tr><td style=\"%1\"><strong>%2</strong></td>"
-                                  "<td style=\"%1\">%3</td></tr>\n")
-                          .arg(paddingStyle + (i++ % 2 ? alternateBackColorStyle : QString()),
-                               exInfo.Name, exInfo.Value);
+    {
+        //We escape html tags, etc (instead of maybe directly inserting html and text fragments or
+        //  dealing with QTextDocumentFragment to do it)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+        QString name = exInfo.Name.toHTMLEscaped();
+        QString value = exInfo.Value.toHTMLEscaped();
+#else
+        QString name = Qt::escape(exInfo.Name);
+        QString value = Qt::escape(exInfo.Value);
+#endif
+        QString cellStyle = paddingStyle + (i++ % 2 ? alternateBackColorStyle : QString());
+        propertiesHTML += rowText.arg(cellStyle, name, value);
+    }
     propertiesHTML += "</table>";
 
     ui->txtDesc->insertHtml(propertiesHTML);

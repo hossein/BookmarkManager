@@ -48,7 +48,7 @@
 ///   x Filter by tags
 ///   - "Delete" moves the bookmarks or archivefiles to a "Trash", never deletes them!
 ///   - Search
-///   - Bookmark extra info table.
+///   x Bookmark extra info table.
 ///   - Import Firefox bookmarks (by both browsing the json file and selecting profile!)
 ///   x Linking Bookmarks to each other.
 ///   x Extension Association Edit Dialog: For each extension, show the list of Open With (but not
