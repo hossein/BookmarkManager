@@ -3,6 +3,7 @@
 
 #include "BookmarkEditDialog.h"
 #include "BookmarkViewDialog.h"
+#include "BookmarksBusinessLogic.h"
 
 #include <QDebug>
 #include <QDir>
@@ -418,12 +419,12 @@ void MainWindow::DeleteSelectedBookmark()
 
     if (QMessageBox::Yes !=
         QMessageBox::question(this, "Delete Bookmark",
-                              "Are you sure you want to delete the selected bookmark \""
-                              + selectedBookmarkName + "\"?",
+                              "Are you sure you want to send the selected bookmark \""
+                              + selectedBookmarkName + "\" to the trash?",
                               QMessageBox::Yes | QMessageBox::No, QMessageBox::No))
         return;
 
-    int success = dbm.bms.DeleteBookmark(ui->bv->GetSelectedBookmarkID());
+    bool success = BookmarksBusinessLogic(&dbm, &conf).DeleteBookmark(ui->bv->GetSelectedBookmarkID());
     if (!success)
         return;
 
