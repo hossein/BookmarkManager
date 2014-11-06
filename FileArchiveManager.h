@@ -1,6 +1,8 @@
 #pragma once
 #include "IArchiveManager.h"
 
+//TODO: Save the files with their own file name in the archive!
+
 /// This class is also known as FAM.
 class FileArchiveManager : public IArchiveManager
 {

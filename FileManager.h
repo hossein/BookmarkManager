@@ -78,7 +78,7 @@ public:
     /// This function DOES NOT set any `Ex_` fields in the returned structs.
     bool RetrieveBookmarkFiles(long long BID, QList<BookmarkFile>& bookmarkFiles);
 
-    //Bookmark updating: involves BOTH adding and deleting.
+    //Bookmark updating: involves BOTH adding and deleting. NEEDS Transaction.
     /// Although the interface currently doesn't allow sharing a file between multiple bookmarks,
     ///     this function uses BFID for its calculations and allows it.
     /// IMPORTANT: Do NOT make `editedBookmarkFiles` non-const; in transactions where consecutive
@@ -90,6 +90,11 @@ public:
                              const QList<BookmarkFile>& editedBookmarkFiles,
                              QList<long long>& editedBFIDs,
                              const QString& fileArchiveNameForNewFiles);
+
+    //NEEDS Transaction.
+    /// Remove all file attachment information of a bookmark and send all the files for to the trash
+    ///     (only if they are not shared).
+    bool TrashAllBookmarkFiles(long long BID);
 
     //Sandbox
 public:

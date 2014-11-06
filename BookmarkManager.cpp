@@ -101,14 +101,37 @@ bool BookmarkManager::SetBookmarkDefBFID(long long BID, long long BFID)
     return true;
 }
 
-bool BookmarkManager::DeleteBookmark(long long BID)
+bool BookmarkManager::RemoveBookmark(long long BID)
 {
     QSqlQuery query(db);
     query.prepare("DELETE FROM Bookmark WHERE BID = ?");
     query.addBindValue(BID);
 
     if (!query.exec())
-        return Error("Could not delete bookmark.", query.lastError());
+        return Error("Could not remove bookmark.", query.lastError());
+
+    return true;
+}
+
+bool BookmarkManager::InsertBookmarkIntoTrash(
+        const QString& Name, const QString& URL, const QString& Description, const QString& Tags,
+        const QString& AttachedFIDs, const long long DefFID, const int Rating, long long AddDate)
+{
+    QSqlQuery query(db);
+    query.prepare("INSERT INTO BookmarkTrash(Name, URL, Desc, AttachedFIDs, DefFID, Rating, Tags, "
+                  "                          DeleteDate, AddDate) VALUES (?,?,?,?,?,?,?,?,?)");
+    query.addBindValue(Name);
+    query.addBindValue(URL);
+    query.addBindValue(Description);
+    query.addBindValue(AttachedFIDs);
+    query.addBindValue(DefFID);
+    query.addBindValue(Rating);
+    query.addBindValue(Tags);
+    query.addBindValue(QDateTime::currentMSecsSinceEpoch());
+    query.addBindValue(AddDate);
+
+    if (!query.exec())
+        return Error("Could not trash the bookmark.", query.lastError());
 
     return true;
 }
@@ -397,7 +420,8 @@ void BookmarkManager::CreateTables()
 
     query.exec("CREATE TABLE BookmarkTrash"
                "( BID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, URL TEXT, "
-               "  Desc TEXT, DefBFID INTEGER, Rating INTEGER, AddDate INTEGER )");
+               "  Desc TEXT, AttachedFIDs TEXT, DefFID INTEGER, Rating INTEGER, "
+               "  Tags TEXT, DeleteDate INTEGER, AddDate INTEGER )");
 
     query.exec("CREATE Table BookmarkLink"
                "( BLID INTEGER PRIMARY KEY AUTOINCREMENT, BID1 INTEGER, BID2 INTEGER )");

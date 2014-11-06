@@ -224,6 +224,33 @@ bool FileManager::UpdateBookmarkFiles(long long BID,
     return true;
 }
 
+bool FileManager::TrashAllBookmarkFiles(long long BID)
+{
+    QString retrieveBookmarkFilesError =
+            "Unable to get attached files information for bookmark in order to delete them.";
+
+    QSqlQuery query(db);
+    query.prepare("SELECT * FROM BookmarkFile WHERE BID = ?");
+    query.addBindValue(BID);
+
+    if (!query.exec())
+        return Error(retrieveBookmarkFilesError, query.lastError());
+
+    while (query.next())
+    {
+        const QSqlRecord& record = query.record();
+        long long BFID = record.value("BFID").toLongLong();
+        long long FID = record.value("FID").toLongLong();
+
+        //The following call will remove the attachment information and trash the files ONLY IF
+        //  they are not shared.
+        if (!RemoveBookmarkFile(BFID, FID))
+            return false;
+    }
+
+    return true;
+}
+
 bool FileManager::ClearSandBox()
 {
     //dynamic_cast as an assertion.
@@ -272,7 +299,7 @@ bool FileManager::AddBookmarkFile(long long BID, long long FID, long long& added
 
 bool FileManager::UpdateFile(long long FID, const FileManager::BookmarkFile& bf)
 {
-    QString updateFileError = "Unable To alter the information of attached files in the database.";
+    QString updateFileError = "Unable to alter the information of attached files in the database.";
     QSqlQuery query(db);
 
     query.prepare("UPDATE File "
@@ -308,7 +335,7 @@ bool FileManager::AddFile(FileManager::BookmarkFile& bf, const QString& fileArch
     //  functions must be careful to give writable COPIES of const references to this.
     bf.OriginalName = QFileInfo(bf.OriginalName).fileName();
 
-    QString addFileDBError = "Unable To add file information to the database.";
+    QString addFileDBError = "Unable to add file information to the database.";
     QSqlQuery query(db);
 
     //Get the required file names from the DB.
@@ -330,15 +357,16 @@ bool FileManager::AddFile(FileManager::BookmarkFile& bf, const QString& fileArch
 
 bool FileManager::RemoveBookmarkFile(long long BFID, long long FID)
 {
-    QString attachedRemoveError = "Unable To remove an old attached file from database.";
+    QString attachedRemoveError = "Unable to remove an old attached file from database.";
     QSqlQuery query(db);
 
     //Trash the bookmark-attached file relation.
-    query.prepare("INSERT INTO BookmarkFileTrash(BFID, BID, FID) "
-                  "SELECT BFID, BID, FID FROM BookmarkFile WHERE BFID = ?");
-    query.addBindValue(BFID);
-    if (!query.exec())
-        return Error(attachedRemoveError, query.lastError());
+    /// No more needed after business logic doing stuff.
+    /// query.prepare("INSERT INTO BookmarkFileTrash(BFID, BID, FID) "
+    ///               "SELECT BFID, BID, FID FROM BookmarkFile WHERE BFID = ?");
+    /// query.addBindValue(BFID);
+    /// if (!query.exec())
+    ///     return Error(attachedRemoveError, query.lastError());
 
     query.prepare("DELETE FROM BookmarkFile WHERE BFID = ?");
     query.addBindValue(BFID);
@@ -347,7 +375,7 @@ bool FileManager::RemoveBookmarkFile(long long BFID, long long FID)
 
     //If file FID is not used by other bookmarks (shared), remove the file altogether.
     QString attachedRemoveCheckForUseError =
-            "Unable To clean-up after removing an old attached file from database.";
+            "Unable to clean-up after removing an old attached file from database.";
     query.prepare("SELECT * FROM BookmarkFile WHERE FID = ?");
     query.addBindValue(FID);
     if (!query.exec())
@@ -547,9 +575,6 @@ void FileManager::CreateTables()
 
     query.exec("CREATE TABLE BookmarkFile"
                "( BFID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, FID INTEGER )");
-
-    query.exec("CREATE TABLE BookmarkFileTrash"
-               "( BFID INTEGER PRIMARY KEY              , BID INTEGER, FID INTEGER )");
 }
 
 void FileManager::PopulateModels()

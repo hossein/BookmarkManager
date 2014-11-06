@@ -81,7 +81,11 @@ public:
     ///   the BID of the inserted bookmark.
     bool AddOrEditBookmark(long long& BID, BookmarkData& bdata);
     bool SetBookmarkDefBFID(long long BID, long long BFID);
-    bool DeleteBookmark(long long BID);
+    bool RemoveBookmark(long long BID);
+
+    bool InsertBookmarkIntoTrash(
+            const QString& Name, const QString& URL, const QString& Description, const QString& Tags,
+            const QString& AttachedFIDs, const long long DefFID, const int Rating, long long AddDate);
 
     bool RetrieveLinkedBookmarks(long long BID, QList<long long>& linkedBIDs);
     bool UpdateLinkedBookmarks(long long BID, const QList<long long>& originalLinkedBIDs,
