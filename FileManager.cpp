@@ -547,6 +547,9 @@ void FileManager::CreateTables()
 
     query.exec("CREATE TABLE BookmarkFile"
                "( BFID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, FID INTEGER )");
+
+    query.exec("CREATE TABLE BookmarkFileTrash"
+               "( BFID INTEGER PRIMARY KEY              , BID INTEGER, FID INTEGER )");
 }
 
 void FileManager::PopulateModels()

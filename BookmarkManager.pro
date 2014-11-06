@@ -44,8 +44,7 @@ SOURCES += main.cpp\
     IArchiveManager.cpp \
     BookmarksView.cpp \
     QuickBookmarkSelectDialog.cpp \
-    BookmarkExtraInfoAddEditDialog.cpp \
-    BookmarkRemovalManager.cpp
+    BookmarkExtraInfoAddEditDialog.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -77,8 +76,7 @@ HEADERS  += MainWindow.h \
     BookmarksView.h \
     QuickBookmarkSelectDialog.h \
     BookmarkExtraInfoAddEditDialog.h \
-    BookmarkExtraInfoTypeChooser.h \
-    BookmarkRemovalManager.h
+    BookmarkExtraInfoTypeChooser.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \

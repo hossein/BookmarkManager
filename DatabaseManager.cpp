@@ -12,7 +12,7 @@
 #include <QtSql/QSqlResult>
 
 DatabaseManager::DatabaseManager(QWidget* dialogParent, Config* conf)
-    : IManager(dialogParent, conf), bms(dialogParent, conf), vestore(dialogParent, this, conf),
+    : IManager(dialogParent, conf), bms(dialogParent, conf),
       files(dialogParent, conf), fview(dialogParent, conf), tags(dialogParent, conf)
 {
 }
@@ -31,7 +31,6 @@ bool DatabaseManager::BackupOpenOrCreate(const QString& fileName)
         success = CreateDatabase(fileName);
 
     bms.setSqlDatabase(db);
-    vestore.setSqlDatabase(db);
     files.setSqlDatabase(db);
     fview.setSqlDatabase(db);
     tags.setSqlDatabase(db);
@@ -48,7 +47,6 @@ void DatabaseManager::Close()
 void DatabaseManager::PopulateModels()
 {
     bms.PopulateModels();
-    vestore.PopulateModels();
     fview.PopulateModels();
     files.PopulateModels();
     tags.PopulateModels();
@@ -121,7 +119,6 @@ bool DatabaseManager::CreateDatabase(const QString& fileName)
     query.exec("INSERT INTO Info(Version) VALUES(" + QString::number(conf->nominalDatabaseVersion) + ")");
 
     bms.CreateTables();
-    vestore.CreateTables();
     files.CreateTables();
     fview.CreateTables();
     tags.CreateTables();

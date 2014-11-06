@@ -101,6 +101,18 @@ bool BookmarkManager::SetBookmarkDefBFID(long long BID, long long BFID)
     return true;
 }
 
+bool BookmarkManager::DeleteBookmark(long long BID)
+{
+    QSqlQuery query(db);
+    query.prepare("DELETE FROM Bookmark WHERE BID = ?");
+    query.addBindValue(BID);
+
+    if (!query.exec())
+        return Error("Could not delete bookmark.", query.lastError());
+
+    return true;
+}
+
 bool BookmarkManager::RetrieveLinkedBookmarks(long long BID, QList<long long>& linkedBIDs)
 {
     QString retrieveError = "Could not retrieve linked bookmark information from database.";
@@ -380,6 +392,10 @@ void BookmarkManager::CreateTables()
     QSqlQuery query(db);
 
     query.exec("CREATE TABLE Bookmark"
+               "( BID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, URL TEXT, "
+               "  Desc TEXT, DefBFID INTEGER, Rating INTEGER, AddDate INTEGER )");
+
+    query.exec("CREATE TABLE BookmarkTrash"
                "( BID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, URL TEXT, "
                "  Desc TEXT, DefBFID INTEGER, Rating INTEGER, AddDate INTEGER )");
 
