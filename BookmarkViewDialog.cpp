@@ -11,6 +11,10 @@
 #include <QUrl>
 #include <QDesktopServices>
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#   define setSectionResizeMode setResizeMode
+#endif
+
 BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, Config* conf, long long viewBId, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkViewDialog),
     dbm(dbm), conf(conf), canShowTheDialog(false)
@@ -213,13 +217,13 @@ void BookmarkViewDialog::InitializeFilesUI()
     ui->twAttachedFiles->setHorizontalHeaderLabels(QString("File Name,Size").split(','));
 
     QHeaderView* hh = ui->twAttachedFiles->horizontalHeader();
-    hh->setResizeMode(QHeaderView::ResizeToContents);
+    hh->setSectionResizeMode(QHeaderView::ResizeToContents);
     //hh->setResizeMode(0, QHeaderView::Stretch);
     //hh->setResizeMode(1, QHeaderView::Fixed  );
     hh->resizeSection(1, 60);
 
     QHeaderView* vh = ui->twAttachedFiles->verticalHeader();
-    vh->setResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
+    vh->setSectionResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
 }
 
 void BookmarkViewDialog::PopulateUIFiles(bool saveSelection)
@@ -413,8 +417,8 @@ void BookmarkViewDialog::PopulateExtraInfos()
         //We escape html tags, etc (instead of maybe directly inserting html and text fragments or
         //  dealing with QTextDocumentFragment to do it)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-        QString name = exInfo.Name.toHTMLEscaped();
-        QString value = exInfo.Value.toHTMLEscaped();
+        QString name = exInfo.Name.toHtmlEscaped();
+        QString value = exInfo.Value.toHtmlEscaped();
 #else
         QString name = Qt::escape(exInfo.Name);
         QString value = Qt::escape(exInfo.Value);

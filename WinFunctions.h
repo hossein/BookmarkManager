@@ -13,4 +13,7 @@ public:
     static QString GetProgramDisplayName(const QString& exePathName);
     static QPixmap GetProgramSmallIcon(const QString& exePathName);
     static QPixmap GetProgramLargeIcon(const QString& exePathName);
+
+private:
+    static QPixmap GetPixmapFromWindowsHIcon(HICON icon);
 };

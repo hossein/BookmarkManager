@@ -46,3 +46,4 @@
 2014-10-26  39  BMViewDlg shows linked bookmarks
 2014-10-27  40  Introduced BookmarkExtraInfo tables and UI and initial code.
 2014-10-29  42  Bookmark Extra Info adding, viewing, editing, etc all done.
+2014-11-06  47  Introduce business logic class, implemented Trashing bookmarks. Ported to Qt5.3.

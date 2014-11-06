@@ -7,11 +7,11 @@
 
 #include <QDebug>
 #include <QDir>
-#include <QtGui/QDesktopWidget>
-#include <QtGui/QMessageBox>
-#include <QtGui/QResizeEvent>
-#include <QtGui/QScrollBar>
-#include <QtGui/QToolButton>
+#include <QDesktopWidget>
+#include <QMessageBox>
+#include <QResizeEvent>
+#include <QScrollBar>
+#include <QToolButton>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow), conf(), dbm(this, &conf),

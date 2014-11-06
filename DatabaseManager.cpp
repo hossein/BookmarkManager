@@ -6,7 +6,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QtSql/QSQLiteDriver>
+#include <QtSql/QSqlDriver>
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
 #include <QtSql/QSqlResult>

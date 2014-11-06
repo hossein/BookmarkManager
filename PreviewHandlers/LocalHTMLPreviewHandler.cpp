@@ -88,7 +88,8 @@ bool LocalHTMLPreviewHandler::ClearAndSetDataToWidget(const QString& filePathNam
     else
         webViewWidget->setUrl(QUrl(filePathName));
 #else
-#   error Implement logic for Qt5
+    //In Qt5 this works decently.
+    webViewWidget->setUrl(QUrl::fromLocalFile(filePathName));
 #endif
 
     return true;

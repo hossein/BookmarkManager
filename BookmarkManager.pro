@@ -6,7 +6,7 @@
 
 QT       += core gui sql webkit
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets webkitwidgets winextras
 
 TARGET = BookmarkManager
 TEMPLATE = app
@@ -14,8 +14,13 @@ LIBS += Shell32.lib User32.lib Version.lib
 
 #To generate header file dependency:
 #https://qt-project.org/forums/viewreply/82432/
-LOCAL_INCLUDE_DIRS = $$_PRO_FILE_PWD_
+LOCAL_INCLUDE_DIRS = $$_PRO_FILE_PWD_ \
+    $$_PRO_FILE_PWD_/PreviewHandlers
 DEPENDPATH *= $$(LOCAL_INCLUDE_DIRS)
+
+#Without this on Qt5 files inside the subfolders can't access the higher-level files directly.
+#  Dangerous, but we set it so. Obviously not good for big projects. And we have to use <> then.
+INCLUDEPATH += $$_PRO_FILE_PWD_
 
 SOURCES += main.cpp\
         MainWindow.cpp \

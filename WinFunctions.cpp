@@ -1,6 +1,9 @@
 #include "WinFunctions.h"
 
 #include <QFileInfo>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#   include <QtWinExtras/QtWin>
+#endif
 
 #include <Windows.h>
 
@@ -76,7 +79,7 @@ QString WinFunctions::GetProgramDisplayName(const QString& exePathName)
 
     //Note: QString::toWCharArray produces UTF-16, BUT QString::fromWCharArray assumes input is UCS-2!
     //      QString::fromUtf16 gets input from UTF-16.
-    QString displayName = QString::fromUtf16(lpBuffer, size); //The size is correct.
+    QString displayName = QString::fromUtf16((ushort*)lpBuffer, size); //The size is correct.
 
     delete[] verData;
 
@@ -97,7 +100,7 @@ QPixmap WinFunctions::GetProgramSmallIcon(const QString& exePathName)
     if (ret == 0) //Error
         return QPixmap();
 
-    QPixmap pixmap = QPixmap::fromWinHICON(sfi.hIcon);
+    QPixmap pixmap = GetPixmapFromWindowsHIcon(sfi.hIcon);
     DestroyIcon(sfi.hIcon);
 
     return pixmap;
@@ -115,8 +118,17 @@ QPixmap WinFunctions::GetProgramLargeIcon(const QString& exePathName)
     if (ret == 0) //Error
         return QPixmap();
 
-    QPixmap pixmap = QPixmap::fromWinHICON(sfi.hIcon);
+    QPixmap pixmap = GetPixmapFromWindowsHIcon(sfi.hIcon);
     DestroyIcon(sfi.hIcon);
 
     return pixmap;
+}
+
+QPixmap WinFunctions::GetPixmapFromWindowsHIcon(HICON icon)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    return QtWin::fromHICON(icon);
+#else
+    return QPixmap::fromWinHICON(icon);
+#endif
 }

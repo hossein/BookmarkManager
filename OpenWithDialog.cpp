@@ -4,7 +4,11 @@
 #include "AppListItemDelegate.h"
 #include "WinFunctions.h"
 
-#include <QDesktopServices>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#   include <QStandardPaths>
+#else
+#   include <QDesktopServices>
+#endif
 #include <QDir>
 #include <QFileInfo>
 #include <QFileDialog>
@@ -407,7 +411,11 @@ void OpenWithDialog::pact_browse()
     //NOTE: BAT files don't have icon, etc. They are a more general idea than supporting arbitrary
     //      parameters for executables. However we should also set the *.lnk extension as Start Menu
     //      programs (the default directory) are all shortcuts.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    QString programsDir = QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation);
+#else
     QString programsDir = QDesktopServices::storageLocation(QDesktopServices::ApplicationsLocation);
+#endif
     QString exeFileName = QFileDialog::getOpenFileName(this, "Select Program", programsDir,
                                                        "Executables (*.exe *.com *.bat)");
     if (exeFileName.length() > 0)

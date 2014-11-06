@@ -7,6 +7,10 @@
 
 #include "BookmarksFilteredByTagsSortProxyModel.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#   define setSectionResizeMode setResizeMode
+#endif
+
 BookmarksView::BookmarksView(QWidget *parent)
     : QWidget(parent)
     , dialogParent(parent), tvBookmarks(NULL), dbm(NULL), conf(NULL), filteredBookmarksModel(NULL)
@@ -157,7 +161,7 @@ void BookmarksView::ResetHeadersAndSort()
         if (m_listMode <= LM_NameOnlyDisplayWithoutHeaders)
             hh->hideSection(bidx.URL);
 
-        hh->setResizeMode(bidx.Name, QHeaderView::Stretch);
+        hh->setSectionResizeMode(bidx.Name, QHeaderView::Stretch);
 
         hh->resizeSection(bidx.URL, 200);
         //TODO: How to show tags? hh->resizeSection(dbm.bidx.Tags, 100);
@@ -169,7 +173,7 @@ void BookmarksView::ResetHeadersAndSort()
     //hh->setSortIndicator(sortColumn, sortOrder);
 
     QHeaderView* vh = tvBookmarks->verticalHeader();
-    vh->setResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
+    vh->setSectionResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
 
     //Need to connect everytime we change the model.
     connect(tvBookmarks->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),

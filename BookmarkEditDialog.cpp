@@ -11,9 +11,9 @@
 #include "QuickBookmarkSelectDialog.h"
 
 #include <QDebug>
-#include <QtGui/QFileDialog>
-#include <QtGui/QInputDialog>
-#include <QtGui/QMenu>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QMenu>
 
 #include <QtSql/QSqlTableModel>
 
@@ -22,6 +22,10 @@
 //      choose it again or it will be automatically choosed or remained -1 if no files are
 //      remaining. We achieve this by not keeping a editedDefBFID and instead having a bool field
 //      editedFilesList.
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#   define setSectionResizeMode setResizeMode
+#endif
 
 BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long long editBId,
                                        OutParams* outParams, QWidget *parent) :
@@ -261,13 +265,13 @@ void BookmarkEditDialog::InitializeFilesUI()
     ui->twAttachedFiles->setHorizontalHeaderLabels(QString("File Name,Size").split(','));
 
     QHeaderView* hh = ui->twAttachedFiles->horizontalHeader();
-    hh->setResizeMode(QHeaderView::ResizeToContents);
+    hh->setSectionResizeMode(QHeaderView::ResizeToContents);
     //hh->setResizeMode(0, QHeaderView::Stretch);
     //hh->setResizeMode(1, QHeaderView::Fixed  );
     hh->resizeSection(1, 60);
 
     QHeaderView* vh = ui->twAttachedFiles->verticalHeader();
-    vh->setResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
+    vh->setSectionResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
 }
 
 void BookmarkEditDialog::PopulateUIFiles(bool saveSelection)
@@ -749,7 +753,7 @@ void BookmarkEditDialog::PopulateExtraInfos()
     hh->resizeSection(beiidx.Value, 200);
 
     QHeaderView* vh = ui->tvExtraInfos->verticalHeader();
-    vh->setResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
+    vh->setSectionResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
 
     //Set item delegate for editing the type.
     QStyledItemDelegate* delegate = new BookmarkExtraInfoTypeChooser(this);

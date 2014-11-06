@@ -1,6 +1,6 @@
 #pragma once
 #include <QString>
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 #include <QtSql/QSqlError>
 
 class Config;
