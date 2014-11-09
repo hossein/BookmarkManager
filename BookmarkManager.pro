@@ -50,7 +50,8 @@ SOURCES += main.cpp\
     BookmarksView.cpp \
     QuickBookmarkSelectDialog.cpp \
     BookmarkExtraInfoAddEditDialog.cpp \
-    BookmarksBusinessLogic.cpp
+    BookmarksBusinessLogic.cpp \
+    FirefoxBookmarkJSONFileParser.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -83,7 +84,8 @@ HEADERS  += MainWindow.h \
     QuickBookmarkSelectDialog.h \
     BookmarkExtraInfoAddEditDialog.h \
     BookmarkExtraInfoTypeChooser.h \
-    BookmarksBusinessLogic.h
+    BookmarksBusinessLogic.h \
+    FirefoxBookmarkJSONFileParser.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \
