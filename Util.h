@@ -38,6 +38,9 @@ public:
     // Database Serialization/Deserialization /////////////////////////////////////////////////////
     static QByteArray SerializeQPixmap(const QPixmap& pixmap);
     static QPixmap DeSerializeQPixmap(const QByteArray& data);
+
+    // Byte Array /////////////////////////////////////////////////////////////////////////////////
+    static void FindLineColumnForOffset(const QByteArray& buff, int offset, int& line, int& col);
 };
 
 class UtilT

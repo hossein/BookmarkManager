@@ -273,3 +273,36 @@ QPixmap Util::DeSerializeQPixmap(const QByteArray& data)
     pixmap.loadFromData(data, "PNG");
     return pixmap;
 }
+
+void Util::FindLineColumnForOffset(const QByteArray& buff, int offset, int& line, int& col)
+{
+    const int size = buff.size();
+    const unsigned char* data = (const unsigned char*)buff.data();
+
+    line = 1;
+    col = 1;
+
+    //In case offset overflows the buff size, the last line/column is returned.
+    int pos = 0;
+    while (pos < size && pos < offset)
+    {
+        if (data[pos] == '\r')
+        {
+            line += 1;
+            col = 1;
+        }
+        else if (data[pos] == '\n')
+        {
+            if (pos > 0 && data[pos-1] == '\r')
+                { } //Do nothing. CrLf
+            else
+                line += 1;
+        }
+        else
+        {
+            col += 1;
+        }
+
+        pos += 1;
+    }
+}
