@@ -25,6 +25,7 @@ public:
     ~MainWindow();
 
 private slots:
+    //// Private slots responding to UI ///////////////////////////////////////////////////////////
     void on_btnNew_clicked();
     void on_btnView_clicked();
     void on_btnEdit_clicked();
@@ -33,12 +34,15 @@ private slots:
     void bvCurrentRowChanged(long long currentBID, long long previousBID);
     void lwTagsItemChanged(QListWidgetItem* item);
 
+    void on_action_importFirefoxBookmarks_triggered();
+    void on_actionImportFirefoxBookmarksJSONfile_triggered();
+
 private:
-    /// Initialization functions, to be called JUST ONCE for loading.
+    /// Initialization functions, to be called JUST ONCE for loading //////////////////////////////
     void PreAssignModels();
     void LoadDatabaseAndUI();
 
-    /// Master functions for data refresh and display.
+    /// Master functions for data refresh and display /////////////////////////////////////////////
     enum RefreshAction
     {
         RA_None = 0x00,
@@ -88,4 +92,7 @@ private:
     QList<long long> GetCheckedTIDs();
     void RestoreCheckedTIDs(const QList<long long>& checkedTIDs,
                             const QList<long long>& newTIDsToCheck);
+
+    //// Bookmark importing ///////////////////////////////////////////////////////////////////////
+    void ImportFirefoxJSONFile(const QString& jsonFilePath);
 };

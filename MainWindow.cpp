@@ -5,6 +5,8 @@
 #include "BookmarkViewDialog.h"
 #include "BookmarksBusinessLogic.h"
 
+#include "FirefoxBookmarkJSONFileParser.h"
+
 #include <QDebug>
 #include <QDir>
 #include <QDesktopWidget>
@@ -42,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Add additional UI controls
     QMenu* importMenu = new QMenu("Import");
     importMenu->addAction(ui->action_importFirefoxBookmarks);
+    importMenu->addAction(ui->actionImportFirefoxBookmarksJSONfile);
 
     QToolButton* btn = new QToolButton();
     btn->setText("Import/Export");
@@ -141,6 +144,17 @@ void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
     //  Read the comments in the following function at the place where selection is restored.
     RefreshUIDataDisplay(false, RA_SaveSelAndFocus, -1,
                          (RefreshAction)(RA_SaveSelAndScroll | RA_NoRefreshView));
+}
+
+void MainWindow::on_action_importFirefoxBookmarks_triggered()
+{
+
+}
+
+void MainWindow::on_actionImportFirefoxBookmarksJSONfile_triggered()
+{
+    //TODO: Real url
+    ImportFirefoxJSONFile("C:\\Users\\Hossein\\Desktop\\bookmarks-2014-11-09_1730 - Pretty.json");
 }
 
 void MainWindow::PreAssignModels()
@@ -564,4 +578,10 @@ void MainWindow::RestoreCheckedTIDs(const QList<long long>& checkedTIDs,
 
     QueryAllTagsChecked();
     UpdateAllTagsCheckBoxCheck();
+}
+
+void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
+{
+    FirefoxBookmarkJSONFileParser ffParser(this, &conf);
+    bool success = ffParser.ParseFile(jsonFilePath);
 }

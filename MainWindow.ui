@@ -178,6 +178,11 @@
     <string>Import Firefox Bookmarks...</string>
    </property>
   </action>
+  <action name="actionImportFirefoxBookmarksJSONfile">
+   <property name="text">
+    <string>Import Firefox Bookmarks JSON File...</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
