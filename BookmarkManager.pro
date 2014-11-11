@@ -85,7 +85,8 @@ HEADERS  += MainWindow.h \
     BookmarkExtraInfoAddEditDialog.h \
     BookmarkExtraInfoTypeChooser.h \
     BookmarksBusinessLogic.h \
-    BookmarkImporters/FirefoxBookmarkJSONFileParser.h
+    BookmarkImporters/FirefoxBookmarkJSONFileParser.h \
+    BookmarkImporters/ImportedEntity.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \

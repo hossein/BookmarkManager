@@ -1,39 +1,8 @@
 #pragma once
 #include "IManager.h"
-#include <QString>
-#include <QList>
-#include <QDateTime>
+#include "BookmarkImporters/ImportedEntity.h"
 
 class QJsonObject;
-
-struct ImportedBookmark
-{
-    QString title;
-    QString guid;
-    QString description;
-    QString uri;
-    QString charset;
-
-    QString intId;
-    QString intIndex;
-    QString parentId;
-    QDateTime dtAdded;
-    QDateTime dtModified;
-};
-
-struct ImportedBookmarkFolder
-{
-    QString title;
-    QString guid;
-    QString description;
-    QString root;
-
-    QString intId;
-    QString intIndex;
-    QString parentId;
-    QDateTime dtAdded;
-    QDateTime dtModified;
-};
 
 class FirefoxBookmarkJSONFileParser : public IManager
 {
