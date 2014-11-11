@@ -1,4 +1,5 @@
 #pragma once
+#include <QList>
 #include <QString>
 #include <QDateTime>
 
@@ -31,4 +32,10 @@ struct ImportedBookmarkFolder
     QString parentId;
     QDateTime dtAdded;
     QDateTime dtModified;
+};
+
+struct ImportedEntityList
+{
+    QList<ImportedBookmark> iblist;
+    QList<ImportedBookmarkFolder> ibflist;
 };

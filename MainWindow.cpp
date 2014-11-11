@@ -5,7 +5,7 @@
 #include "BookmarkViewDialog.h"
 #include "BookmarksBusinessLogic.h"
 
-#include "FirefoxBookmarkJSONFileParser.h"
+#include "BookmarkImporters/FirefoxBookmarkJSONFileParser.h"
 
 #include <QDebug>
 #include <QDir>
@@ -582,6 +582,7 @@ void MainWindow::RestoreCheckedTIDs(const QList<long long>& checkedTIDs,
 
 void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
 {
+    ImportedEntityList elist;
     FirefoxBookmarkJSONFileParser ffParser(this, &conf);
-    bool success = ffParser.ParseFile(jsonFilePath);
+    bool success = ffParser.ParseFile(jsonFilePath, elist);
 }

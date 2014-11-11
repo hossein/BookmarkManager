@@ -16,7 +16,7 @@ FirefoxBookmarkJSONFileParser::FirefoxBookmarkJSONFileParser(QWidget* dialogPare
 
 }
 
-bool FirefoxBookmarkJSONFileParser::ParseFile(const QString& jsonFilePath)
+bool FirefoxBookmarkJSONFileParser::ParseFile(const QString& jsonFilePath, ImportedEntityList& elist)
 {
     QFile jsonFile(jsonFilePath);
     if (!jsonFile.exists())
@@ -44,11 +44,15 @@ bool FirefoxBookmarkJSONFileParser::ParseFile(const QString& jsonFilePath)
     if (!doc.isObject())
         return Error("File format error: Root element is not an object.");
 
-    bool success = processObject(doc.object());
+    //Do it for caller.
+    elist.iblist.clear();
+    elist.ibflist.clear();
+
+    bool success = processObject(doc.object(), elist);
     return success;
 }
 
-bool FirefoxBookmarkJSONFileParser::processObject(const QJsonObject& obj)
+bool FirefoxBookmarkJSONFileParser::processObject(const QJsonObject& obj, ImportedEntityList& elist)
 {
     if (!obj.keys().contains("type"))
         return Error("File format error: Object does not have a 'type' key.");
@@ -61,11 +65,11 @@ bool FirefoxBookmarkJSONFileParser::processObject(const QJsonObject& obj)
 
     if (type == "text/x-moz-place")
     {
-        return processBookmark(obj);
+        return processBookmark(obj, elist);
     }
     else if (type == "text/x-moz-place-container")
     {
-        return processFolder(obj);
+        return processFolder(obj, elist);
     }
     else if (type == "text/x-moz-place-separator")
     {
@@ -111,7 +115,7 @@ bool FirefoxBookmarkJSONFileParser::processObject(const QJsonObject& obj)
     if (keys.contains(KEY)) { CHECK_AND_STORE_DTSTAMP(VARNAME,KEY); } else VARNAME = DEFVALUE;
 
 
-bool FirefoxBookmarkJSONFileParser::processBookmark(const QJsonObject& obj)
+bool FirefoxBookmarkJSONFileParser::processBookmark(const QJsonObject& obj, ImportedEntityList& elist)
 {
     QStringList requiredBookmarkKeys, otherBookmarkKeys;
     requiredBookmarkKeys << "title" << "guid" << "id" << "parent" << "type" << "uri";
@@ -179,11 +183,13 @@ bool FirefoxBookmarkJSONFileParser::processBookmark(const QJsonObject& obj)
         }
     }
 
+    elist.iblist.append(ib);
+
     //qDebug() << "Imported bookmark " << ib.title;
     return true;
 }
 
-bool FirefoxBookmarkJSONFileParser::processFolder(const QJsonObject& obj)
+bool FirefoxBookmarkJSONFileParser::processFolder(const QJsonObject& obj, ImportedEntityList& elist)
 {
     QStringList requiredFolderKeys, otherFolderKeys;
     requiredFolderKeys << "title" << "guid" << "id" << "type" << "children";
@@ -251,6 +257,8 @@ bool FirefoxBookmarkJSONFileParser::processFolder(const QJsonObject& obj)
         }
     }
 
+    elist.ibflist.append(ibf);
+
     if (!obj["children"].isArray())
         return Error(QString("Children attribute for folder %1 is not an array.").arg(quickGuid));
 
@@ -262,7 +270,7 @@ bool FirefoxBookmarkJSONFileParser::processFolder(const QJsonObject& obj)
                          .arg(QString::number(i), quickGuid));
 
         const QJsonObject child = childrenArray[i].toObject();
-        if (!processObject(child))
+        if (!processObject(child, elist))
             return false;
     }
 
