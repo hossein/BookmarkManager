@@ -15,6 +15,7 @@ LIBS += Shell32.lib User32.lib Version.lib
 #To generate header file dependency:
 #https://qt-project.org/forums/viewreply/82432/
 LOCAL_INCLUDE_DIRS = $$_PRO_FILE_PWD_ \
+    $$_PRO_FILE_PWD_/BookmarkImporters \
     $$_PRO_FILE_PWD_/PreviewHandlers
 DEPENDPATH *= $$(LOCAL_INCLUDE_DIRS)
 
@@ -51,7 +52,8 @@ SOURCES += main.cpp\
     QuickBookmarkSelectDialog.cpp \
     BookmarkExtraInfoAddEditDialog.cpp \
     BookmarksBusinessLogic.cpp \
-    BookmarkImporters/FirefoxBookmarkJSONFileParser.cpp
+    BookmarkImporters/FirefoxBookmarkJSONFileParser.cpp \
+    ImportedBookmarksPreviewDialog.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -86,14 +88,16 @@ HEADERS  += MainWindow.h \
     BookmarkExtraInfoTypeChooser.h \
     BookmarksBusinessLogic.h \
     BookmarkImporters/FirefoxBookmarkJSONFileParser.h \
-    BookmarkImporters/ImportedEntity.h
+    BookmarkImporters/ImportedEntity.h \
+    ImportedBookmarksPreviewDialog.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \
     BookmarkViewDialog.ui \
     OpenWithDialog.ui \
     QuickBookmarkSelectDialog.ui \
-    BookmarkExtraInfoAddEditDialog.ui
+    BookmarkExtraInfoAddEditDialog.ui \
+    ImportedBookmarksPreviewDialog.ui
 
 RESOURCES += \
     BookmarkManager.qrc

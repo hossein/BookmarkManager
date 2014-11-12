@@ -17,6 +17,8 @@ public:
     explicit TagLineEdit(QWidget *parent = 0);
 
 public slots:
+    /// The TagLineEdit does not get ownership of the model.
+    /// The same model can be used on multiple TagLineEdits.
     void setModel(QAbstractItemModel* model);
     void setModelColumn(int column);
 

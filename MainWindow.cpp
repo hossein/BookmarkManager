@@ -5,6 +5,7 @@
 #include "BookmarkViewDialog.h"
 #include "BookmarksBusinessLogic.h"
 
+#include "ImportedBookmarksPreviewDialog.h"
 #include "BookmarkImporters/FirefoxBookmarkJSONFileParser.h"
 
 #include <QDebug>
@@ -582,7 +583,21 @@ void MainWindow::RestoreCheckedTIDs(const QList<long long>& checkedTIDs,
 
 void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
 {
+    bool success;
     ImportedEntityList elist;
+
     FirefoxBookmarkJSONFileParser ffParser(this, &conf);
-    bool success = ffParser.ParseFile(jsonFilePath, elist);
+    success = ffParser.ParseFile(jsonFilePath, elist);
+    if (!success)
+        return;
+
+    ImportedBookmarksPreviewDialog importPreviewDialog(&dbm, &conf, &elist, this);
+    success = importPreviewDialog.canShow();
+    if (!success)
+        return;
+
+    int result = importPreviewDialog.exec();
+    if (result != QDialog::Accepted)
+        return;
+
 }
