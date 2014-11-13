@@ -51,5 +51,5 @@ QString BookmarkImporter::GetURLForFastComparison(const QString& originalUrl)
 {
     //TODO: Check this with file: and mailto: urls.
     QUrl url(originalUrl);
-    return url.host() + '/' + url.path();
+    return QString(url.host() + '/' + url.path()).toLower();
 }
