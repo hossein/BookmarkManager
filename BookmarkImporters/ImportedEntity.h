@@ -7,6 +7,11 @@ class QJsonObject;
 
 struct ImportedBookmark
 {
+    ImportedBookmark()
+    {
+        this->Ex_status = S_NotAnalyzed;
+    }
+
     QString title;
     QString guid;
     QString description;
@@ -18,6 +23,18 @@ struct ImportedBookmark
     QString parentId;
     QDateTime dtAdded;
     QDateTime dtModified;
+
+    //Managed by BookmarkImporter
+    enum ImportedBookmarkStatus
+    {
+        S_NotAnalyzed = 0,
+        S_ImportOK,
+        S_DontImport,
+        S_ReplaceExisting,
+        S_AppendToExisting,
+    };
+    ImportedBookmarkStatus Ex_status;
+    QStringList Ex_additionalTags;
 };
 
 struct ImportedBookmarkFolder
@@ -32,6 +49,9 @@ struct ImportedBookmarkFolder
     QString parentId;
     QDateTime dtAdded;
     QDateTime dtModified;
+
+    //Managed by BookmarkImporter
+    QStringList additionalTags;
 };
 
 struct ImportedEntityList
