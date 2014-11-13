@@ -113,6 +113,25 @@ bool BookmarkManager::RemoveBookmark(long long BID)
     return true;
 }
 
+bool BookmarkManager::RetrieveAllFullURLs(QHash<long long, QString>& bookmarkURLs)
+{
+    QString retrieveError = "Could not get bookmarks information from database.";
+    QSqlQuery query(db);
+    query.prepare("SELECT BID, URL FROM Bookmark");
+
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    //Do it for caller
+    bookmarkURLs.clear();
+
+    while (query.next())
+        //We indexed explicitly in our select statement; indexes are constant.
+        bookmarkURLs.insert(query.value(0).toLongLong(), query.value(1).toString());
+
+    return true;
+}
+
 bool BookmarkManager::InsertBookmarkIntoTrash(
         const QString& Name, const QString& URL, const QString& Description, const QString& Tags,
         const QString& AttachedFIDs, const long long DefFID, const int Rating, long long AddDate)

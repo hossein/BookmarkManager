@@ -3,6 +3,7 @@
 #include "DatabaseManager.h"
 
 #include <QString>
+#include <QHash>
 #include <QMultiHash>
 #include <QList>
 
@@ -10,9 +11,10 @@
 ///     before really importing them. It should be re-initialized each time an import is going to
 ///     happen so that it can collect the bookmark url list again.
 /// Analyzing checks for existing urls. If a url exists with exact same anchors case-sensitively,
-///     there is an exact match for an existing bookmark. Different protocols (http/https/ftp) don't
-///     count. If text cases differs or one of the bookmarks refers to another anchor in the same file,
-///     there is a 'similar' match. Analyzer sets the corresponding 'Ex_' fields in the bookmarks list.
+///     there is an exact match for an existing bookmark. If text cases differs or one of the bookmarks
+///     refers to another anchor in the same file, there is a 'similar' match. In the mentioned
+///     comparison, protocols (http/https/ftp), user info (john:doe) and ports (:8080) are discarded.
+/// Analyzer sets the corresponding 'Ex_' fields in the bookmarks list.
 ///     User should make the changes he wants and decide what to do for duplicate/similar bookmarks that
 ///     are going to be imported, then call the Import function.
 class BookmarkImporter
@@ -28,4 +30,7 @@ public:
     bool Initialize();
     bool Analyze(ImportedEntityList& elist);
     bool Import(ImportedEntityList& elist);
+
+private:
+    QString GetURLForFastComparison(const QString& originalUrl);
 };

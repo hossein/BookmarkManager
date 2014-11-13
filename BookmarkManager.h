@@ -1,6 +1,7 @@
 #pragma once
 #include "ISubManager.h"
 #include "FileManager.h"
+#include <QHash>
 #include <QStringList>
 #include <QtSql/QSqlQueryModel>
 #include <QtSql/QSqlTableModel>
@@ -82,6 +83,9 @@ public:
     bool AddOrEditBookmark(long long& BID, BookmarkData& bdata);
     bool SetBookmarkDefBFID(long long BID, long long BFID);
     bool RemoveBookmark(long long BID);
+
+    /// Convenience function used during importing.
+    bool RetrieveAllFullURLs(QHash<long long, QString>& bookmarkURLs);
 
     bool InsertBookmarkIntoTrash(
             const QString& Name, const QString& URL, const QString& Description, const QString& Tags,
