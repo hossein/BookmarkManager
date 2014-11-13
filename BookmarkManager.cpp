@@ -113,25 +113,6 @@ bool BookmarkManager::RemoveBookmark(long long BID)
     return true;
 }
 
-bool BookmarkManager::RetrieveAllFullURLs(QHash<long long, QString>& bookmarkURLs)
-{
-    QString retrieveError = "Could not get bookmarks information from database.";
-    QSqlQuery query(db);
-    query.prepare("SELECT BID, URL FROM Bookmark");
-
-    if (!query.exec())
-        return Error(retrieveError, query.lastError());
-
-    //Do it for caller
-    bookmarkURLs.clear();
-
-    while (query.next())
-        //We indexed explicitly in our select statement; indexes are constant.
-        bookmarkURLs.insert(query.value(0).toLongLong(), query.value(1).toString());
-
-    return true;
-}
-
 bool BookmarkManager::InsertBookmarkIntoTrash(
         const QString& Name, const QString& URL, const QString& Description, const QString& Tags,
         const QString& AttachedFIDs, const long long DefFID, const int Rating, long long AddDate)
@@ -415,6 +396,64 @@ bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, const QList<Bookma
 
         if (!query.exec())
             return Error(addError, query.lastError());
+    }
+
+    return true;
+}
+
+bool BookmarkManager::RetrieveAllFullURLs(QHash<long long, QString>& bookmarkURLs)
+{
+    QString retrieveError = "Could not get bookmarks information from database.";
+    QSqlQuery query(db);
+    query.prepare("SELECT BID, URL FROM Bookmark");
+
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    //Do it for caller
+    bookmarkURLs.clear();
+
+    while (query.next())
+        //We indexed explicitly in our select statement; indexes are constant.
+        bookmarkURLs.insert(query.value(0).toLongLong(), query.value(1).toString());
+
+    return true;
+}
+
+bool BookmarkManager::RetrieveSpecificExtraInfoForAllBookmarks(const QString& extraInfoName,
+                                                               QList<BookmarkExtraInfoData>& extraInfos)
+{
+    QString retrieveError = "Could not get bookmarks extra information from database.";
+    QSqlQuery query(db);
+    query.prepare("SELECT * FROM BookmarkExtraInfo WHERE Name = ?");
+    query.addBindValue(extraInfoName);
+
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    bool indexesCalculated = false;
+    int beiidx_BID, beiidx_Name, beiidx_Type, beiidx_Value;
+
+    extraInfos.clear(); //Do it for caller
+    while (query.next())
+    {
+        if (!indexesCalculated)
+        {
+            const QSqlRecord& record = query.record();
+            beiidx_BID   = record.indexOf("BID"  );
+            beiidx_Name  = record.indexOf("Name" );
+            beiidx_Type  = record.indexOf("Type" );
+            beiidx_Value = record.indexOf("Value");
+            indexesCalculated = true;
+        }
+
+        BookmarkExtraInfoData exInfo;
+        exInfo.BID   = query.value(beiidx_BID).toLongLong();
+        exInfo.Name  = query.value(beiidx_Name).toString();
+        exInfo.Type  = static_cast<BookmarkExtraInfoData::DataType>(query.value(beiidx_Type).toInt());
+        exInfo.Value = query.value(beiidx_Value).toString();
+
+        extraInfos.append(exInfo);
     }
 
     return true;

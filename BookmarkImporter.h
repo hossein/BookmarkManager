@@ -23,6 +23,7 @@ private:
     DatabaseManager* dbm;
     Config* conf;
     QMultiHash<QString, long long> existentBookmarksForUrl;
+    QMultiHash<QString, long long> existentBookmarksForUniqueId;
 
 public:
     BookmarkImporter(DatabaseManager* dbm, Config* conf);

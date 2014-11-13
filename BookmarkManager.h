@@ -84,9 +84,6 @@ public:
     bool SetBookmarkDefBFID(long long BID, long long BFID);
     bool RemoveBookmark(long long BID);
 
-    /// Convenience function used during importing.
-    bool RetrieveAllFullURLs(QHash<long long, QString>& bookmarkURLs);
-
     bool InsertBookmarkIntoTrash(
             const QString& Name, const QString& URL, const QString& Description, const QString& Tags,
             const QString& AttachedFIDs, const long long DefFID, const int Rating, long long AddDate);
@@ -113,6 +110,11 @@ public:
     bool RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkExtraInfoData>& extraInfos);
     bool UpdateBookmarkExtraInfos(long long BID, const QList<BookmarkExtraInfoData>& originalExtraInfos,
                                   const QList<BookmarkExtraInfoData>& extraInfos);
+
+    /// Convenience functions used during importing.
+    bool RetrieveAllFullURLs(QHash<long long, QString>& bookmarkURLs);
+    /// Works case-sensitively.
+    bool RetrieveSpecificExtraInfoForAllBookmarks(const QString& extraInfoName, QList<BookmarkExtraInfoData>& extraInfos);
 
 private:
     void SetBookmarkExtraInfoIndexes(const QSqlRecord& record);
