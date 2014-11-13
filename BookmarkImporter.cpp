@@ -39,7 +39,25 @@ bool BookmarkImporter::Initialize()
 
 bool BookmarkImporter::Analyze(ImportedEntityList& elist)
 {
+    foreach (ImportedBookmark& ib, elist.iblist)
+    {
+        //First check the unique ids for duplicates.
+        if (existentBookmarksForUniqueId.contains(ib.guid))
+        {
+            //Get the other bookmark(s). Compare with their url, if url didn't match, dismiss this.
+            //  If urls match, well it will be caught by the next if check.
+            //So TODO: Why we bother checking guids at all?
+        }
 
+        //Whether a guid found or not, also check the url for duplicates.
+        QString fastDuplCheckURL = GetURLForFastComparison(ib.uri);
+        if (existentBookmarksForUrl.contains(fastDuplCheckURL))
+        {
+            //Whoops, we found a similar match until now.
+        }
+
+
+    }
 }
 
 bool BookmarkImporter::Import(ImportedEntityList& elist)
