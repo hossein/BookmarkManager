@@ -27,8 +27,13 @@ struct ImportedBookmark
     //Managed by BookmarkImporter
     enum ImportedBookmarkStatus
     {
+        //Before analysis
         S_NotAnalyzed = 0,
-        S_ImportOK,
+        //After analysis
+        S_AnalyzedExactExistent,
+        S_AnalyzedSimilarExistent,
+        S_AnalyzedImportOK,
+        //Decisions of user
         S_DontImport,
         S_ReplaceExisting,
         S_AppendToExisting,

@@ -49,3 +49,4 @@
 2014-11-06  47  Introduce business logic class, implemented Trashing bookmarks. Ported to Qt5.3.
 2014-11-09  48  FirefoxBookmarkJSONFileParser parses Firefox bookmarks json documents into own structs.
 2014-11-11  48  Introduce general importers and ImportedBookmarksPreviewDialog
+2014-11-13  52  Implemented BookmarkImporter initialization, etc code.

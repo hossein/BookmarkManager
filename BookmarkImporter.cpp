@@ -46,17 +46,52 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
         {
             //Get the other bookmark(s). Compare with their url, if url didn't match, dismiss this.
             //  If urls match, well it will be caught by the next if check.
-            //So TODO: Why we bother checking guids at all?
+            //So: Why we bother checking guids at all?
         }
 
         //Whether a guid found or not, also check the url for duplicates.
         QString fastDuplCheckURL = GetURLForFastComparison(ib.uri);
         if (existentBookmarksForUrl.contains(fastDuplCheckURL))
         {
-            //Whoops, we found a similar match until now.
+            //Whoops, we found a similar match until now. Check if it's fully similar or just partially.
+            long long existentBID = existentBookmarksForUrl[fastDuplCheckURL];
+
+            BookmarkManager::BookmarkData bdata;
+            bool retrieveSuccess = dbm->bms.RetrieveBookmark(existentBID, bdata);
+            if (!retrieveSuccess)
+                return false;
+
+            QString newAlmostExactDuplCheckURL = GetURLForAlmostExactComparison(ib.uri);
+            QString existentAlmostExactDuplCheckURL = GetURLForAlmostExactComparison(bdata.URL);
+
+            if (newAlmostExactDuplCheckURL == existentAlmostExactDuplCheckURL)
+            {
+                //Exact URL match. Check all the properties for exact match also.
+                QList<BookmarkManager::BookmarkExtraInfoData> extraInfos;
+                retrieveSuccess = dbm->bms.RetrieveBookmarkExtraInfos(existentBID, extraInfos);
+                if (!retrieveSuccess)
+                    return false;
+
+                bool detailsMatch = true;
+                detailsMatch = detailsMatch && (ib.title == bdata.Name);
+
+                //Note: To generalize the code below, at least one of the guids must match.
+                //  Probably can't check with single-line if's.
+                QString ffGuidField = extraInfoField("firefox-guid", extraInfos);
+                detailsMatch = detailsMatch && (!ffGuidField.isNull() && ib.guid == bdata.Name);
+
+                detailsMatch = detailsMatch && (ib.description == bdata.Desc);
+                detailsMatch = detailsMatch && (ib.uri == bdata.URL);
+
+                if (detailsMatch)
+                    ib.Ex_status = ImportedBookmark::S_AnalyzedExactExistent;
+                else
+                    ib.Ex_status = ImportedBookmark::S_AnalyzedSimilarExistent;
+            }
         }
 
-
+        //If urls are not similar
+        ib.Ex_status = ImportedBookmark::S_AnalyzedImportOK;
     }
 }
 
@@ -67,7 +102,21 @@ bool BookmarkImporter::Import(ImportedEntityList& elist)
 
 QString BookmarkImporter::GetURLForFastComparison(const QString& originalUrl)
 {
-    //TODO: Check this with file: and mailto: urls.
+    //TODO: Check both these functions this with file: and mailto: urls.
     QUrl url(originalUrl);
     return QString(url.host() + '/' + url.path()).toLower();
+}
+
+QString BookmarkImporter::GetURLForAlmostExactComparison(const QString& originalUrl)
+{
+    QUrl url(originalUrl);
+    return url.host() + '/' + url.path() + '#' + url.fragment();
+}
+
+QString BookmarkImporter::extraInfoField(const QString& fieldName, const QList<BookmarkManager::BookmarkExtraInfoData>& extraInfos)
+{
+    foreach (const BookmarkManager::BookmarkExtraInfoData& exInfo, extraInfos)
+        if (exInfo.Name == fieldName)
+            return exInfo.Value;
+    return QString();
 }
