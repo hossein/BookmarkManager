@@ -50,3 +50,4 @@
 2014-11-09  48  FirefoxBookmarkJSONFileParser parses Firefox bookmarks json documents into own structs.
 2014-11-11  48  Introduce general importers and ImportedBookmarksPreviewDialog
 2014-11-13  52  Implemented BookmarkImporter initialization, etc code.
+2014-11-14  52  Decided and implemented BookmarkImporter::Analyze, UI updates.

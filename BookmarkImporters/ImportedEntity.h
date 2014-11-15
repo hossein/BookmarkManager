@@ -1,6 +1,7 @@
 #pragma once
 #include <QList>
 #include <QString>
+#include <QStringList>
 #include <QDateTime>
 
 class QJsonObject;
@@ -18,9 +19,9 @@ struct ImportedBookmark
     QString uri;
     QString charset;
 
-    QString intId;
-    QString intIndex;
-    QString parentId;
+    int intId;
+    int intIndex;
+    int parentId;
     QDateTime dtAdded;
     QDateTime dtModified;
 
@@ -49,9 +50,9 @@ struct ImportedBookmarkFolder
     QString description;
     QString root;
 
-    QString intId;
-    QString intIndex;
-    QString parentId;
+    int intId;
+    int intIndex;
+    int parentId;
     QDateTime dtAdded;
     QDateTime dtModified;
 

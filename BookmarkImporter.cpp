@@ -39,14 +39,18 @@ bool BookmarkImporter::Initialize()
 
 bool BookmarkImporter::Analyze(ImportedEntityList& elist)
 {
-    foreach (ImportedBookmark& ib, elist.iblist)
+    for (int i = 0; i < elist.iblist.size(); i++)
+    //foreach (ImportedBookmark& ib, elist.iblist)
     {
+        //By reference.
+        ImportedBookmark& ib = elist.iblist[i];
+
         //First check the unique ids for duplicates.
         if (existentBookmarksForUniqueId.contains(ib.guid))
         {
             //Get the other bookmark(s). Compare with their url, if url didn't match, dismiss this.
             //  If urls match, well it will be caught by the next if check.
-            //So: Why we bother checking guids at all?
+            //So TODO: Why we bother checking guids at all?
         }
 
         //Whether a guid found or not, also check the url for duplicates.
@@ -54,7 +58,7 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
         if (existentBookmarksForUrl.contains(fastDuplCheckURL))
         {
             //Whoops, we found a similar match until now. Check if it's fully similar or just partially.
-            long long existentBID = existentBookmarksForUrl[fastDuplCheckURL];
+            long long existentBID = existentBookmarksForUrl.value(fastDuplCheckURL);
 
             BookmarkManager::BookmarkData bdata;
             bool retrieveSuccess = dbm->bms.RetrieveBookmark(existentBID, bdata);
@@ -93,11 +97,13 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
         //If urls are not similar
         ib.Ex_status = ImportedBookmark::S_AnalyzedImportOK;
     }
+
+    return true;
 }
 
 bool BookmarkImporter::Import(ImportedEntityList& elist)
 {
-
+    return true;
 }
 
 QString BookmarkImporter::GetURLForFastComparison(const QString& originalUrl)

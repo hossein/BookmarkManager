@@ -2,7 +2,9 @@
 #include <QDialog>
 #include "DatabaseManager.h"
 #include "BookmarkImporters/ImportedEntity.h"
+#include <QMap>
 
+class QTreeWidgetItem;
 namespace Ui { class ImportedBookmarksPreviewDialog; }
 
 /// This class also configures the to-be-imported bookmarks, not just preview them.
@@ -17,6 +19,10 @@ private:
     bool canShowTheDialog;
     ImportedEntityList* elist;
 
+    QMap<int, QTreeWidgetItem*> folderItems;
+    //QMap<int, ImportedBookmarkFolder*> importedFolders;
+    //QMap<int, ImportedBookmarkFolder*> importedFolders;
+
 public:
     explicit ImportedBookmarksPreviewDialog(DatabaseManager* dbm, Config* conf,
                                             ImportedEntityList* elist, QWidget *parent = 0);
@@ -27,4 +33,7 @@ public:
 
 public slots:
     void accept();
+
+private:
+    void AddItems();
 };
