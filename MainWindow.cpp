@@ -5,6 +5,7 @@
 #include "BookmarkViewDialog.h"
 #include "BookmarksBusinessLogic.h"
 
+#include "BookmarkImporter.h"
 #include "ImportedBookmarksPreviewDialog.h"
 #include "BookmarkImporters/FirefoxBookmarkJSONFileParser.h"
 
@@ -591,6 +592,15 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     if (!success)
         return;
 
+    BookmarkImporter bmim(&dbm, &conf);
+    success = bmim.Initialize();
+    if (!success)
+        return;
+
+    success = bmim.Analyze(elist);
+    if (!success)
+        return;
+
     ImportedBookmarksPreviewDialog importPreviewDialog(&dbm, &conf, &elist, this);
     success = importPreviewDialog.canShow();
     if (!success)
@@ -599,5 +609,12 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     int result = importPreviewDialog.exec();
     if (result != QDialog::Accepted)
         return;
+
+    //TODO: Start transaction?
+    success = bmim.Import(elist);
+    if (!success)
+        return;
+    else
+    {}//Show success message box.
 
 }
