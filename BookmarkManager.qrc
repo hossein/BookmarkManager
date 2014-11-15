@@ -5,5 +5,11 @@
         <file>res/exec16.png</file>
         <file>res/exec32.png</file>
         <file>res/go.png</file>
+        <file>res/import_append.png</file>
+        <file>res/import_duplicate_exact.png</file>
+        <file>res/import_duplicate_similar.png</file>
+        <file>res/import_ok.png</file>
+        <file>res/import_overwrite.png</file>
+        <file>res/import_folder.png</file>
     </qresource>
 </RCC>
