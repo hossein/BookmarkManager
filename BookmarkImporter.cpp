@@ -23,18 +23,12 @@ bool BookmarkImporter::Initialize(ImportSource importSource)
         existentBookmarksForUrl.insertMulti(GetURLForFastComparison(it.value()), it.key());
 
     //Query bookmark unique ids.
-    //NOTE: In case of other importers, they should be queried too.
-    QList<BookmarkManager::BookmarkExtraInfoData> extraInfos;
-    success = dbm->bms.RetrieveSpecificExtraInfoForAllBookmarks("firefox-guid", extraInfos);
-    if (!success)
-        return false;
-
-    existentBookmarksForUniqueId.clear();
-    foreach (const BookmarkManager::BookmarkExtraInfoData& exInfo, extraInfos)
-        if (exInfo.Type == BookmarkManager::BookmarkExtraInfoData::Type_Text)
-            existentBookmarksForUniqueId.insertMulti(exInfo.Value, exInfo.BID);
-
-    //TODO: If unique ids match but urls dont then don't assume bookmarks are equal.
+    //Note: Until e7d886fd2227165c67cd61e75137622ada874e4c @ 20141116 we queried `firefox-guid` and
+    //      wanted to query other browsers' unique ids too; but it appears that guid's of firefox
+    //      are not what their name suggests. There may be multiple bookmarks with the same url but
+    //      different guids that are in different folders representing firefox bookmarks' tags.
+    //Also if unique ids match but urls dont then don't assume bookmarks are equal. So what was its
+    //      usage after all? So it was removed.
 
     return true;
 }
@@ -47,15 +41,7 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
         //By reference.
         ImportedBookmark& ib = elist.iblist[i];
 
-        //First check the unique ids for duplicates.
-        if (existentBookmarksForUniqueId.contains(ib.guid))
-        {
-            //Get the other bookmark(s). Compare with their url, if url didn't match, dismiss this.
-            //  If urls match, well it will be caught by the next if check.
-            //So TODO: Why we bother checking guids at all?
-        }
-
-        //Whether a guid found or not, also check the url for duplicates.
+        //Check the urls for duplicates among existing bookmarks.
         QString fastDuplCheckURL = GetURLForFastComparison(ib.uri);
         if (existentBookmarksForUrl.contains(fastDuplCheckURL))
         {

@@ -28,7 +28,6 @@ private:
     Config* conf;
     ImportSource importSource;
     QMultiHash<QString, long long> existentBookmarksForUrl;
-    QMultiHash<QString, long long> existentBookmarksForUniqueId;
 
 public:
     BookmarkImporter(DatabaseManager* dbm, Config* conf);
