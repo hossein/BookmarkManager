@@ -20,16 +20,20 @@
 ///     are going to be imported, then call the Import function.
 class BookmarkImporter
 {
+public:
+    enum ImportSource { Source_Firefox };
+
 private:
     DatabaseManager* dbm;
     Config* conf;
+    ImportSource importSource;
     QMultiHash<QString, long long> existentBookmarksForUrl;
     QMultiHash<QString, long long> existentBookmarksForUniqueId;
 
 public:
     BookmarkImporter(DatabaseManager* dbm, Config* conf);
 
-    bool Initialize();
+    bool Initialize(ImportSource importSource);
     bool Analyze(ImportedEntityList& elist);
     bool Import(ImportedEntityList& elist);
 

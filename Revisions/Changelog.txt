@@ -51,3 +51,4 @@
 2014-11-11  48  Introduce general importers and ImportedBookmarksPreviewDialog
 2014-11-13  52  Implemented BookmarkImporter initialization, etc code.
 2014-11-14  52  Decided and implemented BookmarkImporter::Analyze, UI updates.
+2014-11-15  53  MainWindow shows bookmarks in the preview dialog after analysis.

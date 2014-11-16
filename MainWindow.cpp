@@ -593,7 +593,7 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
         return;
 
     BookmarkImporter bmim(&dbm, &conf);
-    success = bmim.Initialize();
+    success = bmim.Initialize(BookmarkImporter::Source_Firefox);
     if (!success)
         return;
 

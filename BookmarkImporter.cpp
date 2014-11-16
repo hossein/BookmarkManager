@@ -8,8 +8,10 @@ BookmarkImporter::BookmarkImporter(DatabaseManager* dbm, Config* conf)
 
 }
 
-bool BookmarkImporter::Initialize()
+bool BookmarkImporter::Initialize(ImportSource importSource)
 {
+    this->importSource = importSource;
+
     //Query bookmark urls
     QHash<long long, QString> bookmarkURLs;
     bool success = dbm->bms.RetrieveAllFullURLs(bookmarkURLs);
