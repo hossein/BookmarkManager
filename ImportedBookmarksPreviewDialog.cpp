@@ -59,6 +59,7 @@ void ImportedBookmarksPreviewDialog::AddItems()
     {
         QTreeWidgetItem* twi = new QTreeWidgetItem();
         twi->setText(0, ib.title);
+        twi->setToolTip(0, ib.uri);
         if (ib.Ex_status == ImportedBookmark::S_AnalyzedExactExistent)
             twi->setIcon(0, icon_exact);
         else if (ib.Ex_status == ImportedBookmark::S_AnalyzedSimilarExistent)
