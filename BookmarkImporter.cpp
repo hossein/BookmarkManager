@@ -49,11 +49,31 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
         if (exactURLIndices.count(exactURL) > 1)
             duplicateExactURLs.append(exactURL);
 
+    //Collect all descriptions and titles for each duplicate url; mark one of them as 'original' and remove the rest.
+    //I saw that usually among the tagged duplicate bookmarks, just one of them contains title and description
+    //  and the rest are without title and description. But anyway we use a join operation to be safe.
     foreach (const QString& duplicateURL, duplicateExactURLs)
     {
+        const QList<int>& indicesForURL = exactURLIndices.values(duplicateURL);
 
+        int originalIndex = 0; //The one with title and/or description.
+        QStringList titles;
+        QStringList descriptions;
+        foreach (int index, indicesForURL)
+        {
+            const ImportedBookmark& ib = elist.iblist[index];
+            if (!ib.title.isEmpty() || !ib.description.isEmpty())
+                originalIndex = index;
+            if (!ib.title.isEmpty())
+                titles.append(ib.title);
+            if (!ib.description.isEmpty())
+                descriptions.append(ib.description);
+
+        }
     }
 
+    //TODO: Some of the folders and bookmarks are still without titles.
+    //      Some of these may include duplicate urls which neither one had titles.
 
     //Now check the urls for duplicates among EXISTING bookmarks.
     for (int i = 0; i < elist.iblist.size(); i++)
@@ -99,6 +119,8 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
                     ib.Ex_status = ImportedBookmark::S_AnalyzedExactExistent;
                 else
                     ib.Ex_status = ImportedBookmark::S_AnalyzedSimilarExistent;
+
+                continue; //These `if`s don't have `else`s, don't reach the parts after them and set them to ImportOK.
             }
         }
 
