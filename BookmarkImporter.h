@@ -28,6 +28,7 @@ private:
     Config* conf;
     ImportSource importSource;
     QMultiHash<QString, long long> existentBookmarksForUrl;
+    QMap<int, int> folderItemsIndexInArray;
 
 public:
     BookmarkImporter(DatabaseManager* dbm, Config* conf);
@@ -41,4 +42,7 @@ private:
     QString GetURLForAlmostExactComparison(const QString& originalUrl);
     /// Returns a null QString if extra infos don't contain the field.
     QString extraInfoField(const QString& fieldName, const QList<BookmarkManager::BookmarkExtraInfoData>& extraInfos);
+
+    QString bookmarkTagAccordingToParentFolders(ImportedEntityList& elist, int bookmarkIndex);
+
 };

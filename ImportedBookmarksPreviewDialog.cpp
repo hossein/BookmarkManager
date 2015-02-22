@@ -51,7 +51,7 @@ void ImportedBookmarksPreviewDialog::AddItems()
     foreach (const ImportedBookmarkFolder& ibf, elist->ibflist)
     {
         QTreeWidgetItem* twi = new QTreeWidgetItem();
-        twi->setText(0, ibf.title);
+        twi->setText(0, "[" + QString::number(ibf.intId) + "] " + ibf.title + " [" + ibf.root + "]");
         twi->setIcon(0, icon_folder);
         twi->setData(0, TWID_IsFolder, true);
         twi->setData(0, TWID_Index, index);
@@ -69,7 +69,7 @@ void ImportedBookmarksPreviewDialog::AddItems()
     foreach (const ImportedBookmark& ib, elist->iblist)
     {
         QTreeWidgetItem* twi = new QTreeWidgetItem();
-        twi->setText(0, ib.title);
+        twi->setText(0, ib.title + " [" + QString::number(ib.parentId) + "]");
         twi->setToolTip(0, ib.uri);
         twi->setData(0, TWID_IsFolder, false);
         twi->setData(0, TWID_Index, index);
@@ -109,6 +109,7 @@ void ImportedBookmarksPreviewDialog::on_twBookmarks_itemSelectionChanged()
     if (!isFolder)
     {
         const ImportedBookmark::ImportedBookmarkStatus status = elist->iblist[index].Ex_status;
+        ui->leTagsForBookmark->setText(elist->iblist[index].Ex_additionalTags.join(' ')); //TODO: Monitor user changes to this text box.
         //TODO: All statuses are possible, even user-chosen ones.
         //TODO: need to check user selection for duplicate, non-same bookmarks.
         if (status == ImportedBookmark::S_AnalyzedExactExistent)

@@ -37,6 +37,10 @@ bool BookmarkImporter::Initialize(ImportSource importSource)
 
 bool BookmarkImporter::Analyze(ImportedEntityList& elist)
 {
+    //First initialize the data we will need during the conversion.
+    for (int i = 0; i < elist.ibflist.size(); i++)
+        folderItemsIndexInArray[elist.ibflist[i].intId] = i;
+
     //Find URLs of the TO-BE-IMPORTED bookmarks that EXACTLY match.
     //  This is done to merge firefox bookmarks with different tags into one bookmark.
     //Insert everything into a multihash
@@ -53,13 +57,15 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
     //Collect all descriptions and titles for each duplicate url; mark one of them as 'original' and remove the rest.
     //I saw that usually among the tagged duplicate bookmarks, just one of them contains title and description
     //  and the rest are without title and description. But anyway we use a join operation to be safe.
+    QList<int> indicesToDelete;
     foreach (const QString& duplicateURL, duplicateExactURLs)
     {
         const QList<int>& indicesForURL = exactURLIndices.values(duplicateURL);
-
-        int originalIndex = 0; //The one with title and/or description.
+qDebug() << duplicateURL;
+        int originalIndex = indicesForURL[0]; //The one with title and/or description.
         QStringList titles;
         QStringList descriptions;
+        QStringList tags;
         foreach (int index, indicesForURL)
         {
             const ImportedBookmark& ib = elist.iblist[index];
@@ -69,9 +75,35 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
                 titles.append(ib.title);
             if (!ib.description.isEmpty())
                 descriptions.append(ib.description);
-
+            QString tag = bookmarkTagAccordingToParentFolders(elist, index);
+            if (!tag.isEmpty())
+                tags.append(tag);
+qDebug() << index << ib.parentId << elist.ibflist[folderItemsIndexInArray[ib.parentId]].title;
+            if (ib.parentId == 88)
+            {
+                int aa = 1;
+            }
         }
+
+        //Apply the new title, descriptions, tags to the only bookmark that is going to remain.
+        elist.iblist[originalIndex].title = titles.join(" -- ");
+        elist.iblist[originalIndex].description = descriptions.join("\n\n");
+        elist.iblist[originalIndex].Ex_additionalTags = tags;
+
+        //Add those we eant to remove all except the one with the most information (at originalIndex).
+        //We can't just remove them here, it will change the indexes of bookmarks in the next iterations.
+        indicesToDelete.append(indicesForURL);
+        indicesToDelete.removeOne(originalIndex);
+        /*QList<int> indicesToDelete = indicesForURL;
+        indicesToDelete.removeOne(originalIndex);
+        qSort(indicesToDelete);
+        for (int i = indicesToDelete.size() - 1; i >= 0; i--)
+            elist.iblist.removeAt(i);*/
     }
+
+    qSort(indicesToDelete);
+    for (int i = indicesToDelete.size() - 1; i >= 0; i--)
+    {}///elist.iblist.removeAt(i);
 
     //TODO: Some of the folders and bookmarks are still without titles.
     //      Some of these may include duplicate urls which neither one had titles.
@@ -159,4 +191,25 @@ QString BookmarkImporter::extraInfoField(const QString& fieldName, const QList<B
         if (exInfo.Name == fieldName)
             return exInfo.Value;
     return QString();
+}
+
+QString BookmarkImporter::bookmarkTagAccordingToParentFolders(ImportedEntityList& elist, int bookmarkIndex)
+{
+    const ImportedBookmark& ib = elist.iblist[bookmarkIndex];
+    int parentId = ib.parentId;
+
+    if (parentId == 88)
+    {
+        int aa = 1;
+    }
+
+    QString tag = QString();
+    while (elist.ibflist[folderItemsIndexInArray[parentId]].root.isEmpty())
+    {
+        tag = elist.ibflist[folderItemsIndexInArray[parentId]].title + (tag.isEmpty() ? "" : "/") + tag;
+        parentId = elist.ibflist[folderItemsIndexInArray[parentId]].parentId;
+    }
+    tag = tag.replace(' ', '-');
+
+    return tag;
 }
