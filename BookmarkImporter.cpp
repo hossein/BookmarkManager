@@ -1,5 +1,6 @@
 #include "BookmarkImporter.h"
 
+#include <QDebug>
 #include <QUrl>
 
 BookmarkImporter::BookmarkImporter(DatabaseManager* dbm, Config* conf)

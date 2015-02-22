@@ -21,7 +21,13 @@ private:
 
     QMap<int, QTreeWidgetItem*> folderItems;
     //QMap<int, ImportedBookmarkFolder*> importedFolders;
-    //QMap<int, ImportedBookmarkFolder*> importedFolders;
+    //QMap<int, ImportedBookmarkFolder*> importedFolders;'
+
+    enum TreeWidgetItemData
+    {
+        TWID_IsFolder = Qt::UserRole,
+        TWID_Index,
+    };
 
 public:
     explicit ImportedBookmarksPreviewDialog(DatabaseManager* dbm, Config* conf,
@@ -33,6 +39,9 @@ public:
 
 public slots:
     void accept();
+
+private slots:
+    void on_twBookmarks_itemSelectionChanged();
 
 private:
     void AddItems();
