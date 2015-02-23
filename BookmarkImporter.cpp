@@ -101,6 +101,8 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
 
     //TODO: Some of the folders and bookmarks are still without titles.
     //      Some of these may include duplicate urls which neither one had titles.
+    //      But even some of the bookmarks who are not tag-duplicates of another
+    //      bookmark may have empty titles.
 
     //Now check the urls for duplicates among EXISTING bookmarks.
     for (int i = 0; i < elist.iblist.size(); i++)
@@ -155,9 +157,6 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
         ib.Ex_status = ImportedBookmark::S_AnalyzedImportOK;
     }
 
-    //TODO: Handle title-less bookmarks. Even those bookmarks who are not tag-duplicates of another
-    //  bookmark may have empty titles.
-
     //Bookmarks imported; delete folders without bookmarks or folders in them until nothing remains to be deleted.
     QSet<int> usedFolderIds;
     while (true)
@@ -192,13 +191,14 @@ bool BookmarkImporter::Import(ImportedEntityList& elist)
 
 QString BookmarkImporter::GetURLForFastComparison(const QString& originalUrl)
 {
-    //TODO: Check both these functions this with file: and mailto: urls.
+    //These work okay with "file:" and "mailto:" urls.
     QUrl url(originalUrl);
     return QString(url.host() + '/' + url.path()).toLower();
 }
 
 QString BookmarkImporter::GetURLForAlmostExactComparison(const QString& originalUrl)
 {
+    //These work okay with "file:" and "mailto:" urls.
     QUrl url(originalUrl);
     return url.host() + '/' + url.path() + '#' + url.fragment();
 }
