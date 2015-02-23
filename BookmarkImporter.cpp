@@ -50,7 +50,7 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
 
     //Find those keys who have more than one bookmark.
     QStringList duplicateExactURLs;
-    foreach (const QString& exactURL, exactURLIndices.keys())
+    foreach (const QString& exactURL, exactURLIndices.uniqueKeys())
         if (exactURLIndices.count(exactURL) > 1)
             duplicateExactURLs.append(exactURL);
 
@@ -61,7 +61,7 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
     foreach (const QString& duplicateURL, duplicateExactURLs)
     {
         const QList<int>& indicesForURL = exactURLIndices.values(duplicateURL);
-qDebug() << duplicateURL;
+qDebug() << duplicateURL << indicesForURL.size();
         int originalIndex = indicesForURL[0]; //The one with title and/or description.
         QStringList titles;
         QStringList descriptions;
@@ -79,10 +79,6 @@ qDebug() << duplicateURL;
             if (!tag.isEmpty())
                 tags.append(tag);
 qDebug() << index << ib.parentId << elist.ibflist[folderItemsIndexInArray[ib.parentId]].title;
-            if (ib.parentId == 88)
-            {
-                int aa = 1;
-            }
         }
 
         //Apply the new title, descriptions, tags to the only bookmark that is going to remain.
@@ -103,7 +99,7 @@ qDebug() << index << ib.parentId << elist.ibflist[folderItemsIndexInArray[ib.par
 
     qSort(indicesToDelete);
     for (int i = indicesToDelete.size() - 1; i >= 0; i--)
-    {}///elist.iblist.removeAt(i);
+        elist.iblist.removeAt(indicesToDelete[i]);
 
     //TODO: Some of the folders and bookmarks are still without titles.
     //      Some of these may include duplicate urls which neither one had titles.
@@ -197,11 +193,6 @@ QString BookmarkImporter::bookmarkTagAccordingToParentFolders(ImportedEntityList
 {
     const ImportedBookmark& ib = elist.iblist[bookmarkIndex];
     int parentId = ib.parentId;
-
-    if (parentId == 88)
-    {
-        int aa = 1;
-    }
 
     QString tag = QString();
     while (elist.ibflist[folderItemsIndexInArray[parentId]].root.isEmpty())

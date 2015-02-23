@@ -69,7 +69,7 @@ void ImportedBookmarksPreviewDialog::AddItems()
     foreach (const ImportedBookmark& ib, elist->iblist)
     {
         QTreeWidgetItem* twi = new QTreeWidgetItem();
-        twi->setText(0, ib.title + " [" + QString::number(ib.parentId) + "]");
+        twi->setText(0, ib.title + " [" + QString::number(index) + "]");
         twi->setToolTip(0, ib.uri);
         twi->setData(0, TWID_IsFolder, false);
         twi->setData(0, TWID_Index, index);
