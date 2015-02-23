@@ -41,6 +41,10 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
     for (int i = 0; i < elist.ibflist.size(); i++)
         folderItemsIndexInArray[elist.ibflist[i].intId] = i;
 
+    //Tag all the bookmarks
+    for (int index = 0; index < elist.iblist.size(); index++)
+        elist.iblist[index].Ex_additionalTags = QStringList(bookmarkTagAccordingToParentFolders(elist, index));
+
     //Find URLs of the TO-BE-IMPORTED bookmarks that EXACTLY match.
     //  This is done to merge firefox bookmarks with different tags into one bookmark.
     //Insert everything into a multihash
@@ -61,7 +65,7 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
     foreach (const QString& duplicateURL, duplicateExactURLs)
     {
         const QList<int>& indicesForURL = exactURLIndices.values(duplicateURL);
-qDebug() << duplicateURL << indicesForURL.size();
+
         int originalIndex = indicesForURL[0]; //The one with title and/or description.
         QStringList titles;
         QStringList descriptions;
@@ -75,10 +79,9 @@ qDebug() << duplicateURL << indicesForURL.size();
                 titles.append(ib.title);
             if (!ib.description.isEmpty())
                 descriptions.append(ib.description);
-            QString tag = bookmarkTagAccordingToParentFolders(elist, index);
-            if (!tag.isEmpty())
-                tags.append(tag);
-qDebug() << index << ib.parentId << elist.ibflist[folderItemsIndexInArray[ib.parentId]].title;
+            foreach (const QString& tag, ib.Ex_additionalTags)
+                if (!tags.contains(tag, Qt::CaseSensitive))
+                    tags.append(tag);
         }
 
         //Apply the new title, descriptions, tags to the only bookmark that is going to remain.
@@ -90,11 +93,6 @@ qDebug() << index << ib.parentId << elist.ibflist[folderItemsIndexInArray[ib.par
         //We can't just remove them here, it will change the indexes of bookmarks in the next iterations.
         indicesToDelete.append(indicesForURL);
         indicesToDelete.removeOne(originalIndex);
-        /*QList<int> indicesToDelete = indicesForURL;
-        indicesToDelete.removeOne(originalIndex);
-        qSort(indicesToDelete);
-        for (int i = indicesToDelete.size() - 1; i >= 0; i--)
-            elist.iblist.removeAt(i);*/
     }
 
     qSort(indicesToDelete);
@@ -159,6 +157,30 @@ qDebug() << index << ib.parentId << elist.ibflist[folderItemsIndexInArray[ib.par
 
     //TODO: Handle title-less bookmarks. Even those bookmarks who are not tag-duplicates of another
     //  bookmark may have empty titles.
+
+    //Bookmarks imported; delete folders without bookmarks or folders in them until nothing remains to be deleted.
+    QSet<int> usedFolderIds;
+    while (true)
+    {
+        qDebug() << "One pass";
+        usedFolderIds.clear();
+        foreach (const ImportedBookmark& ib, elist.iblist)
+            usedFolderIds.insert(ib.parentId);
+        foreach (const ImportedBookmarkFolder& ibf, elist.ibflist)
+            usedFolderIds.insert(ibf.parentId);
+
+        indicesToDelete.clear();
+        for (int i = 0; i < elist.ibflist.size(); i++)
+            if (!usedFolderIds.contains(elist.ibflist[i].intId))
+                indicesToDelete.append(i);
+
+        if (indicesToDelete.isEmpty())
+            break;
+
+        qSort(indicesToDelete);
+        for (int i = indicesToDelete.size() - 1; i >= 0; i--)
+            elist.ibflist.removeAt(indicesToDelete[i]);
+    }
 
     return true;
 }
