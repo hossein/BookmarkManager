@@ -20,6 +20,9 @@ ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(
     ui->grpDuplBookmarkSameProps->setVisible(false);
     ui->grpBookmarkFolderProps->setVisible  (false);
 
+    connect(ui->chkImportBookmark, SIGNAL(toggled(bool)), ui->leTagsForBookmark, SLOT(setEnabled(bool)));
+    connect(ui->chkImportFolder  , SIGNAL(toggled(bool)), ui->leTagsForFolder  , SLOT(setEnabled(bool)));
+
     AddItems();
 
     canShowTheDialog = true;
@@ -37,9 +40,10 @@ bool ImportedBookmarksPreviewDialog::canShow()
 
 void ImportedBookmarksPreviewDialog::accept()
 {
+    //Check if there are any undecided similar bookmarks to be imported.
     foreach (const ImportedBookmark& ib, elist->iblist)
     {
-        if (ib.Ex_status == ImportedBookmark::S_AnalyzedSimilarExistent)
+        if (ib.Ex_import && ib.Ex_status == ImportedBookmark::S_AnalyzedSimilarExistent)
         {
             QTreeWidgetItem* twi = bookmarkItems[ib.intId];
             ui->twBookmarks->setCurrentItem(twi);
@@ -124,23 +128,38 @@ void ImportedBookmarksPreviewDialog::on_twBookmarks_itemSelectionChanged()
     if (!isFolder)
     {
         const ImportedBookmark::ImportedBookmarkStatus status = elist->iblist[index].Ex_status;
-        ui->leTagsForBookmark->setText(elist->iblist[index].Ex_additionalTags.join(' ')); //TODO: Monitor user changes to this text box.
+        ui->chkImportBookmark->setChecked(elist->iblist[index].Ex_import);
+        ui->leTagsForBookmark->setText(elist->iblist[index].Ex_additionalTags.join(' ')); //TODO: Monitor user changes to this text box and other elements.
         //TODO: All statuses are possible, even user-chosen ones.
         //TODO: need to check user selection for duplicate, non-same bookmarks.
-        if (status == ImportedBookmark::S_AnalyzedExactExistent)
+        if (status == ImportedBookmark::S_AnalyzedExactExistent ||
+            status == ImportedBookmark::S_ReplaceExisting ||
+            status == ImportedBookmark::S_AppendToExisting)
         {
+            ui->chkImportBookmark->setVisible(false);
             ui->grpDuplBookmarkProps->setVisible(true);
-            ui->optKeep->setChecked(false);
-            ui->optOverwrite->setChecked(false);
-            ui->optAppend->setChecked(false);
+
+            if (elist->iblist[index].Ex_import)
+            {
+                ui->optKeep->setChecked(false);
+                ui->optOverwrite->setChecked(status == ImportedBookmark::S_ReplaceExisting);
+                ui->optAppend->setChecked(status == ImportedBookmark::S_AppendToExisting);
+            }
+            else
+            {
+                ui->optKeep->setChecked(true);
+                ui->optOverwrite->setChecked(false);
+                ui->optAppend->setChecked(false);
+            }
         }
         else if (status == ImportedBookmark::S_AnalyzedSimilarExistent)
         {
+            ui->chkImportBookmark->setVisible(true);
             ui->grpDuplBookmarkSameProps->setVisible(true);
         }
         else if (status == ImportedBookmark::S_AnalyzedImportOK)
         {
-
+            ui->chkImportBookmark->setVisible(true);
         }
     }
 }

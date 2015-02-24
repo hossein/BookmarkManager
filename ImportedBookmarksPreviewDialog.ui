@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>702</width>
-    <height>667</height>
+    <width>688</width>
+    <height>671</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,6 +23,13 @@
       <string>Bookmark Folder Properties</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <widget class="QCheckBox" name="chkImportFolder">
+        <property name="text">
+         <string>&amp;Import bookmarks in this folder</string>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QLabel" name="label_3">
         <property name="text">
@@ -70,6 +77,13 @@
       <string>Bookmark Properties</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QCheckBox" name="chkImportBookmark">
+        <property name="text">
+         <string>&amp;Import this bookmark</string>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QLabel" name="label_4">
         <property name="text">
@@ -121,7 +135,7 @@
       <item row="2" column="1">
        <widget class="QLabel" name="label_7">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#800000;&quot;&gt;Warning: &lt;/span&gt;Any details that the new bookmark has is discarded!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Don't import the new bookmark.&lt;br/&gt;&lt;span style=&quot; font-weight:600; color:#800000;&quot;&gt;Warning: &lt;/span&gt;Any details that the new bookmark has is discarded!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
@@ -141,7 +155,7 @@
       <item row="4" column="1">
        <widget class="QLabel" name="label_8">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#800000;&quot;&gt;Warning: &lt;/span&gt;All attached files, tags, linked bookmarks and other additional information &lt;span style=&quot; font-weight:600;&quot;&gt;will be removed&lt;/span&gt; from the previous bookmark without an undo option.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#FF0000;&quot;&gt;Careful: &lt;/span&gt;All attached files, tags, linked bookmarks and other additional information &lt;span style=&quot; font-weight:600;&quot;&gt;will be removed&lt;/span&gt; from the previous bookmark without an undo option.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>

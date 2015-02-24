@@ -11,5 +11,7 @@
         <file>res/import_ok.png</file>
         <file>res/import_overwrite.png</file>
         <file>res/import_folder.png</file>
+        <file>res/import_dontimport.png</file>
+        <file>res/import_folderdontimport.png</file>
     </qresource>
 </RCC>

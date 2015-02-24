@@ -10,6 +10,7 @@ struct ImportedBookmark
 {
     ImportedBookmark()
     {
+        this->Ex_import = true;
         this->Ex_status = S_NotAnalyzed;
     }
 
@@ -35,10 +36,10 @@ struct ImportedBookmark
         S_AnalyzedSimilarExistent,
         S_AnalyzedImportOK,
         //Decisions of user
-        S_DontImport,
         S_ReplaceExisting,
         S_AppendToExisting,
     };
+    bool Ex_import;
     ImportedBookmarkStatus Ex_status;
     QStringList Ex_additionalTags;
 };
