@@ -37,6 +37,20 @@ bool ImportedBookmarksPreviewDialog::canShow()
 
 void ImportedBookmarksPreviewDialog::accept()
 {
+    foreach (const ImportedBookmark& ib, elist->iblist)
+    {
+        if (ib.Ex_status == ImportedBookmark::S_AnalyzedSimilarExistent)
+        {
+            QTreeWidgetItem* twi = bookmarkItems[ib.intId];
+            ui->twBookmarks->setCurrentItem(twi);
+            ui->twBookmarks->scrollToItem(twi);
+
+            QMessageBox::information(this, "Items Need Review", "One or more of the bookmarks for import are similar to an existing "
+                                                                "bookmark. You must decide what to do with the new bookmark first.");
+            return;
+        }
+    }
+
     QDialog::accept();
 }
 
@@ -73,6 +87,7 @@ void ImportedBookmarksPreviewDialog::AddItems()
         twi->setToolTip(0, ib.uri);
         twi->setData(0, TWID_IsFolder, false);
         twi->setData(0, TWID_Index, index);
+        bookmarkItems[ib.intId] = twi;
 
         if (ib.Ex_status == ImportedBookmark::S_AnalyzedExactExistent)
             twi->setIcon(0, icon_exact);

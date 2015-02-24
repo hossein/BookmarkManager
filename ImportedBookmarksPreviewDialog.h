@@ -20,6 +20,7 @@ private:
     ImportedEntityList* elist;
 
     QMap<int, QTreeWidgetItem*> folderItems;
+    QMap<int, QTreeWidgetItem*> bookmarkItems;
     //QMap<int, ImportedBookmarkFolder*> importedFolders;
     //QMap<int, ImportedBookmarkFolder*> importedFolders;'
 
