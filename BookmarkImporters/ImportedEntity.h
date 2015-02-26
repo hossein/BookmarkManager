@@ -69,6 +69,7 @@ struct ImportedBookmarkFolder
 
 struct ImportedEntityList
 {
+    enum ImportSource { Source_Firefox };
     QList<ImportedBookmark> iblist;
     QList<ImportedBookmarkFolder> ibflist;
 };

@@ -3,10 +3,10 @@
 
 #include <QDebug>
 
-ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(
-        DatabaseManager* dbm, Config* conf, ImportedEntityList* elist, QWidget *parent)
+ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* dbm, Config* conf, ImportedEntityList* elist,
+                                                               ImportedEntityList::ImportSource importSource, QWidget *parent)
     : QDialog(parent), ui(new Ui::ImportedBookmarksPreviewDialog), dbm(dbm), conf(conf)
-    , canShowTheDialog(false), elist(elist)
+    , canShowTheDialog(false), elist(elist), importSource(importSource)
 {
     ui->setupUi(this);
 
@@ -206,6 +206,8 @@ void ImportedBookmarksPreviewDialog::on_leTagsForFolder_editingFinished()
 
 void ImportedBookmarksPreviewDialog::AddItems()
 {
+    const int rootFolderIntId = (importSource == ImportedEntityList::Source_Firefox ? 1 : 0);
+
     int index = 0;
     foreach (const ImportedBookmarkFolder& ibf, elist->ibflist)
     {
@@ -215,13 +217,16 @@ void ImportedBookmarksPreviewDialog::AddItems()
         twi->setData(0, TWID_IsFolder, true);
         twi->setData(0, TWID_Index, index);
         folderItems[ibf.intId] = twi;
+        index++;
 
-        if (ibf.parentId <= 0)
+        //On firefox, don't add or show the root folder which has the ID 1.
+        if (ibf.intId == rootFolderIntId && importSource == ImportedEntityList::Source_Firefox)
+            continue;
+
+        if (ibf.parentId <= rootFolderIntId)
             ui->twBookmarks->addTopLevelItem(twi);
         else
             folderItems[ibf.parentId]->addChild(twi);
-
-        index++;
     }
 
     index = 0;
@@ -234,13 +239,12 @@ void ImportedBookmarksPreviewDialog::AddItems()
         twi->setData(0, TWID_IsFolder, false);
         twi->setData(0, TWID_Index, index);
         bookmarkItems[ib.intId] = twi;
+        index++;
 
         if (ib.parentId <= 0)
             ui->twBookmarks->addTopLevelItem(twi);
         else
             folderItems[ib.parentId]->addChild(twi);
-
-        index++;
     }
 
     ui->twBookmarks->expandAll();

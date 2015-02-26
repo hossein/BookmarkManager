@@ -9,7 +9,7 @@ BookmarkImporter::BookmarkImporter(DatabaseManager* dbm, Config* conf)
 
 }
 
-bool BookmarkImporter::Initialize(ImportSource importSource)
+bool BookmarkImporter::Initialize(ImportedEntityList::ImportSource importSource)
 {
     this->importSource = importSource;
 

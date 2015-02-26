@@ -21,6 +21,7 @@ private:
     Config* conf;
     bool canShowTheDialog;
     ImportedEntityList* elist;
+    ImportedEntityList::ImportSource importSource;
 
     QMap<int, QTreeWidgetItem*> folderItems;
     QMap<int, QTreeWidgetItem*> bookmarkItems;
@@ -44,7 +45,9 @@ private:
 
 public:
     explicit ImportedBookmarksPreviewDialog(DatabaseManager* dbm, Config* conf,
-                                            ImportedEntityList* elist, QWidget *parent = 0);
+                                            ImportedEntityList* elist,
+                                            ImportedEntityList::ImportSource importSource,
+                                            QWidget *parent = 0);
     ~ImportedBookmarksPreviewDialog();
 
 public:
