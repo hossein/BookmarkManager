@@ -16,8 +16,11 @@
 ///     there is a 'similar' match. In the mentioned comparison, protocols (http/https/ftp),
 ///     user info (john:doe) and ports (:8080) are discarded.
 /// Analyzer sets the corresponding 'Ex_' fields in the bookmarks list.
-///     User should make the changes he wants and decide what to do for duplicate/similar bookmarks that
-///     are going to be imported, then call the Import function.
+///     User should make the changes he wants and decide what to do for duplicate/similar
+///     bookmarks that are going to be imported, then call the Import function.
+/// Note: Some of the folders and bookmarks that this analyzes are still without titles. Some of
+///     these may include duplicate urls which neither one had titles, but some of the bookmarks
+///     that are not tag-duplicates of another bookmarks may have empty titles.
 class BookmarkImporter
 {
 private:

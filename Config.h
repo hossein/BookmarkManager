@@ -101,6 +101,8 @@
 ///     some warning the next time!
 ///   - When sorting bookmarks by URL, disregard the protocol name in sorting.
 ///   - Save bookmark extra data as whole JSON files and edit them using a JSON editor.
+///   - Find similar urls in imported bookmarks and our collection that escaped our 'almost'
+///     similar/exact check.
 
 class Config
 {

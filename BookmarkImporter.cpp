@@ -99,11 +99,6 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
     for (int i = indicesToDelete.size() - 1; i >= 0; i--)
         elist.iblist.removeAt(indicesToDelete[i]);
 
-    //TODO: Some of the folders and bookmarks are still without titles.
-    //      Some of these may include duplicate urls which neither one had titles.
-    //      But even some of the bookmarks who are not tag-duplicates of another
-    //      bookmark may have empty titles.
-
     //Now check the urls for duplicates among EXISTING bookmarks.
     for (int i = 0; i < elist.iblist.size(); i++)
     //foreach (ImportedBookmark& ib, elist.iblist)

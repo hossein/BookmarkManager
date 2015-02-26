@@ -66,7 +66,7 @@ void ImportedBookmarksPreviewDialog::accept()
         }
     }
 
-    //TOOD: add tags of folder and ALL to bms.
+    //TODO: add tags of folder and ALL to bms.
     //      don't import bms that parent folder is not gonna be importd.
     //      respect user tags while importing.
     //      add extra attributes, e.g firefox's date added and the real import date and 'imported from: firefox', and 'fxprofilename: 2nvgyxqez'
@@ -97,10 +97,9 @@ void ImportedBookmarksPreviewDialog::on_twBookmarks_itemSelectionChanged()
     {
         const ImportedBookmark::ImportedBookmarkStatus status = elist->iblist[index].Ex_status;
         ui->chkImportBookmark->setChecked(elist->iblist[index].Ex_import);
-        ui->leTagsForBookmark->setText(elist->iblist[index].Ex_additionalTags.join(' ')); //TODO: Monitor user changes to this text box and other elements.
-        //TODO: All statuses are possible, even user-chosen ones.
-        //TODO: need to check user selection for duplicate, non-same bookmarks.
-        if (status == ImportedBookmark::S_AnalyzedExactExistent ||
+        ui->leTagsForBookmark->setText(elist->iblist[index].Ex_additionalTags.join(' '));
+
+        if (status == ImportedBookmark::S_AnalyzedSimilarExistent ||
             status == ImportedBookmark::S_ReplaceExisting ||
             status == ImportedBookmark::S_AppendToExisting)
         {
@@ -120,7 +119,7 @@ void ImportedBookmarksPreviewDialog::on_twBookmarks_itemSelectionChanged()
                 ui->optAppend->setChecked(false);
             }
         }
-        else if (status == ImportedBookmark::S_AnalyzedSimilarExistent)
+        else if (status == ImportedBookmark::S_AnalyzedExactExistent)
         {
             ui->chkImportBookmark->setVisible(true);
             ui->grpDuplBookmarkSameProps->setVisible(true);
@@ -139,8 +138,6 @@ void ImportedBookmarksPreviewDialog::on_leTagsForAll_editingFinished()
 
 void ImportedBookmarksPreviewDialog::on_chkImportBookmark_clicked()
 {
-    //TODO: In all of the following change icons as well.
-
     bool import = ui->chkImportBookmark->isChecked();
     QTreeWidgetItem* twi = ui->twBookmarks->selectedItems()[0];
     int index = twi->data(0, TWID_Index).toInt();
