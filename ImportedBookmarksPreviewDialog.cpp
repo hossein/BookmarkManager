@@ -25,6 +25,15 @@ ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(
     connect(ui->chkImportBookmark, SIGNAL(toggled(bool)), ui->leTagsForBookmark, SLOT(setEnabled(bool)));
     connect(ui->chkImportFolder  , SIGNAL(toggled(bool)), ui->leTagsForFolder  , SLOT(setEnabled(bool)));
 
+    icon_folder           = QIcon(":/res/import_folder.png");
+    icon_folderdontimport = QIcon(":/res/import_folderdontimport.png");
+    icon_dontimport       = QIcon(":/res/import_dontimport.png");
+    icon_okay             = QIcon(":/res/import_ok.png");
+    icon_similar          = QIcon(":/res/import_duplicate_similar.png");
+    icon_exact            = QIcon(":/res/import_duplicate_exact.png");
+    icon_overwrite        = QIcon(":/res/import_overwrite.png");
+    icon_append           = QIcon(":/res/import_append.png");
+
     AddItems();
 
     canShowTheDialog = true;
@@ -130,9 +139,11 @@ void ImportedBookmarksPreviewDialog::on_chkImportBookmark_clicked()
 {
     //TODO: In all of the following change icons as well.
 
+    bool import = ui->chkImportBookmark->isChecked();
     QTreeWidgetItem* twi = ui->twBookmarks->selectedItems()[0];
     int index = twi->data(0, TWID_Index).toInt();
-    elist->iblist[index].Ex_import = ui->chkImportBookmark->isChecked();
+    elist->iblist[index].Ex_import = import;
+    SetBookmarkItemIcon(twi, elist->iblist[index]);
 }
 
 void ImportedBookmarksPreviewDialog::on_leTagsForBookmark_editingFinished()
@@ -151,6 +162,7 @@ void ImportedBookmarksPreviewDialog::on_optKeep_clicked()
     QTreeWidgetItem* twi = ui->twBookmarks->selectedItems()[0];
     int index = twi->data(0, TWID_Index).toInt();
     elist->iblist[index].Ex_import = false;
+    SetBookmarkItemIcon(twi, elist->iblist[index]);
 }
 
 void ImportedBookmarksPreviewDialog::on_optOverwrite_clicked()
@@ -162,6 +174,7 @@ void ImportedBookmarksPreviewDialog::on_optOverwrite_clicked()
     int index = twi->data(0, TWID_Index).toInt();
     elist->iblist[index].Ex_import = true;
     elist->iblist[index].Ex_status = ImportedBookmark::S_ReplaceExisting;
+    SetBookmarkItemIcon(twi, elist->iblist[index]);
 }
 
 void ImportedBookmarksPreviewDialog::on_optAppend_clicked()
@@ -173,6 +186,7 @@ void ImportedBookmarksPreviewDialog::on_optAppend_clicked()
     int index = twi->data(0, TWID_Index).toInt();
     elist->iblist[index].Ex_import = true;
     elist->iblist[index].Ex_status = ImportedBookmark::S_AppendToExisting;
+    SetBookmarkItemIcon(twi, elist->iblist[index]);
 }
 
 void ImportedBookmarksPreviewDialog::on_chkImportFolder_clicked()
@@ -192,16 +206,11 @@ void ImportedBookmarksPreviewDialog::on_leTagsForFolder_editingFinished()
 
 void ImportedBookmarksPreviewDialog::AddItems()
 {
-    QIcon icon_folder (":/res/import_folder.png");
-    QIcon icon_okay   (":/res/import_ok.png");
-    QIcon icon_similar(":/res/import_duplicate_similar.png");
-    QIcon icon_exact  (":/res/import_duplicate_exact.png");
-
     int index = 0;
     foreach (const ImportedBookmarkFolder& ibf, elist->ibflist)
     {
         QTreeWidgetItem* twi = new QTreeWidgetItem();
-        twi->setText(0, "[" + QString::number(ibf.intId) + "] " + ibf.title + " [" + ibf.root + "]");
+        twi->setText(0, ibf.title);
         twi->setIcon(0, icon_folder);
         twi->setData(0, TWID_IsFolder, true);
         twi->setData(0, TWID_Index, index);
@@ -219,18 +228,12 @@ void ImportedBookmarksPreviewDialog::AddItems()
     foreach (const ImportedBookmark& ib, elist->iblist)
     {
         QTreeWidgetItem* twi = new QTreeWidgetItem();
-        twi->setText(0, ib.title + " [" + QString::number(index) + "]");
+        twi->setText(0, ib.title);
+        SetBookmarkItemIcon(twi, ib);
         twi->setToolTip(0, ib.uri);
         twi->setData(0, TWID_IsFolder, false);
         twi->setData(0, TWID_Index, index);
         bookmarkItems[ib.intId] = twi;
-
-        if (ib.Ex_status == ImportedBookmark::S_AnalyzedExactExistent)
-            twi->setIcon(0, icon_exact);
-        else if (ib.Ex_status == ImportedBookmark::S_AnalyzedSimilarExistent)
-            twi->setIcon(0, icon_similar);
-        else if (ib.Ex_status == ImportedBookmark::S_AnalyzedImportOK)
-            twi->setIcon(0, icon_okay);
 
         if (ib.parentId <= 0)
             ui->twBookmarks->addTopLevelItem(twi);
@@ -244,20 +247,26 @@ void ImportedBookmarksPreviewDialog::AddItems()
     ui->twBookmarks->setCurrentItem(ui->twBookmarks->topLevelItem(0));
 }
 
+void ImportedBookmarksPreviewDialog::SetBookmarkItemIcon(QTreeWidgetItem* twi, const ImportedBookmark& ib)
+{
+    if (ib.Ex_import == false)
+        twi->setIcon(0, icon_dontimport);
+    else if (ib.Ex_status == ImportedBookmark::S_AnalyzedExactExistent)
+        twi->setIcon(0, icon_exact);
+    else if (ib.Ex_status == ImportedBookmark::S_AnalyzedSimilarExistent)
+        twi->setIcon(0, icon_similar);
+    else if (ib.Ex_status == ImportedBookmark::S_AnalyzedImportOK)
+        twi->setIcon(0, icon_okay);
+    else if (ib.Ex_status == ImportedBookmark::S_ReplaceExisting)
+        twi->setIcon(0, icon_overwrite);
+    else if (ib.Ex_status == ImportedBookmark::S_AppendToExisting)
+        twi->setIcon(0, icon_append);
+}
+
 void ImportedBookmarksPreviewDialog::RecursiveSetFolderImport(QTreeWidgetItem* twi, bool import)
 {
     int index = twi->data(0, TWID_Index).toInt();
     int folderId = elist->ibflist[index].intId;
-
-    QIcon icon_folder(":/res/import_folder.png");
-    QIcon icon_folderdontimport(":/res/import_folderdontimport.png");
-
-    QIcon icon_dontimport(":/res/import_dontimport.png");
-    QIcon icon_okay      (":/res/import_ok.png");
-    QIcon icon_similar   (":/res/import_duplicate_similar.png");
-    QIcon icon_exact     (":/res/import_duplicate_exact.png");
-    QIcon icon_overwrite (":/res/import_overwrite.png");
-    QIcon icon_append    (":/res/import_append.png");
 
     //Update import status and icon of the node.
     elist->ibflist[index].Ex_importBookmarks = import;
@@ -270,29 +279,15 @@ void ImportedBookmarksPreviewDialog::RecursiveSetFolderImport(QTreeWidgetItem* t
         ImportedBookmark& ib = elist->iblist[i];
         if (ib.parentId == folderId)
         {
-            qDebug() << "Set that";
-            ib.Ex_import = import;
+            //IMPORTANT: Do NOT set the import on this bookmark so as to prevent clearing user choices.
+            //  The final not-importing, etc will be managed by `accept`s processings.
+            //ib.Ex_import = import;
             bmtwi = bookmarkItems[ib.intId];
             bmtwi->setDisabled(!import);
             if (!import)
-            {
                 bmtwi->setIcon(0, icon_dontimport);
-            }
             else
-            {
-                if (ib.Ex_import == false)
-                    bmtwi->setIcon(0, icon_dontimport);
-                else if (ib.Ex_status == ImportedBookmark::S_AnalyzedExactExistent)
-                    bmtwi->setIcon(0, icon_exact);
-                else if (ib.Ex_status == ImportedBookmark::S_AnalyzedSimilarExistent)
-                    bmtwi->setIcon(0, icon_similar);
-                else if (ib.Ex_status == ImportedBookmark::S_AnalyzedImportOK)
-                    bmtwi->setIcon(0, icon_okay);
-                else if (ib.Ex_status == ImportedBookmark::S_ReplaceExisting)
-                    bmtwi->setIcon(0, icon_overwrite);
-                else if (ib.Ex_status == ImportedBookmark::S_AppendToExisting)
-                    bmtwi->setIcon(0, icon_append);
-            }
+                SetBookmarkItemIcon(bmtwi, ib);
         }
     }
 
@@ -303,7 +298,6 @@ void ImportedBookmarksPreviewDialog::RecursiveSetFolderImport(QTreeWidgetItem* t
         ImportedBookmarkFolder& ibf = elist->ibflist[i];
         if (ibf.parentId == folderId)
         {
-            qDebug() << "Set that folder";
             ibf.Ex_importBookmarks = import;
             childdirtwi = folderItems[ibf.intId];
             childdirtwi->setDisabled(!import); //Set disabled as well as setting icon and handling children.

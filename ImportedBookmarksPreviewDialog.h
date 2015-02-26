@@ -1,7 +1,10 @@
 #pragma once
 #include <QDialog>
+
 #include "DatabaseManager.h"
 #include "BookmarkImporters/ImportedEntity.h"
+
+#include <QIcon>
 #include <QMap>
 
 class QTreeWidgetItem;
@@ -22,7 +25,16 @@ private:
     QMap<int, QTreeWidgetItem*> folderItems;
     QMap<int, QTreeWidgetItem*> bookmarkItems;
     //QMap<int, ImportedBookmarkFolder*> importedFolders;
-    //QMap<int, ImportedBookmarkFolder*> importedFolders;'
+    //QMap<int, ImportedBookmarkFolder*> importedFolders;
+
+    QIcon icon_folder;
+    QIcon icon_folderdontimport;
+    QIcon icon_dontimport;
+    QIcon icon_okay;
+    QIcon icon_similar;
+    QIcon icon_exact;
+    QIcon icon_overwrite;
+    QIcon icon_append;
 
     enum TreeWidgetItemData
     {
@@ -56,5 +68,6 @@ private slots:
 
 private:
     void AddItems();
+    void SetBookmarkItemIcon(QTreeWidgetItem* twi, const ImportedBookmark& ib);
     void RecursiveSetFolderImport(QTreeWidgetItem* twi, bool import);
 };
