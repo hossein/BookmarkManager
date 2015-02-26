@@ -66,9 +66,11 @@ void ImportedBookmarksPreviewDialog::accept()
         }
     }
 
-
     //TOOD: add tags of folder and ALL to bms.
     //      don't import bms that parent folder is not gonna be importd.
+    //      respect user tags while importing.
+    //      add extra attributes, e.g firefox's date added and the real import date and 'imported from: firefox', and 'fxprofilename: 2nvgyxqez'
+    //          for easy filtering in the future.
 
     QDialog::accept();
 }
@@ -132,7 +134,7 @@ void ImportedBookmarksPreviewDialog::on_twBookmarks_itemSelectionChanged()
 
 void ImportedBookmarksPreviewDialog::on_leTagsForAll_editingFinished()
 {
-    //TODO
+    tagsForAll = ui->leTagsForAll->text().split(' ', QString::SkipEmptyParts);
 }
 
 void ImportedBookmarksPreviewDialog::on_chkImportBookmark_clicked()

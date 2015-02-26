@@ -23,6 +23,7 @@ private:
     ImportedEntityList* elist;
     ImportedEntityList::ImportSource importSource;
 
+    QStringList tagsForAll;
     QMap<int, QTreeWidgetItem*> folderItems;
     QMap<int, QTreeWidgetItem*> bookmarkItems;
     //QMap<int, ImportedBookmarkFolder*> importedFolders;
