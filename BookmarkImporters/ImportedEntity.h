@@ -46,6 +46,11 @@ struct ImportedBookmark
 
 struct ImportedBookmarkFolder
 {
+    ImportedBookmarkFolder()
+    {
+        this->Ex_importBookmarks = true;
+    }
+
     QString title;
     QString guid;
     QString description;
@@ -58,7 +63,8 @@ struct ImportedBookmarkFolder
     QDateTime dtModified;
 
     //Managed by BookmarkImporter
-    QStringList additionalTags;
+    bool Ex_importBookmarks;
+    QStringList Ex_additionalTags;
 };
 
 struct ImportedEntityList

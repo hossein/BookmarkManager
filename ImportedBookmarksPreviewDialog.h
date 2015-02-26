@@ -44,6 +44,17 @@ public slots:
 private slots:
     void on_twBookmarks_itemSelectionChanged();
 
+    //For applying user selections to items, we use slots that do NOT fire programmatically.
+    void on_leTagsForAll_editingFinished();
+    void on_chkImportBookmark_clicked();
+    void on_leTagsForBookmark_editingFinished();
+    void on_optKeep_clicked();
+    void on_optOverwrite_clicked();
+    void on_optAppend_clicked();
+    void on_chkImportFolder_clicked();
+    void on_leTagsForFolder_editingFinished();
+
 private:
     void AddItems();
+    void RecursiveSetFolderImport(QTreeWidgetItem* twi, bool import);
 };
