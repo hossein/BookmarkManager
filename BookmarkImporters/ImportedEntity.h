@@ -42,6 +42,8 @@ struct ImportedBookmark
     bool Ex_import;
     ImportedBookmarkStatus Ex_status;
     QStringList Ex_additionalTags;
+    bool Ex_finalImport;
+    QStringList Ex_finalTags;
 };
 
 struct ImportedBookmarkFolder
@@ -65,6 +67,7 @@ struct ImportedBookmarkFolder
     //Managed by BookmarkImporter
     bool Ex_importBookmarks;
     QStringList Ex_additionalTags;
+    QStringList Ex_finalTags;
 };
 
 struct ImportedEntityList

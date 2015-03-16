@@ -26,8 +26,7 @@ private:
     QStringList tagsForAll;
     QMap<int, QTreeWidgetItem*> folderItems;
     QMap<int, QTreeWidgetItem*> bookmarkItems;
-    //QMap<int, ImportedBookmarkFolder*> importedFolders;
-    //QMap<int, ImportedBookmarkFolder*> importedFolders;
+    QMap<int, int> folderItemsIndexInArray;
 
     QIcon icon_folder;
     QIcon icon_folderdontimport;

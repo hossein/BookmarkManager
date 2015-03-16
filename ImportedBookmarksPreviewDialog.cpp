@@ -34,6 +34,10 @@ ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* 
     icon_overwrite        = QIcon(":/res/import_overwrite.png");
     icon_append           = QIcon(":/res/import_append.png");
 
+    //Initialize the data we will need during the conversion.
+    for (int i = 0; i < elist->ibflist.size(); i++)
+        folderItemsIndexInArray[elist->ibflist[i].intId] = i;
+
     AddItems();
 
     canShowTheDialog = true;
@@ -66,10 +70,43 @@ void ImportedBookmarksPreviewDialog::accept()
         }
     }
 
-    //TODO: add tags of folder and ALL to bms.
-    //      don't import bms that parent folder is not gonna be importd.
-    //      respect user tags while importing.
-    //      add extra attributes, e.g firefox's date added and the real import date and 'imported from: firefox', and 'fxprofilename: 2nvgyxqez'
+    //1. Add tags that user has specified for folders and also all of the bookmarks to each bookmark.
+    //   Note: The functions that set bookmark tags handle duplicate tags so we don't check for
+    //   duplicate tags here at all.
+
+    //1a. Begin with applying the tags of parent folders to their child folders recursively.
+    for (int parentidx = 0; parentidx < elist->ibflist.size(); parentidx++)
+    {
+        elist->ibflist[parentidx].Ex_finalTags = elist->ibflist[parentidx].Ex_additionalTags;
+
+        for (int childidx = 0; childidx < elist->ibflist.size(); childidx++)
+            if (elist->ibflist[childidx].parentId == elist->ibflist[parentidx].intId)
+                elist->ibflist[childidx].Ex_additionalTags.append(elist->ibflist[parentidx].Ex_finalTags);
+    }
+
+    //1b. Add the tagsForAll tags; we didn't add these in the previous `for` to prevent them being
+    //  added from parents to children again and again.
+    for (int parentidx = 0; parentidx < elist->ibflist.size(); parentidx++)
+        elist->ibflist[parentidx].Ex_finalTags.append(tagsForAll);
+
+    //1c. Now simply copy the tags from each folder for its children.
+    //2. Also, all the folders that are not going to be imported are already specified RECURSIVELY
+    //   when the user clicked the checkboxes, so we also just set the import value for bookmarks
+    //   from their parent folders.
+    int parentFolderIndex;
+    for (int i = 0; i < elist->iblist.size(); i++)
+    {
+        elist->iblist[i].Ex_finalTags = elist->iblist[i].Ex_additionalTags;
+
+        parentFolderIndex = folderItemsIndexInArray[elist->iblist[i].parentId];
+        elist->iblist[i].Ex_finalTags.append(elist->ibflist[parentFolderIndex].Ex_finalTags);
+
+        elist->iblist[i].Ex_finalImport = (elist->ibflist[parentFolderIndex].Ex_importBookmarks
+                                          ? elist->iblist[i].Ex_import
+                                          : false);
+    }
+
+    //TODO: add extra attributes, e.g firefox's date added and the real import date and 'imported from: firefox', and 'fxprofilename: 2nvgyxqez'
     //          for easy filtering in the future.
 
     QDialog::accept();
@@ -272,6 +309,8 @@ void ImportedBookmarksPreviewDialog::RecursiveSetFolderImport(QTreeWidgetItem* t
     int folderId = elist->ibflist[index].intId;
 
     //Update import status and icon of the node.
+    //IMPORTANT: We set the `import` RECURSIVELY on all sub-folders, and `accept` processing
+    //           RELIES ON THIS.
     elist->ibflist[index].Ex_importBookmarks = import;
     folderItems[folderId]->setIcon(0, import ? icon_folder : icon_folderdontimport);
 
