@@ -1,7 +1,7 @@
 #pragma once
 #include <QObject>
 
-class ImportedBookmark;
+struct ImportedBookmark;
 
 /// Adds any extra information to the bookmark, as well as getting the HTML page or possibly
 /// websnap of the pages. Works asynchronously.

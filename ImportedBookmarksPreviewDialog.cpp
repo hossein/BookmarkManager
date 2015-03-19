@@ -1,6 +1,9 @@
 #include "ImportedBookmarksPreviewDialog.h"
 #include "ui_ImportedBookmarksPreviewDialog.h"
 
+#include "Config.h"
+#include "ImportedBookmarksProcessor.h"
+
 #include <QDebug>
 
 ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* dbm, Config* conf, ImportedEntityList* elist,
@@ -24,6 +27,10 @@ ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* 
 
     connect(ui->chkImportBookmark, SIGNAL(toggled(bool)), ui->leTagsForBookmark, SLOT(setEnabled(bool)));
     connect(ui->chkImportFolder  , SIGNAL(toggled(bool)), ui->leTagsForFolder  , SLOT(setEnabled(bool)));
+
+    m_bookmarksProcessor = new ImportedBookmarksProcessor(conf->concurrentBookmarkProcessings, this, this);
+    connect(m_bookmarksProcessor, SIGNAL(ProcessingDone()), this, SLOT(ProcessingDone()));
+    connect(m_bookmarksProcessor, SIGNAL(ProcessingCanceled()), this, SLOT(ProcessingCanceled()));
 
     icon_folder           = QIcon(":/res/import_folder.png");
     icon_folderdontimport = QIcon(":/res/import_folderdontimport.png");
@@ -56,9 +63,15 @@ bool ImportedBookmarksPreviewDialog::canShow()
 void ImportedBookmarksPreviewDialog::accept()
 {
     //Check if there are any undecided similar bookmarks to be imported.
+    //Also collect some stats.
+    int similarDuplicateBookmarksToBeImported = 0;
+    int exactDuplicateBookmarksToBeIgnored = 0;
     foreach (const ImportedBookmark& ib, elist->iblist)
     {
-        if (ib.Ex_import && ib.Ex_status == ImportedBookmark::S_AnalyzedSimilarExistent)
+        if (!ib.Ex_import)
+            continue;
+
+        if (ib.Ex_status == ImportedBookmark::S_AnalyzedSimilarExistent)
         {
             QTreeWidgetItem* twi = bookmarkItems[ib.intId];
             ui->twBookmarks->setCurrentItem(twi);
@@ -68,6 +81,10 @@ void ImportedBookmarksPreviewDialog::accept()
                                                                 "bookmark. You must decide what to do with the new bookmark first.");
             return;
         }
+        else if (ib.Ex_status == ImportedBookmark::S_AnalyzedSimilarExistent)
+            similarDuplicateBookmarksToBeImported += 1;
+        else if (ib.Ex_status == ImportedBookmark::S_AnalyzedExactExistent)
+            exactDuplicateBookmarksToBeIgnored += 1;
     }
 
     //1. Add tags that user has specified for folders and also all of the bookmarks to each bookmark.
@@ -94,6 +111,7 @@ void ImportedBookmarksPreviewDialog::accept()
     //   when the user clicked the checkboxes, so we also just set the import value for bookmarks
     //   from their parent folders.
     int parentFolderIndex;
+    int importedCount = 0;
     for (int i = 0; i < elist->iblist.size(); i++)
     {
         elist->iblist[i].Ex_finalTags = elist->iblist[i].Ex_additionalTags;
@@ -101,15 +119,48 @@ void ImportedBookmarksPreviewDialog::accept()
         parentFolderIndex = folderItemsIndexInArray[elist->iblist[i].parentId];
         elist->iblist[i].Ex_finalTags.append(elist->ibflist[parentFolderIndex].Ex_finalTags);
 
-        elist->iblist[i].Ex_finalImport = (elist->ibflist[parentFolderIndex].Ex_importBookmarks
-                                          ? elist->iblist[i].Ex_import
-                                          : false);
+        bool doImport = (elist->ibflist[parentFolderIndex].Ex_importBookmarks
+                         ? elist->iblist[i].Ex_import
+                         : false);
+        elist->iblist[i].Ex_finalImport = doImport;
+        importedCount += (doImport ? 1 : 0);
     }
 
-    //TODO: add extra attributes, e.g firefox's date added and the real import date and 'imported from: firefox', and 'fxprofilename: 2nvgyxqez'
-    //          for easy filtering in the future.
+    //Show import statistics to user and confirm.
+    if (importedCount == 0)
+    {
+        QMessageBox::information(this, "Nothing To Import", "No bookmark is selected for import! Select bookmarks or folders first.");
+        return;
+    }
+    else
+    {
+        QString message = QString("%1 bookmark(s) are going to be imported, %2 bookmarks will not be imported.")
+                          .arg(importedCount).arg(elist->iblist.size());
+        if (similarDuplicateBookmarksToBeImported > 0)
+            message += QString("\n%1 bookmark(s) are similar to bookmarks already in database and will be merged or will replace them.")
+                       .arg(similarDuplicateBookmarksToBeImported);
+        if (exactDuplicateBookmarksToBeIgnored > 0)
+            message += QString("\nAlso %1 bookmark(s) exactly look like bookmarks already in database and will be ignored.")
+                       .arg(exactDuplicateBookmarksToBeIgnored);
+        message += "\n\nContinue?";
+        int result = QMessageBox::information(this, "Bookmarks To Import", message, QMessageBox::Yes | QMessageBox::No);
+        if (result != QMessageBox::Yes)
+            return;
+    }
 
+    m_bookmarksProcessor->BeginProcessing(elist);
+    //Now `ProcessingDone` or `ProcessingCancelled` signal/slot connections will finish the job,
+    //accepting the dialog if necessary.
+}
+
+void ImportedBookmarksPreviewDialog::ProcessingDone()
+{
     QDialog::accept();
+}
+
+void ImportedBookmarksPreviewDialog::ProcessingCanceled()
+{
+    //QDialog::accept();
 }
 
 void ImportedBookmarksPreviewDialog::on_twBookmarks_itemSelectionChanged()

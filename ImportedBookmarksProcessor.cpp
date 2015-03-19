@@ -5,22 +5,23 @@
 
 #include <QProgressDialog>
 
-ImportedBookmarksProcessor::ImportedBookmarksProcessor(int processorCount, QWidget* dialogParent,
-                                                       ImportedEntityList* elist, QObject *parent) :
-    QObject(parent), m_processorCount(processorCount), m_dialogParent(dialogParent), m_elist(elist)
+ImportedBookmarksProcessor::ImportedBookmarksProcessor(int processorCount, QWidget* dialogParent, QObject *parent) :
+    QObject(parent), m_processorCount(processorCount), m_dialogParent(dialogParent)
 {
     m_isProcessing = false;
+}
+
+bool ImportedBookmarksProcessor::BeginProcessing(ImportedEntityList* elist)
+{
+    if (m_isProcessing)
+        return false;
+
+    m_elist = elist;
 
     m_toBeImportedCount = 0;
     foreach (const ImportedBookmark& ib, elist->iblist)
         if (ib.Ex_finalImport)
             m_toBeImportedCount += 1;
-}
-
-bool ImportedBookmarksProcessor::BeginProcessing()
-{
-    if (m_isProcessing)
-        return false;
 
     m_progressDialog = new QProgressDialog("Processing bookmarks, please wait...", "Cancel", 0, m_toBeImportedCount, m_dialogParent);
     m_progressDialog->setValue(0);
@@ -36,8 +37,8 @@ bool ImportedBookmarksProcessor::BeginProcessing()
 
     if (m_toBeImportedCount == 0)
     {
-        ProcessingDone();
-        return;
+        AllBookmarksProcessed();
+        return true;
     }
 
     //Add the initial bookmarks for processing.
@@ -75,13 +76,13 @@ void ImportedBookmarksProcessor::BookmarkProcessed(int id)
     else
     {
         if (m_processedCount == m_toBeImportedCount) //Last processor
-            ProcessingDone();
+            AllBookmarksProcessed();
         //else
         //    just wait for other processors to finish.
     }
 }
 
-void ImportedBookmarksProcessor::ProcessingDone()
+void ImportedBookmarksProcessor::AllBookmarksProcessed()
 {
     CleanUp();
     emit ProcessingDone();
@@ -93,7 +94,7 @@ void ImportedBookmarksProcessor::Cancel()
         m_bookmarkProcessors[i].Cancel();
 
     CleanUp();
-    emit Canceled();
+    emit ProcessingCanceled();
 }
 
 void ImportedBookmarksProcessor::CleanUp()

@@ -8,6 +8,7 @@
 #include <QMap>
 
 class QTreeWidgetItem;
+class ImportedBookmarksProcessor;
 namespace Ui { class ImportedBookmarksPreviewDialog; }
 
 /// This class also configures the to-be-imported bookmarks, not just preview them.
@@ -22,6 +23,7 @@ private:
     bool canShowTheDialog;
     ImportedEntityList* elist;
     ImportedEntityList::ImportSource importSource;
+    ImportedBookmarksProcessor* m_bookmarksProcessor;
 
     QStringList tagsForAll;
     QMap<int, QTreeWidgetItem*> folderItems;
@@ -55,6 +57,8 @@ public:
 
 public slots:
     void accept();
+    void ProcessingDone();
+    void ProcessingCanceled();
 
 private slots:
     void on_twBookmarks_itemSelectionChanged();

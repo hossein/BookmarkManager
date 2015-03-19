@@ -115,6 +115,8 @@ public:
         currentFileArchiveForAddingFiles = ":arch0:";
 
         //// CONSTANTS
+        concurrentBookmarkProcessings = 3;
+
         nominalDatabaseVersion = 1;
         nominalDatabasetFileName = "bmmgr.sqlite";
 
@@ -134,6 +136,8 @@ public:
 
 
     //// CONSTANTS
+    int concurrentBookmarkProcessings;
+
     int nominalDatabaseVersion;
     QString nominalDatabasetFileName;
 
