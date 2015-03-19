@@ -440,7 +440,8 @@ void MainWindow::DeleteSelectedBookmark()
                               QMessageBox::Yes | QMessageBox::No, QMessageBox::No))
         return;
 
-    bool success = BookmarksBusinessLogic(&dbm, &conf).DeleteBookmark(ui->bv->GetSelectedBookmarkID());
+    BookmarksBusinessLogic bbLogic(&dbm, &conf, this);
+    bool success = bbLogic.DeleteBookmark(ui->bv->GetSelectedBookmarkID());
     if (!success)
         return;
 

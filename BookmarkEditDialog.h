@@ -51,9 +51,6 @@ private:
 
 public slots:
     void accept();
-private slots:
-    /// Rolls back transactions and shows error if they failed, also sets editBId = -1.
-    void DoRollBackAction();
 
 private slots:
     /// UI Things /////////////////////////////////////////////////////////////////////////////////

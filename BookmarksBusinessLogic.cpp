@@ -1,13 +1,75 @@
 #include "BookmarksBusinessLogic.h"
 
+#include "Config.h"
 #include "DatabaseManager.h"
 
 #include <QMessageBox>
 
-BookmarksBusinessLogic::BookmarksBusinessLogic(DatabaseManager* dbm, Config* conf)
-    : dbm(dbm), conf(conf)
+BookmarksBusinessLogic::BookmarksBusinessLogic(DatabaseManager* dbm, Config* conf, QWidget* dialogParent)
+    : dbm(dbm), conf(conf), dialogParent(dialogParent)
 {
 
+}
+
+bool BookmarksBusinessLogic::AddOrEditBookmark(long long& editBId, BookmarkManager::BookmarkData& bdata,
+                                               long long originalEditBId, BookmarkManager::BookmarkData& editOriginalBData,
+                                               const QList<long long>& editedLinkedBookmarks,
+                                               const QStringList& tagsList, QList<long long>& associatedTIDs,
+                                               const QList<FileManager::BookmarkFile>& editedFilesList, int defaultFileIndex)
+{
+    bool success;
+
+    //We do NOT use the transactions in a nested manner. This 'linear' ('together') mode is was
+    //  not only and easier to understand, it's better for error management, too.
+    //IMPORTANT: In case of RollBack, do NOT return!
+    //           [why-two-editbids]: In case of ADDing, MUST set editBId to its original `-1` value!
+    //           Thanksfully FilesList don't need changing.
+    dbm->db.transaction();
+    dbm->files.BeginFilesTransaction();
+    {
+        success = dbm->bms.AddOrEditBookmark(editBId, bdata); //For Add, the editBID will be modified!
+        if (!success)
+            return DoRollBackAction(editBId, originalEditBId);
+
+        success = dbm->bms.UpdateLinkedBookmarks(editBId, editOriginalBData.Ex_LinkedBookmarksList,
+                                                 editedLinkedBookmarks);
+        if (!success)
+            return DoRollBackAction(editBId, originalEditBId);
+
+        //We use models, this function is no longer necessary.
+        //success = dbm->bms.UpdateBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosList,
+        //                                            editedExtraInfos);
+        //DO NOT: success = editOriginalBData.Ex_ExtraInfosModel.submitAll(); Read docs
+        success = dbm->bms.UpdateBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosModel);
+        if (!success)
+            return DoRollBackAction(editBId, originalEditBId);
+
+        success = dbm->tags.SetBookmarkTags(editBId, tagsList, associatedTIDs);
+        if (!success)
+            return DoRollBackAction(editBId, originalEditBId);
+
+        QList<long long> updatedBFIDs;
+        success = dbm->files.UpdateBookmarkFiles(editBId,
+                                                 editOriginalBData.Ex_FilesList, editedFilesList,
+                                                 updatedBFIDs, conf->currentFileArchiveForAddingFiles);
+        if (!success)
+            return DoRollBackAction(editBId, originalEditBId);
+
+        //Set the default file BFID for the bookmark. We already set defBFID to `-1` in the database
+        //  according to [KeepDefaultFile-1], so we only do it if it's other than -1.
+        //The following line is WRONG and can't be used! Our original `editedFilesList` hasn't changed!
+        //long long editedDefBFID = DefaultBFID(editedFilesList);
+        long long editedDefBFIDIndex = defaultFileIndex;
+        if (editedDefBFIDIndex != -1)
+        {
+            long long editedDefBFID = updatedBFIDs[editedDefBFIDIndex];
+            success = dbm->bms.SetBookmarkDefBFID(editBId, editedDefBFID);
+        }
+        if (!success)
+            return DoRollBackAction(editBId, originalEditBId);
+    }
+    dbm->files.CommitFilesTransaction(); //Committing files transaction doesn't fail!
+    dbm->db.commit();
 }
 
 bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
@@ -88,7 +150,7 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
         //TODO: TO JSON: bdata.Ex_ExtraInfosList[0]
         QString extraInfoJSonText = "???";
 
-        //Do nothing about linked bookmarks.
+        //Do nothing about linked bookmarks. //TODO: Why not? How about bms that this bm is linked to them?
         //Okay!
 
         //Move the information to BookmarkTrash table
@@ -114,11 +176,18 @@ bool BookmarksBusinessLogic::DoRollBackAction()
     bool rollbackResult = dbm->files.RollBackFilesTransaction();
     if (!rollbackResult)
     {
-        QMessageBox::critical(NULL, "File Transaction Rollback Error", "Not all changes made "
+        QMessageBox::critical(dialogParent, "File Transaction Rollback Error", "Not all changes made "
                               "to your filesystem in the intermediary process of adding the "
                               "bookmark could not be reverted.<br/><br/>"
                               "<b>Your filesystem may be in inconsistent state!</b>");
+        //TODO: ^ Now a message like this requires a detailed log written to some log file!
     }
 
     return false;
+}
+
+bool BookmarksBusinessLogic::DoRollBackAction(long long& editBId, const long long originalEditBId)
+{
+    editBId = originalEditBId; //Affects only the Adding mode.
+    return DoRollBackAction();
 }

@@ -6,6 +6,7 @@
 #include "FileViewManager.h"
 #include "Util.h"
 
+#include "BookmarksBusinessLogic.h"
 #include "BookmarkExtraInfoTypeChooser.h"
 #include "BookmarkExtraInfoAddEditDialog.h"
 #include "QuickBookmarkSelectDialog.h"
@@ -145,62 +146,12 @@ void BookmarkEditDialog::accept()
     bdata.DefBFID = -1; //[KeepDefaultFile-1]
     bdata.Rating = ui->dialRating->value();
 
+    QList<long long> associatedTIDs;
     QStringList tagsList = ui->leTags->text().split(' ', QString::SkipEmptyParts);
 
-    bool success;
-    QList<long long> associatedTIDs;
-
-    //We do NOT use the transactions in a nested manner. This 'linear' ('together') mode is was
-    //  not only and easier to understand, it's better for error management, too.
-    //IMPORTANT: In case of RollBack, do NOT return!
-    //           [why-two-editbids]: In case of ADDing, MUST set editBId to its original `-1` value!
-    //           Thanksfully FilesList don't need changing.
-    dbm->db.transaction();
-    dbm->files.BeginFilesTransaction();
-    {
-        success = dbm->bms.AddOrEditBookmark(editBId, bdata); //For Add, the editBID will be modified!
-        if (!success)
-            return DoRollBackAction();
-
-        success = dbm->bms.UpdateLinkedBookmarks(editBId, editOriginalBData.Ex_LinkedBookmarksList,
-                                                 editedLinkedBookmarks);
-        if (!success)
-            return DoRollBackAction();
-
-        //We use models, this function is no longer necessary.
-        //success = dbm->bms.UpdateBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosList,
-        //                                            editedExtraInfos);
-        //DO NOT: success = editOriginalBData.Ex_ExtraInfosModel.submitAll(); Read docs
-        success = dbm->bms.UpdateBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosModel);
-        if (!success)
-            return DoRollBackAction();
-
-        success = dbm->tags.SetBookmarkTags(editBId, tagsList, associatedTIDs);
-        if (!success)
-            return DoRollBackAction();
-
-        QList<long long> updatedBFIDs;
-        success = dbm->files.UpdateBookmarkFiles(editBId,
-                                                 editOriginalBData.Ex_FilesList, editedFilesList,
-                                                 updatedBFIDs, conf->currentFileArchiveForAddingFiles);
-        if (!success)
-            return DoRollBackAction();
-
-        //Set the default file BFID for the bookmark. We already set defBFID to `-1` in the database
-        //  according to [KeepDefaultFile-1], so we only do it if it's other than -1.
-        //The following line is WRONG and can't be used! Our original `editedFilesList` hasn't changed!
-        //long long editedDefBFID = DefaultBFID(editedFilesList);
-        long long editedDefBFIDIndex = DefaultFileIndex();
-        if (editedDefBFIDIndex != -1)
-        {
-            long long editedDefBFID = updatedBFIDs[editedDefBFIDIndex];
-            success = dbm->bms.SetBookmarkDefBFID(editBId, editedDefBFID);
-        }
-        if (!success)
-            return DoRollBackAction();
-    }
-    dbm->files.CommitFilesTransaction(); //Committing files transaction doesn't fail!
-    dbm->db.commit();
+    BookmarksBusinessLogic bbLogic(dbm, conf, this);
+    bool success = bbLogic.AddOrEditBookmark(editBId, bdata, originalEditBId, editOriginalBData, editedLinkedBookmarks,
+                                        tagsList, associatedTIDs, editedFilesList, DefaultFileIndex());
 
     if (success)
     {
@@ -211,21 +162,6 @@ void BookmarkEditDialog::accept()
         }
 
         QDialog::accept();
-    }
-}
-
-void BookmarkEditDialog::DoRollBackAction()
-{
-    dbm->db.rollback();
-    editBId = originalEditBId; //Affects only the Adding mode.
-
-    bool rollbackResult = dbm->files.RollBackFilesTransaction();
-    if (!rollbackResult)
-    {
-        QMessageBox::critical(this, "File Transaction Rollback Error", "Not all changes made "
-                              "to your filesystem in the intermediary process of adding the "
-                              "bookmark could not be reverted.<br/><br/>"
-                              "<b>Your filesystem may be in inconsistent state!</b>");
     }
 }
 
