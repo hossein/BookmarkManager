@@ -54,7 +54,9 @@ SOURCES += main.cpp\
     BookmarksBusinessLogic.cpp \
     BookmarkImporters/FirefoxBookmarkJSONFileParser.cpp \
     ImportedBookmarksPreviewDialog.cpp \
-    BookmarkImporter.cpp
+    BookmarkImporter.cpp \
+    ImportedBookmarkProcessor.cpp \
+    ImportedBookmarksProcessor.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -91,7 +93,9 @@ HEADERS  += MainWindow.h \
     BookmarkImporters/FirefoxBookmarkJSONFileParser.h \
     BookmarkImporters/ImportedEntity.h \
     ImportedBookmarksPreviewDialog.h \
-    BookmarkImporter.h
+    BookmarkImporter.h \
+    ImportedBookmarkProcessor.h \
+    ImportedBookmarksProcessor.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \

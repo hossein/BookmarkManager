@@ -57,6 +57,8 @@
 ///     dialog for the global programs that are used for every extension. Done in OpenWithDialog.
 ///
 /// LATER:
+///   - Show %'ed urls, e.g Persian wikipedia urls in their decoded forms everywhere, including
+///     import preview dialog and bookmark view dialog.
 ///   - Changes to Edit/Add UI for editing tags with mouse only
 ///   - Make the add/edit dialog non-modal, and allow editing/viewing more than one bookmark at once
 ///     (but do NOT allow opening the edit/view dialog for the same bookmark twice!)
