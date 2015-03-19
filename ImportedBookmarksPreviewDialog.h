@@ -22,7 +22,6 @@ private:
     Config* conf;
     bool canShowTheDialog;
     ImportedEntityList* elist;
-    ImportedEntityList::ImportSource importSource;
     ImportedBookmarksProcessor* m_bookmarksProcessor;
 
     QStringList tagsForAll;
@@ -47,9 +46,7 @@ private:
 
 public:
     explicit ImportedBookmarksPreviewDialog(DatabaseManager* dbm, Config* conf,
-                                            ImportedEntityList* elist,
-                                            ImportedEntityList::ImportSource importSource,
-                                            QWidget *parent = 0);
+                                            ImportedEntityList* elist, QWidget *parent = 0);
     ~ImportedBookmarksPreviewDialog();
 
 public:

@@ -6,10 +6,10 @@
 
 #include <QDebug>
 
-ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* dbm, Config* conf, ImportedEntityList* elist,
-                                                               ImportedEntityList::ImportSource importSource, QWidget *parent)
+ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* dbm, Config* conf,
+                                                               ImportedEntityList* elist, QWidget *parent)
     : QDialog(parent), ui(new Ui::ImportedBookmarksPreviewDialog), dbm(dbm), conf(conf)
-    , canShowTheDialog(false), elist(elist), importSource(importSource)
+    , canShowTheDialog(false), elist(elist)
 {
     ui->setupUi(this);
 
@@ -293,7 +293,7 @@ void ImportedBookmarksPreviewDialog::on_leTagsForFolder_editingFinished()
 
 void ImportedBookmarksPreviewDialog::AddItems()
 {
-    const int rootFolderIntId = (importSource == ImportedEntityList::Source_Firefox ? 1 : 0);
+    const int rootFolderIntId = (elist->importSource == ImportedEntityList::Source_Firefox ? 1 : 0);
 
     int index = 0;
     foreach (const ImportedBookmarkFolder& ibf, elist->ibflist)
@@ -307,7 +307,7 @@ void ImportedBookmarksPreviewDialog::AddItems()
         index++;
 
         //On firefox, don't add or show the root folder which has the ID 1.
-        if (ibf.intId == rootFolderIntId && importSource == ImportedEntityList::Source_Firefox)
+        if (ibf.intId == rootFolderIntId && elist->importSource == ImportedEntityList::Source_Firefox)
             continue;
 
         if (ibf.parentId <= rootFolderIntId)

@@ -26,14 +26,13 @@ class BookmarkImporter
 private:
     DatabaseManager* dbm;
     Config* conf;
-    ImportedEntityList::ImportSource importSource;
     QMultiHash<QString, long long> existentBookmarksForUrl;
     QMap<int, int> folderItemsIndexInArray;
 
 public:
     BookmarkImporter(DatabaseManager* dbm, Config* conf);
 
-    bool Initialize(ImportedEntityList::ImportSource importSource);
+    bool Initialize();
     bool Analyze(ImportedEntityList& elist);
     bool Import(ImportedEntityList& elist);
 

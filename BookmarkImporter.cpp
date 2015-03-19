@@ -9,10 +9,8 @@ BookmarkImporter::BookmarkImporter(DatabaseManager* dbm, Config* conf)
 
 }
 
-bool BookmarkImporter::Initialize(ImportedEntityList::ImportSource importSource)
+bool BookmarkImporter::Initialize()
 {
-    this->importSource = importSource;
-
     //Query bookmark urls
     QHash<long long, QString> bookmarkURLs;
     bool success = dbm->bms.RetrieveAllFullURLs(bookmarkURLs);
@@ -156,7 +154,6 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
     QSet<int> usedFolderIds;
     while (true)
     {
-        qDebug() << "One pass";
         usedFolderIds.clear();
         foreach (const ImportedBookmark& ib, elist.iblist)
             usedFolderIds.insert(ib.parentId);
@@ -181,6 +178,7 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
 
 bool BookmarkImporter::Import(ImportedEntityList& elist)
 {
+    //TODO
     return true;
 }
 

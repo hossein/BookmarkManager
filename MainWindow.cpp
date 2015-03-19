@@ -586,15 +586,15 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
 {
     bool success;
     ImportedEntityList elist;
+    elist.importSource = ImportedEntityList::Source_Firefox;
 
     FirefoxBookmarkJSONFileParser ffParser(this, &conf);
     success = ffParser.ParseFile(jsonFilePath, elist);
     if (!success)
         return;
 
-    ImportedEntityList::ImportSource importSource = ImportedEntityList::Source_Firefox;
     BookmarkImporter bmim(&dbm, &conf);
-    success = bmim.Initialize(importSource);
+    success = bmim.Initialize();
     if (!success)
         return;
 
@@ -602,7 +602,7 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     if (!success)
         return;
 
-    ImportedBookmarksPreviewDialog importPreviewDialog(&dbm, &conf, &elist, importSource, this);
+    ImportedBookmarksPreviewDialog importPreviewDialog(&dbm, &conf, &elist, this);
     success = importPreviewDialog.canShow();
     if (!success)
         return;
