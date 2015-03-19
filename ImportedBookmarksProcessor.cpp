@@ -100,7 +100,8 @@ void ImportedBookmarksProcessor::Cancel()
 void ImportedBookmarksProcessor::CleanUp()
 {
     m_isProcessing = false;
-    m_progressDialog->close();
+    //Either `hide()` then `delete`, or use `close()` alone.
+    m_progressDialog->hide();
     delete m_progressDialog;
     delete[] m_bookmarkProcessors;
 }

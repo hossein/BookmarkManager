@@ -135,7 +135,7 @@ void ImportedBookmarksPreviewDialog::accept()
     else
     {
         QString message = QString("%1 bookmark(s) are going to be imported, %2 bookmarks will not be imported.")
-                          .arg(importedCount).arg(elist->iblist.size());
+                          .arg(importedCount).arg(elist->iblist.size() - importedCount);
         if (similarDuplicateBookmarksToBeImported > 0)
             message += QString("\n%1 bookmark(s) are similar to bookmarks already in database and will be merged or will replace them.")
                        .arg(similarDuplicateBookmarksToBeImported);
