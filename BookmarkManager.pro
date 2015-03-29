@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql webkit
+QT       += core gui sql network webkit
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets webkitwidgets winextras
 
@@ -56,7 +56,8 @@ SOURCES += main.cpp\
     ImportedBookmarksPreviewDialog.cpp \
     BookmarkImporter.cpp \
     ImportedBookmarkProcessor.cpp \
-    ImportedBookmarksProcessor.cpp
+    ImportedBookmarksProcessor.cpp \
+    MHTSaver.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -95,7 +96,8 @@ HEADERS  += MainWindow.h \
     ImportedBookmarksPreviewDialog.h \
     BookmarkImporter.h \
     ImportedBookmarkProcessor.h \
-    ImportedBookmarksProcessor.h
+    ImportedBookmarksProcessor.h \
+    MHTSaver.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \

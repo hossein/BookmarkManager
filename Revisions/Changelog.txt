@@ -54,3 +54,7 @@
 2014-11-15  53  MainWindow shows bookmarks in the preview dialog after analysis.
 2014-11-16  51  Don't rely on GUIDs, initial tagged bookmark import implementation.
 2015-02-24  56  Worked on importer and imported preview dialog.
+2015-02-26  56  Preview dialog functions mostly working.
+2015-03-19  56  Import logic complete, but real processing is still to happen.
+2015-03-21  58  MHT Saving url getting logic done, file parsers and mht format remaining.
+2015-03-22  57  MHT Saving done.

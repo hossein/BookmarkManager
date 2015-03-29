@@ -36,6 +36,7 @@ private slots:
 
     void on_action_importFirefoxBookmarks_triggered();
     void on_actionImportFirefoxBookmarksJSONfile_triggered();
+    void on_actionGetMHT_triggered();
 
 private:
     /// Initialization functions, to be called JUST ONCE for loading //////////////////////////////

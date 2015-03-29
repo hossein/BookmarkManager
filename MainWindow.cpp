@@ -45,8 +45,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Add additional UI controls
     QMenu* importMenu = new QMenu("Import");
-    importMenu->addAction(ui->action_importFirefoxBookmarks);
+    importMenu->addAction(ui->
+                          action_importFirefoxBookmarks);
     importMenu->addAction(ui->actionImportFirefoxBookmarksJSONfile);
+    importMenu->addAction(ui->actionGetMHT);
 
     QToolButton* btn = new QToolButton();
     btn->setText("Import/Export");
@@ -619,4 +621,12 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     else
     {}//Show success message box.
 
+}
+
+#include "MHTSaver.h"
+
+void MainWindow::on_actionGetMHT_triggered()
+{
+    MHTSaver* saver = new MHTSaver(this);
+    saver->GetMHTData("http://www.classpad.ir/farsinegar/");
 }

@@ -358,6 +358,9 @@ bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, const QList<Bookma
     //Calculate the difference
     UtilT::ListDifference<BookmarkExtraInfoData>(removeExtraInfos, addExtraInfos, BookmarkExtraInfoNameEquals);
 
+    //TODO: But does this UPDATE the VALUES of existing extra infos?  I think not!
+    //          BOTH  HERE AND ALSO IN MODEL-BASED thingie.
+    
     QString deleteError = "Could not alter bookmark extra information in database.";
     QString addError = "Could not add bookmark extra information to database.";
     QSqlQuery query(db);
@@ -376,7 +379,7 @@ bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, const QList<Bookma
     if (removeCount > 0)
     {
         query.prepare(QString("DELETE FROM BookmarkExtraInfo WHERE BEIID IN (%1)").arg(BEIIDsToRemove));
-        query.addBindValue(BEIIDsToRemove);
+        query.addBindValue(BEIIDsToRemove); //TODO: We are using `.arg`, why bind then?? ALSO: Anywehere else like this?
 
         if (!query.exec())
             return Error(deleteError, query.lastError());

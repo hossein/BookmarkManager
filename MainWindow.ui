@@ -183,6 +183,11 @@
     <string>Import Firefox Bookmarks JSON File...</string>
    </property>
   </action>
+  <action name="actionGetMHT">
+   <property name="text">
+    <string>GetMHT</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
