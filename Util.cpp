@@ -32,6 +32,182 @@ QString Util::RandomHash(int length)
     return randomHash;
 }
 
+QByteArray Util::EncodeQuotedPrintable(const QByteArray& byteArray, bool binaryData,
+                                       const QEncodingOptions& qenc)
+{
+    QByteArray encoded;
+
+    QByteArray lineBreak = "=\r\n";
+    int initialLineLen = 0;
+    if (qenc.QEncoding)
+    {
+        encoded = "=?";
+        encoded += qenc.originalEncoding;
+        encoded += "?Q?";
+
+        lineBreak = "?=\r\n ";
+        lineBreak += encoded;
+        initialLineLen = 1 + encoded.length();
+    }
+
+    int lineLen = initialLineLen + qenc.firstLineAdditionalLen;
+    //We keep our lines less than 76/75 chars because we want to be able to add =/?= soft-breaks
+    //  to lines whenever we want.
+    const int lineMax = (qenc.QEncoding ? 73 : 75);
+
+    const char* data = byteArray.data();
+    const int size = byteArray.size();
+
+
+    for (int i = 0; i < size; i++)
+    {
+        //This must be at the start, not at the end to make sure more data comes.
+        //  This is important for Q-encoding.
+        if (lineLen == lineMax)
+        {
+            encoded += lineBreak;
+            lineLen = initialLineLen;
+        }
+
+        if (data[i] == '=')
+        {
+            if (lineLen > lineMax - 3)
+            {
+                encoded += lineBreak;
+                lineLen = initialLineLen;
+            }
+            encoded += "=3D";
+            lineLen += 3;
+        }
+        else if (qenc.QEncoding && (data[i] == '?' || data[i] == '_'))
+        {
+            //Special Q-encoding exceptions.
+            if (lineLen > lineMax - 3)
+            {
+                encoded += lineBreak;
+                lineLen = initialLineLen;
+            }
+            encoded += (data[i] == '?' ? "=3F" : "=5F");
+            lineLen += 3;
+        }
+        else if (33 <= data[i] && data[i] <= 126)
+        {
+            if (lineLen > lineMax - 1)
+            {
+                encoded += lineBreak;
+                lineLen = initialLineLen;
+            }
+            encoded += data[i];
+            lineLen += 1;
+        }
+        else if (qenc.QEncoding && data[i] == ' ')
+        {
+            //Special Q-encoding: Space becomes underscore.
+            if (lineLen > lineMax - 1)
+            {
+                encoded += lineBreak;
+                lineLen = initialLineLen;
+            }
+            encoded += '_';
+            lineLen += 1;
+        }
+        else if (data[i] == ' ' || data[i] == '\t')
+        {
+            //If after space or tab is a real line-break, we must encode them as 3-letter entities.
+            //  Otherwise they can be themselves, as some other character or a soft break will come
+            //  after them.
+            if (i+1 == size || data[i+1] == '\r' || data[i+1] == '\n')
+            {
+                if (lineLen > lineMax - 3)
+                {
+                    encoded += lineBreak;
+                    lineLen = initialLineLen;
+                }
+                encoded += (data[i] == ' ' ? "=20" : "=09");
+                lineLen += 3;
+            }
+            else
+            {
+                if (lineLen > lineMax - 1)
+                {
+                    encoded += lineBreak;
+                    lineLen = initialLineLen;
+                }
+                encoded += data[i];
+                lineLen += 1;
+            }
+        }
+        else if (!binaryData && !qenc.QEncoding && (data[i] == '\r' || data[i] == '\n'))
+        {
+            if (data[i] == '\r' && i+1 < size && data[i+1] == '\n')
+                i++;
+            //Always encode as CRLF
+            encoded += "\r\n";
+            lineLen = initialLineLen;
+        }
+        else if (data[i] == '\r')
+        {
+            if (qenc.QEncoding)
+            {
+                if (lineLen > lineMax - 3)
+                {
+                    encoded += lineBreak;
+                    lineLen = initialLineLen;
+                }
+                encoded += "=0D";
+                lineLen += 3;
+            }
+            else if (i+1 == size || data[i+1] != '\n')
+            {
+                if (lineLen > lineMax - 3)
+                {
+                    encoded += lineBreak;
+                    lineLen = initialLineLen;
+                }
+                encoded += "=0D";
+                lineLen += 3;
+            }
+            else //if (data[i+1] == '\n')
+            {
+                //We can put line breaks after the 76-character line limit.
+                encoded += "\r\n";
+                i++;
+                lineLen = initialLineLen;
+            }
+        }
+        else if (data[i] == '\n')
+        {
+            //This has escaped from the '\r' case above, so must be encoded.
+            //Also in Q_encoding we always encode it anyway so no need for a separate case.
+            if (lineLen > lineMax - 3)
+            {
+                encoded += lineBreak;
+                lineLen = initialLineLen;
+            }
+            encoded += "=0A";
+            lineLen += 3;
+        }
+        else
+        {
+            if (lineLen > lineMax - 3)
+            {
+                encoded += lineBreak;
+                lineLen = initialLineLen;
+            }
+            QString hex = QString::number((unsigned char)data[i], 16).toUpper();
+            if (hex.length() != 2)
+                hex = "0" + hex;
+            encoded += "=" + hex;
+            lineLen += 3;
+        }
+    }
+
+    if (qenc.QEncoding)
+        encoded += "?=";
+
+    return encoded;
+}
+
 void Util::CaseInsensitiveStringListEliminateDuplicates(QStringList& list)
 {
     QStringList temp(list);

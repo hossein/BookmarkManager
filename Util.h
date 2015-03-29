@@ -11,6 +11,22 @@ public:
     // Strings ////////////////////////////////////////////////////////////////////////////////////
     static QString RandomHash(int length);
 
+    struct QEncodingOptions
+    {
+        QEncodingOptions()
+        {
+            QEncoding = false;
+            firstLineAdditionalLen = 0;
+        }
+
+        bool QEncoding;
+        int firstLineAdditionalLen;
+        QByteArray originalEncoding;
+    };
+
+    static QByteArray EncodeQuotedPrintable(const QByteArray& byteArray, bool binaryData = false,
+                                            const QEncodingOptions& qenc = QEncodingOptions());
+
     // StringList Handling ////////////////////////////////////////////////////////////////////////
     static void CaseInsensitiveStringListEliminateDuplicates(QStringList& list);
     static QStringList CaseInsensitiveStringListEliminateDuplicatesCopy(const QStringList& list);
