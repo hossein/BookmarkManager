@@ -30,6 +30,18 @@
 //  keep the list of newly opened files and don't delete them in the 30 seconds later clean up is
 //  also possible; but we don't do it for now.
 
+//TO-DOs from VT:
+//TODO: implement logging, and for logging imanager errors copy vt's logic.
+//TODO: in populatemodels call error function to at least show a message.
+//TODO: databse' typos; one is at enableforeignkeysupport function.
+//TODO: selection model MUST not be connected everytime.
+//TODO: views ARE refreshed automatically by their models! RefreshView
+//      and setting headers and initial sort must be done only once!
+//TODO: If sth in MW constructor failed, app->quit is not enough and not needed at all, must
+//      use a flag to avoid calling app->exec then
+//TODO: Fix extra info not adding while adding a bookmark! It needs an empty model or sth.
+//TODO: Use latin digits for backup file names and logs.
+
 /// TODO: Plan:
 ///   x File Manager
 ///   x Make the changes that we need to require multiple file attaching and do it.

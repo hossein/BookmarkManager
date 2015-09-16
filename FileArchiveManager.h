@@ -28,7 +28,7 @@ private:
     /// Note: This only happens ONCE, and later if file name in archive, or any other property
     ///       that is used to calculate the hash or anyhting in the FileArchive changes, the file
     ///       remains in the folder that it always was and doesn't change location.
-    ///       Also, remaining the file extension does NOT change the extension that is used with
+    ///       Also, changing the file extension does NOT change the extension that is used with
     ///       the file in the FileArchive.
     QString CalculateFileArchiveURL(const QString& fileFullPathName);
     int FileNameHash(const QString& fileNameOnly);
