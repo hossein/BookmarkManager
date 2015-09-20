@@ -9,8 +9,8 @@
 
 FileArchiveManager::FileArchiveManager(QWidget* dialogParent, Config* conf,
                                        const QString& archiveName, const QString& archiveRoot,
-                                       TransactionalFileOperator* filesTransaction)
-    : IArchiveManager(dialogParent, conf, archiveName, archiveRoot, filesTransaction)
+                                       int fileLayout, TransactionalFileOperator* filesTransaction)
+    : IArchiveManager(dialogParent, conf, archiveName, archiveRoot, fileLayout, filesTransaction)
 {
 
 }

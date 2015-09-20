@@ -13,12 +13,13 @@ protected:
     /// My archive name with ':' colons at beginning and end.
     QString m_archiveName;
     QString m_archiveRoot;
+    int m_fileLayout;
     TransactionalFileOperator* filesTransaction;
 
 public:
     IArchiveManager(QWidget* dialogParent, Config* conf,
                     const QString& archiveName, const QString& archiveRoot,
-                    TransactionalFileOperator* filesTransaction);
+                    int fileLayout, TransactionalFileOperator* filesTransaction);
 
     virtual ~IArchiveManager();
 
@@ -72,5 +73,6 @@ public:
                           TransactionalFileOperator* filesTransaction);
 
     IArchiveManager* CreateArchiveManager(IArchiveManager::ArchiveType type,
-                                          const QString& archiveName, const QString& archiveRoot);
+                                          const QString& archiveName, const QString& archiveRoot,
+                                          int fileLayout);
 };

@@ -9,7 +9,7 @@ class FileArchiveManager : public IArchiveManager
 public:
     FileArchiveManager(QWidget* dialogParent, Config* conf,
                        const QString& archiveName, const QString& archiveRoot,
-                       TransactionalFileOperator* filesTransaction);
+                       int fileLayout, TransactionalFileOperator* filesTransaction);
     ~FileArchiveManager();
 
     /// Archive Type

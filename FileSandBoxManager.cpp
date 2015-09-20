@@ -10,7 +10,7 @@
 FileSandBoxManager::FileSandBoxManager(QWidget* dialogParent, Config* conf,
                                        const QString& archiveName, const QString& archiveRoot,
                                        TransactionalFileOperator* filesTransaction)
-    : IArchiveManager(dialogParent, conf, archiveName, archiveRoot, filesTransaction)
+    : IArchiveManager(dialogParent, conf, archiveName, archiveRoot, -1, filesTransaction)
 {
 
 }

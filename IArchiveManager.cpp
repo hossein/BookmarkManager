@@ -9,9 +9,9 @@
 
 IArchiveManager::IArchiveManager(QWidget* dialogParent, Config* conf,
                                  const QString& archiveName, const QString& archiveRoot,
-                                 TransactionalFileOperator* filesTransaction)
+                                 int fileLayout, TransactionalFileOperator* filesTransaction)
     : IManager(dialogParent, conf), m_archiveName(archiveName), m_archiveRoot(archiveRoot)
-    , filesTransaction(filesTransaction)
+    , m_fileLayout(fileLayout), filesTransaction(filesTransaction)
 {
     m_archiveRoot = QDir(m_archiveRoot).absolutePath(); //Mainly to remove '/' from the end.
 }
@@ -58,13 +58,14 @@ ArchiveManagerFactory::ArchiveManagerFactory(QWidget* dialogParent, Config* conf
 
 IArchiveManager* ArchiveManagerFactory::CreateArchiveManager(IArchiveManager::ArchiveType type,
                                                              const QString& archiveName,
-                                                             const QString& archiveRoot)
+                                                             const QString& archiveRoot,
+                                                             int fileLayout)
 {
     IArchiveManager* iam = NULL;
     switch (type)
     {
     case IArchiveManager::AT_FileArchive:
-        iam = new FileArchiveManager(m_dialogParent,m_conf,archiveName,archiveRoot,m_filesTransaction);
+        iam = new FileArchiveManager(m_dialogParent,m_conf,archiveName,archiveRoot,fileLayout,m_filesTransaction);
     case IArchiveManager::AT_SandBox:
         iam = new FileSandBoxManager(m_dialogParent,m_conf,archiveName,archiveRoot,m_filesTransaction);
     }

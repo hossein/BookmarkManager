@@ -525,6 +525,7 @@ bool FileManager::PopulateAndRegisterFileArchives()
     int faidx_Name = record.indexOf("Name");
     int faidx_Type = record.indexOf("Type");
     int faidx_Path = record.indexOf("Path");
+    int faidx_Layout = record.indexOf("FileLayout");
 
     ArchiveManagerFactory archiveManFactory(dialogParent, conf, &filesTransaction);
     while (query.next())
@@ -533,8 +534,9 @@ bool FileManager::PopulateAndRegisterFileArchives()
                 static_cast<IArchiveManager::ArchiveType>(query.value(faidx_Type).toInt());
         QString aName = query.value(faidx_Name).toString();
         QString aPath = GetAbsoluteFileArchivePath(query.value(faidx_Path).toString());
+        int aFileLayout = query.value(faidx_Layout).toInt();
 
-        IArchiveManager* archiveMan = archiveManFactory.CreateArchiveManager(aType, aName, aPath);
+        IArchiveManager* archiveMan = archiveManFactory.CreateArchiveManager(aType, aName, aPath, aFileLayout);
         fileArchives[aName] = archiveMan;
     }
 
@@ -569,8 +571,11 @@ void FileManager::CreateTables()
                "( FID INTEGER PRIMARY KEY AUTOINCREMENT, OriginalName TEXT, ArchiveURL TEXT, "
                "  ModifyDate INTEGER, Size Integer, MD5 BLOB )");
 
+    //Having a separate `FileLayout` field allows for separation of archive's type from how it
+    //  stores its files, allowing it to be configurable and update-able in case of new versions.
     query.exec("CREATE TABLE FileArchive"
-               "( FAID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Type INTEGER, Path TEXT )");
+               "( FAID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Type INTEGER, Path TEXT,"
+               "  FileLayout INTEGER )");
     CreateDefaultArchives(query);
 
     query.exec("CREATE TABLE BookmarkFile"
@@ -609,22 +614,22 @@ void FileManager::CreateDefaultArchives(QSqlQuery& query)
 
     //Insert multiple values at once requires SQLite 3.7.11+: stackoverflow.com/a/5009740/656366
     //So we don't do it.
-    //query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES "
-    //              "(?, ?, ?), (?, ?, ?), (?, ?, ?);");
+    //query.prepare("INSERT INTO FileArchive(Name, Type, Path, FileLayout) VALUES "
+    //              "(?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?);");
 
-    query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES (?, ?, ?);");
+    query.prepare("INSERT INTO FileArchive(Name, Type, Path, FileLayout) VALUES (?, ?, ?, ?);");
     query.addBindValue(conf->fileArchiveNamePATTERN.arg(0));
     query.addBindValue((int)IArchiveManager::AT_FileArchive);
     query.addBindValue(path_arch0);
     query.exec();
 
-    query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES (?, ?, ?);");
+    query.prepare("INSERT INTO FileArchive(Name, Type, Path, FileLayout) VALUES (?, ?, ?, ?);");
     query.addBindValue(conf->trashArchiveName);
     query.addBindValue((int)IArchiveManager::AT_FileArchive);
     query.addBindValue(path_trash);
     query.exec();
 
-    query.prepare("INSERT INTO FileArchive(Name, Type, Path) VALUES (?, ?, ?);");
+    query.prepare("INSERT INTO FileArchive(Name, Type, Path, FileLayout) VALUES (?, ?, ?, ?);");
     query.addBindValue(conf->sandboxArchiveName);
     query.addBindValue((int)IArchiveManager::AT_SandBox);
     query.addBindValue(path_sandbox);
