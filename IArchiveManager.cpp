@@ -66,8 +66,10 @@ IArchiveManager* ArchiveManagerFactory::CreateArchiveManager(IArchiveManager::Ar
     {
     case IArchiveManager::AT_FileArchive:
         iam = new FileArchiveManager(m_dialogParent,m_conf,archiveName,archiveRoot,fileLayout,m_filesTransaction);
+        break;
     case IArchiveManager::AT_SandBox:
         iam = new FileSandBoxManager(m_dialogParent,m_conf,archiveName,archiveRoot,m_filesTransaction);
+        break;
     }
     return iam;
 }
