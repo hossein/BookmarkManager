@@ -195,7 +195,7 @@ void FileViewManager::SaveAs(const QString& filePathName, const QString& origina
 
     QString targetFilePath = lastSaveAsDir + "/" + originalFileName;
     QString saveAsFilePath = QFileDialog::getSaveFileName(dialogParent, "Save File As",
-                                                          targetFilePath, "All Files (*.*)");
+                                                          targetFilePath, "All Files (*)");
     if (saveAsFilePath.isEmpty())
         return;
 
