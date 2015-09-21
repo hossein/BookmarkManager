@@ -151,6 +151,18 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
 
         //Put files like 'f/fi/filename.ext'.
         QString fileArchiveURL = firstCharInit + "/" + firstCharInit + secondCharInit + "/" + safeFileName;
+
+        //If file exists, put it in a hashed directory.
+        QFileInfo calculatedFileURLInfo(GetFullArchivePathForRelativeURL(fileArchiveURL));
+        //`exists` returns `false` if symlink exists but its target doesn't.
+        if (calculatedFileURLInfo.exists() || calculatedFileURLInfo.isSymLink())
+        {
+            QString calculatedFileDir = calculatedFileURLInfo.absolutePath();
+            QString randomHash = Util::NonExistentRandomFileNameInDirectory(calculatedFileDir, 8);
+            fileArchiveURL = firstCharInit + "/" + firstCharInit + secondCharInit + "/"
+                           + randomHash + "/" + safeFileName;
+        }
+
         return fileArchiveURL;
     }
 }
@@ -183,6 +195,8 @@ QString FileArchiveManager::FolderNameInitialsForASCIIChar(char c, bool startedW
 
 QString FileArchiveManager::GetFullArchivePathForRelativeURL(const QString& fileArchiveURL)
 {
+    //Do NOT canonical-ize or absolute-ize this file name, this function is also called for
+    //  non-existent files, e.g at the end of `CalculateFileArchiveURL`.
     QString path = m_archiveRoot + "/" + fileArchiveURL;
     return path;
 }
