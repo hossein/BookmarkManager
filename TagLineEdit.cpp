@@ -14,6 +14,8 @@ TagLineEdit::TagLineEdit(QWidget *parent) :
     lwPopup->hide();
     lwPopup->setWindowFlags(Qt::ToolTip);
     lwPopup->setSelectionMode(QAbstractItemView::SingleSelection);
+    lwPopup->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    lwPopup->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
 }
 
 void TagLineEdit::setModel(QAbstractItemModel* model)

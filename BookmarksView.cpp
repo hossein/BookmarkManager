@@ -33,6 +33,8 @@ void BookmarksView::Initialize(DatabaseManager* dbm, Config* conf, ListMode list
     tvBookmarks->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tvBookmarks->setSelectionMode(QAbstractItemView::SingleSelection);
     tvBookmarks->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tvBookmarks->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    tvBookmarks->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     tvBookmarks->setWordWrap(false);
 
     QHeaderView* hh = tvBookmarks->horizontalHeader();

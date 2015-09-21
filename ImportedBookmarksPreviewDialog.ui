@@ -203,6 +203,9 @@
    </item>
    <item row="0" column="2" rowspan="8">
     <widget class="QTreeWidget" name="twBookmarks">
+     <property name="verticalScrollMode">
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
      <attribute name="headerVisible">
       <bool>false</bool>
      </attribute>

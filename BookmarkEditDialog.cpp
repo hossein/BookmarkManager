@@ -719,8 +719,6 @@ void BookmarkEditDialog::PopulateExtraInfos()
     //Selection changed signal connection
     connect(ui->tvExtraInfos->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
             this, SLOT(tvExtraInfosCurrentRowChanged(QModelIndex,QModelIndex)));
-
-    //TODO: ScrollPerPixel all of the {table|list|tree}{view|widget}s.
 }
 
 void BookmarkEditDialog::tvExtraInfosCurrentRowChanged(const QModelIndex& current, const QModelIndex& previous)
