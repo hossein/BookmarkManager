@@ -33,7 +33,6 @@
 //TO-DOs from VT:
 //TODO: implement logging, and for logging imanager errors copy vt's logic.
 //TODO: in PopulateModelsAndInternalTables call error function to at least show a message.
-//TODO: databse' typos; one is at enableforeignkeysupport function.
 //TODO: selection model MUST not be connected everytime.
 //TODO: views ARE refreshed automatically by their models! RefreshView
 //      and setting headers and initial sort must be done only once!

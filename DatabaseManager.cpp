@@ -143,7 +143,7 @@ bool DatabaseManager::EnableForeignKeysSupport()
 
     //This is just an assertion.
     if (!db.open())
-        return Error("To enable foreign key support in SQLite first open the databse connection.");
+        return Error("To enable foreign key support in SQLite first open the database connection.");
 
     QSqlQuery query(db);
     if (!query.exec("PRAGMA foreign_keys;"))
