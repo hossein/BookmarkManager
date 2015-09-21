@@ -85,7 +85,7 @@ public:
     ///     actions are happening, this can't just change the parameters it wants.
     ///     This function just returns the BFIDs that are added or edited in EQUIVALENT INDEXES TO
     ///     the `editedBookmarkFiles` arg in `editedBFIDs` list.
-    bool UpdateBookmarkFiles(long long BID,
+    bool UpdateBookmarkFiles(long long BID, const QString& groupHint,
                              const QList<BookmarkFile>& originalBookmarkFiles,
                              const QList<BookmarkFile>& editedBookmarkFiles,
                              QList<long long>& editedBFIDs,
@@ -116,7 +116,7 @@ private:
     bool UpdateFile(long long FID, const BookmarkFile& bf);
     /// Adds the file into the FileArchive folder and Updates the "FID" and "ArchiveURL" fields.
     /// Make sure 'fileArchiveName` exists before calling this function.
-    bool AddFile(BookmarkFile& bf, const QString& fileArchiveName);
+    bool AddFile(BookmarkFile& bf, const QString& fileArchiveName, const QString& groupHint);
 
     //Removing bookmarks
     /// This function will clean-up the no-more-used files automatically by calling "RemoveFile"

@@ -30,8 +30,9 @@ bool FileSandBoxManager::ClearSandBox()
 }
 
 bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
-                                          QString& fileArchiveURL)
+                                          QString& fileArchiveURL, const QString& groupHint)
 {
+    Q_UNUSED(groupHint);
     QFileInfo originalfi(filePathName);
 
     //Check if file is valid.

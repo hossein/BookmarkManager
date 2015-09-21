@@ -159,14 +159,12 @@ bool FileManager::RetrieveBookmarkFiles(long long BID, QList<FileManager::Bookma
     return true;
 }
 
-bool FileManager::UpdateBookmarkFiles(long long BID,
+bool FileManager::UpdateBookmarkFiles(long long BID, const QString& groupHint,
                                       const QList<BookmarkFile>& originalBookmarkFiles,
                                       const QList<BookmarkFile>& editedBookmarkFiles,
                                       QList<long long>& editedBFIDs,
                                       const QString& fileArchiveNameForNewFiles)
 {
-    QSqlQuery query(db);
-
     //Find the bookmarks that were removed. We used BFID, not FID. No difference. Not even in
     //  supporting sharing a file between two bookmarks.
     foreach (const BookmarkFile& obf, originalBookmarkFiles)
@@ -209,7 +207,7 @@ bool FileManager::UpdateBookmarkFiles(long long BID,
         //Insert new files into our FileArchive.
         if (bf.FID)
         {
-            if (!AddFile(bf, fileArchiveNameForNewFiles))
+            if (!AddFile(bf, fileArchiveNameForNewFiles, groupHint))
                 return false;
         }
 
@@ -318,12 +316,12 @@ bool FileManager::UpdateFile(long long FID, const FileManager::BookmarkFile& bf)
     return true;
 }
 
-bool FileManager::AddFile(FileManager::BookmarkFile& bf, const QString& fileArchiveName)
+bool FileManager::AddFile(FileManager::BookmarkFile& bf, const QString& fileArchiveName, const QString& groupHint)
 {
     //Add file to our FileArchive directory and also set the `bf.ArchiveURL` field.
     bool addFileToArchiveSuccess =
             fileArchives[fileArchiveName]->
-            AddFileToArchive(bf.OriginalName, bf.Ex_RemoveAfterAttach, bf.ArchiveURL);
+            AddFileToArchive(bf.OriginalName, bf.Ex_RemoveAfterAttach, bf.ArchiveURL, groupHint);
 
     if (!addFileToArchiveSuccess)
         return false;

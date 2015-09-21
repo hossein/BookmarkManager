@@ -20,7 +20,7 @@ public:
 
     /// Doesn't require Files Transaction.
     bool AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
-                          QString& fileArchiveURL);
+                          QString& fileArchiveURL, const QString& groupHint = QString());
     bool RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash);
 
     QString GetFullArchivePathForRelativeURL(const QString& fileArchiveURL);

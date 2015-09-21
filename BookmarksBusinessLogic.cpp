@@ -49,7 +49,7 @@ bool BookmarksBusinessLogic::AddOrEditBookmark(long long& editBId, BookmarkManag
             return DoRollBackAction(editBId, originalEditBId);
 
         QList<long long> updatedBFIDs;
-        success = dbm->files.UpdateBookmarkFiles(editBId,
+        success = dbm->files.UpdateBookmarkFiles(editBId, bdata.Name,
                                                  editOriginalBData.Ex_FilesList, editedFilesList,
                                                  updatedBFIDs, conf->currentFileArchiveForAddingFiles);
         if (!success)

@@ -21,7 +21,7 @@ FileArchiveManager::~FileArchiveManager()
 }
 
 bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
-                                          QString& fileArchiveURL)
+                                          QString& fileArchiveURL, const QString& groupHint)
 {
     //This is like an assert.
     if (!filesTransaction->isTransactionStarted())
