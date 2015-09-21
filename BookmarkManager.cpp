@@ -384,7 +384,7 @@ bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, const QList<Bookma
     if (removeCount > 0)
     {
         query.prepare(QString("DELETE FROM BookmarkExtraInfo WHERE BEIID IN (%1)").arg(BEIIDsToRemove));
-        query.addBindValue(BEIIDsToRemove); //TODO: We are using `.arg`, why bind then?? ALSO: Anywehere else like this?
+        //query.addBindValue(BEIIDsToRemove); //We are using `.arg`, no bind needed.
 
         if (!query.exec())
             return Error(deleteError, query.lastError());
