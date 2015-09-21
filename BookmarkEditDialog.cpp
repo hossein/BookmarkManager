@@ -663,7 +663,17 @@ void BookmarkEditDialog::on_btnLinkBookmark_clicked()
 
 void BookmarkEditDialog::on_btnRemoveLink_clicked()
 {
-    //TODO: Confirmation message
+    QString removeConfirmText = QString(
+                "Remove related bookmark \"%1\"? This action will also affect the other bookmark.")
+                .arg(ui->bvLinkedBookmarks->GetSelectedBookmarkName());
+
+    int removeConfirmed = (QMessageBox::Yes == QMessageBox::question(
+                this, "Remove Related Bookmark", removeConfirmText, QMessageBox::Yes | QMessageBox::No,
+                QMessageBox::No));
+
+    if (!removeConfirmed)
+        return;
+
     editedLinkedBookmarks.removeAll(ui->bvLinkedBookmarks->GetSelectedBookmarkID());
     PopulateLinkedBookmarks();
 }
