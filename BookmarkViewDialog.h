@@ -54,6 +54,7 @@ private slots:
     void af_open();
     void af_edit();
     void af_openWith();
+    void af_saveAs();
     void af_properties();
     QString GetAttachedFileFullPathName(int filesListIdx);
 

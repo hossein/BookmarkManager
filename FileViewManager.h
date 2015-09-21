@@ -63,6 +63,8 @@ public:
     void OpenReadOnly(const QString& filePathName, FileManager* files);
     void OpenEditable(const QString& filePathName, FileManager* files);
     void OpenWith(const QString& filePathName, DatabaseManager* dbm, QWidget* dialogParent);
+    void SaveAs(const QString& filePathName, const QString& originalFileName,
+                DatabaseManager* dbm, QWidget* dialogParent);
     void ShowProperties(const QString& filePathName);
 
     ///If !sandboxed, then files can be NULL.

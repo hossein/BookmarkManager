@@ -190,9 +190,12 @@ void BookmarkViewDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
     QMenu*   m_openWith = afMenu.addMenu  ("Open Wit&h"     );
     dbm->fview.PopulateOpenWithMenu(filePathName, m_openWith , this, SLOT(af_openWith()));
                           afMenu.addSeparator();
+    QAction* a_saveAs   = afMenu.addAction("Save &As..."     , this, SLOT(af_saveAs()));
+                          afMenu.addSeparator();
     QAction* a_props    = afMenu.addAction("P&roperties"     , this, SLOT(af_properties()), QKS("Alt+Enter"));
 
     Q_UNUSED(a_edit);
+    Q_UNUSED(a_saveAs);
     Q_UNUSED(a_props);
 
     afMenu.setDefaultAction(a_open); //Always Open is the default double-click action.
@@ -348,6 +351,17 @@ void BookmarkViewDialog::af_openWith()
     {
         dbm->fview.GenericOpenFile(filePathName, SAID, true, &dbm->files);
     }
+}
+
+void BookmarkViewDialog::af_saveAs()
+{
+    //Can't use `fi.fileName()`: it may just be a hash in case of FAM's layout 0, or its named may
+    //  be shortened and percent-encoded. we use `OriginalName` instead. We know the file is ALREADY
+    //  attached so this doesn't contain a path.
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    const QString filePathName = GetAttachedFileFullPathName(filesListIdx);
+    const QString originalFileName = viewBData.Ex_FilesList[filesListIdx].OriginalName;
+    dbm->fview.SaveAs(filePathName, originalFileName, dbm, this);
 }
 
 void BookmarkViewDialog::af_properties()

@@ -365,7 +365,6 @@ void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
     }
     else
     {
-        //TODO: "Export File" or "Save File As" on ALL file menus (both on Edit and View dlgs).
         QString fileOrigName = editedFilesList[filesListIdx].OriginalName;
         QAction* a_preview  = afMenu.addAction("&Preview"        , this, SLOT(af_preview()),    QKS("Enter"));
         QAction* a_open     = afMenu.addAction("&Open"           , this, SLOT(af_open()),       QKS("Shift+Enter"));
@@ -373,7 +372,9 @@ void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
         QMenu*   m_openWith = afMenu.addMenu  ("Open Wit&h"      );
         dbm->fview.PopulateOpenWithMenu(fileOrigName, m_openWith , this, SLOT(af_openWith()));
                               afMenu.addSeparator();
-        QAction* a_setDef   = afMenu.addAction("Set &As Default" , this, SLOT(af_setAsDefault()));
+        QAction* a_saveAs   = afMenu.addAction("Save &As..."     , this, SLOT(af_saveAs()));
+                              afMenu.addSeparator();
+        QAction* a_setDef   = afMenu.addAction("Set As &Default" , this, SLOT(af_setAsDefault()));
         QAction* a_rename   = afMenu.addAction("Rena&me"         , this, SLOT(af_rename()));
         QAction* a_remove   = afMenu.addAction("Remo&ve"         , this, SLOT(af_remove()),     QKS("Del"));
                               afMenu.addSeparator();
@@ -386,6 +387,11 @@ void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
         bool canPreview = dbm->fview.HasPreviewHandler(fileOrigName);
         a_preview->setEnabled(canPreview);
         afMenu.setDefaultAction(canPreview ? a_preview : a_open);
+
+        //If we want to allow Save As for un-attached files as well, we need to pass the correct
+        //  `OriginalName` to `fview.SaveAs` function, i.e only pass the file name without path
+        //  for un-attached files.
+        a_saveAs->setEnabled(editedFilesList[filesListIdx].BFID != -1);
 
         a_setDef->setEnabled(!editedFilesList[filesListIdx].Ex_IsDefaultFileForEditedBookmark);
         a_rename->setEnabled(editedFilesList[filesListIdx].BFID != -1);
@@ -534,6 +540,19 @@ void BookmarkEditDialog::af_openWith()
     {
         dbm->fview.GenericOpenFile(filePathName, SAID, true, &dbm->files);
     }
+}
+
+void BookmarkEditDialog::af_saveAs()
+{
+    //Note: Unlike View dialog, we shouldn't be using `GetAttachedFileFullPathName` because we are
+    //  allowing Save As only on already-attached files.
+    //Can't use `fi.fileName()`: it may just be a hash in case of FAM's layout 0, or its named may
+    //  be shortened and percent-encoded. we use `OriginalName` instead. We know the file is ALREADY
+    //  attached so this doesn't contain a path.
+    int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
+    const QString filePathName = GetAttachedFileFullPathName(filesListIdx);
+    const QString originalFileName = editedFilesList[filesListIdx].OriginalName;
+    dbm->fview.SaveAs(filePathName, originalFileName, dbm, this);
 }
 
 void BookmarkEditDialog::af_setAsDefault()

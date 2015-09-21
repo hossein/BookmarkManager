@@ -93,6 +93,7 @@ private slots:
     void af_open();
     void af_edit();
     void af_openWith();
+    void af_saveAs();
     void af_setAsDefault();
     void af_rename();
     void af_remove();

@@ -10,6 +10,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QFileDialog>
 
 #include <QMenu>
 #include <QHBoxLayout>
@@ -20,6 +21,7 @@
 
 #include <QUrl>
 #include <QDesktopServices>
+#include <QStandardPaths>
 #include <QProcess>
 
 FileViewManager::FileViewManager(QWidget* dialogParent, Config* conf)
@@ -181,6 +183,44 @@ void FileViewManager::OpenWith(const QString& filePathName, DatabaseManager* dbm
         return;
 
     GenericOpenFile(filePathName, outParams.selectedSAID, outParams.openSandboxed, &dbm->files);
+}
+
+void FileViewManager::SaveAs(const QString& filePathName, const QString& originalFileName,
+                             DatabaseManager* dbm, QWidget* dialogParent)
+{
+    QFileInfo fi(filePathName);
+
+    const QString documentsDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    QString lastSaveAsDir = dbm->sets.GetSetting("LastSaveAsDir", documentsDir);
+
+    QString targetFilePath = lastSaveAsDir + "/" + originalFileName;
+    QString saveAsFilePath = QFileDialog::getSaveFileName(dialogParent, "Save File As",
+                                                          targetFilePath, "All Files (*.*)");
+    if (saveAsFilePath.isEmpty())
+        return;
+
+    QFileInfo saveAsInfo(saveAsFilePath);
+    dbm->sets.SetSetting("LastSaveAsDir", saveAsInfo.absolutePath());
+
+    //Remove file if it exists (user has already pressed 'Yes' on replace dialog)
+    if (QFile::exists(saveAsInfo.filePath()))
+    {
+        if (!QFile::remove(saveAsInfo.filePath()))
+        {
+            QString errorText = QString("Could not replace file!\nFile: %1")
+                                .arg(saveAsInfo.filePath());
+            QMessageBox::critical(dialogParent, "Error", errorText);
+            return;
+        }
+    }
+
+    //Copy it
+    if (!QFile::copy(fi.absoluteFilePath(), saveAsFilePath))
+    {
+        QString errorText = QString("Could not copy file!\nSource file: %1\nDestination file: %2")
+                            .arg(fi.absoluteFilePath(), saveAsFilePath);
+        QMessageBox::critical(dialogParent, "Error", errorText);
+    }
 }
 
 void FileViewManager::ShowProperties(const QString& filePathName)
