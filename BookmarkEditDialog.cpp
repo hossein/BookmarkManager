@@ -653,12 +653,23 @@ void BookmarkEditDialog::on_btnLinkBookmark_clicked()
         return;
 
     //QuickBookmarkSelectDialog will not return -1.
+
+    //Can't link a bookmark with itself; message the user!
+    if (editBId == bsOutParams.selectedBId)
+    {
+        QMessageBox::information(this, "Did Not Link", "Can't link a bookmark to itself!");
+        return;
+    }
+
+    //Can't select the same bookmark twice; silently accept and select it in the list!
     if (!editedLinkedBookmarks.contains(bsOutParams.selectedBId))
         editedLinkedBookmarks.append(bsOutParams.selectedBId);
 
     PopulateLinkedBookmarks();
+
     //Select the new linked bookmark, whether new or re-selected.
-    ui->bvLinkedBookmarks->SelectBookmarkWithID(bsOutParams.selectedBId);//TODO: Make it blue, it's gray now!
+    ui->bvLinkedBookmarks->setFocus();
+    ui->bvLinkedBookmarks->SelectBookmarkWithID(bsOutParams.selectedBId);
 }
 
 void BookmarkEditDialog::on_btnRemoveLink_clicked()
