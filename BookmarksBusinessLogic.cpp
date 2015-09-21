@@ -69,7 +69,9 @@ bool BookmarksBusinessLogic::AddOrEditBookmark(long long& editBId, BookmarkManag
             return DoRollBackAction(editBId, originalEditBId);
     }
     dbm->files.CommitFilesTransaction(); //Committing files transaction doesn't fail!
-    dbm->db.commit();
+    dbm->db.commit(); //Assume doesn't fail
+
+    return success; //i.e `true`.
 }
 
 bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
@@ -164,7 +166,7 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
             return DoRollBackAction();
     }
     dbm->files.CommitFilesTransaction(); //Committing files transaction doesn't fail!
-    dbm->db.commit();
+    dbm->db.commit(); //Assume doesn't fail
 
     return success; //i.e `true`.
 }
