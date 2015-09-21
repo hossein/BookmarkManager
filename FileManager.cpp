@@ -621,18 +621,21 @@ void FileManager::CreateDefaultArchives(QSqlQuery& query)
     query.addBindValue(conf->fileArchiveNamePATTERN.arg(0));
     query.addBindValue((int)IArchiveManager::AT_FileArchive);
     query.addBindValue(path_arch0);
+    query.addBindValue(1);
     query.exec();
 
     query.prepare("INSERT INTO FileArchive(Name, Type, Path, FileLayout) VALUES (?, ?, ?, ?);");
     query.addBindValue(conf->trashArchiveName);
     query.addBindValue((int)IArchiveManager::AT_FileArchive);
     query.addBindValue(path_trash);
+    query.addBindValue(0);
     query.exec();
 
     query.prepare("INSERT INTO FileArchive(Name, Type, Path, FileLayout) VALUES (?, ?, ?, ?);");
     query.addBindValue(conf->sandboxArchiveName);
     query.addBindValue((int)IArchiveManager::AT_SandBox);
     query.addBindValue(path_sandbox);
+    query.addBindValue(0);
     query.exec();
 }
 
