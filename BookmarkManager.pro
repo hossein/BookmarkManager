@@ -57,7 +57,8 @@ SOURCES += main.cpp\
     BookmarkImporter.cpp \
     ImportedBookmarkProcessor.cpp \
     ImportedBookmarksProcessor.cpp \
-    MHTSaver.cpp
+    MHTSaver.cpp \
+    SettingsManager.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -97,7 +98,8 @@ HEADERS  += MainWindow.h \
     BookmarkImporter.h \
     ImportedBookmarkProcessor.h \
     ImportedBookmarksProcessor.h \
-    MHTSaver.h
+    MHTSaver.h \
+    SettingsManager.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \

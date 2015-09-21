@@ -3,6 +3,7 @@
 #include "BookmarkManager.h"
 #include "FileManager.h"
 #include "FileViewManager.h"
+#include "SettingsManager.h"
 #include "TagManager.h"
 #include <QtSql/QSqlDatabase>
 
@@ -14,6 +15,7 @@ public:
     BookmarkManager bms;
     FileManager files;
     FileViewManager fview;
+    SettingsManager sets;
     TagManager tags;
 
     DatabaseManager(QWidget* dialogParent, Config* conf);

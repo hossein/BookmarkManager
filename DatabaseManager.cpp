@@ -12,8 +12,8 @@
 #include <QtSql/QSqlResult>
 
 DatabaseManager::DatabaseManager(QWidget* dialogParent, Config* conf)
-    : IManager(dialogParent, conf), bms(dialogParent, conf),
-      files(dialogParent, conf), fview(dialogParent, conf), tags(dialogParent, conf)
+    : IManager(dialogParent, conf), bms(dialogParent, conf), files(dialogParent, conf)
+    , fview(dialogParent, conf), sets(dialogParent, conf), tags(dialogParent, conf)
 {
 }
 
@@ -33,6 +33,7 @@ bool DatabaseManager::BackupOpenOrCreate(const QString& fileName)
     bms.setSqlDatabase(db);
     files.setSqlDatabase(db);
     fview.setSqlDatabase(db);
+    sets.setSqlDatabase(db);
     tags.setSqlDatabase(db);
 
     return success;
@@ -49,6 +50,7 @@ void DatabaseManager::PopulateModelsAndInternalTables()
     bms.PopulateModelsAndInternalTables();
     files.PopulateModelsAndInternalTables();
     fview.PopulateModelsAndInternalTables();
+    sets.PopulateModelsAndInternalTables();
     tags.PopulateModelsAndInternalTables();
 }
 
@@ -121,6 +123,7 @@ bool DatabaseManager::CreateDatabase(const QString& fileName)
     bms.CreateTables();
     files.CreateTables();
     fview.CreateTables();
+    sets.CreateTables();
     tags.CreateTables();
 
     return true;
