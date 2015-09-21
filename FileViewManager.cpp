@@ -199,6 +199,14 @@ void FileViewManager::GenericOpenFile(const QString& filePathName, long long pro
         if (filePathNameToOpen.isEmpty()) //Error on copying, etc
             return;
     }
+    else
+    {
+        if (QMessageBox::Yes !=
+            QMessageBox::question(NULL, "Open Real File", "This will modify the contents of the "
+                                  "original file in the file archive. Continue?",
+                                  QMessageBox::Yes | QMessageBox::No, QMessageBox::No))
+            return;
+    }
 
     DirectOpenFile(filePathNameToOpen, programSAID);
 }
