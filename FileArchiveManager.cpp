@@ -102,18 +102,57 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
 {
     QFileInfo fi(fileFullPathName);
 
-    int fileNameHash = FileNameHash(fi.fileName());
-    fileNameHash = fileNameHash % 16;
+    if (m_fileLayout == 0) //File hash layout
+    {
+        int fileNameHash = FileNameHash(fi.fileName());
+        fileNameHash = fileNameHash % 16;
 
-    //Prefix the randomHash with the already calculated fileNameHash.
-    QString prefix = QString::number(fileNameHash, 16).toUpper();
-    QString fileDir = fi.absolutePath();
-    QString randomHash =
-            Util::NonExistentRandomFileNameInDirectory(fileDir, 7, prefix, "." + fi.suffix());
+        //Prefix the randomHash with the already calculated fileNameHash.
+        QString prefix = QString::number(fileNameHash, 16).toUpper();
+        QString fileDir = fi.absolutePath();
+        QString randomHash =
+                Util::NonExistentRandomFileNameInDirectory(fileDir, 7, prefix, "." + fi.suffix());
 
-    //Use `prefix` again to put files in different directories.
-    QString fileArchiveURL = prefix + "/" + randomHash;
-    return fileArchiveURL;
+        //Use `prefix` again to put files in different directories.
+        QString fileArchiveURL = prefix + "/" + randomHash;
+        return fileArchiveURL;
+    }
+    else if (m_fileLayout == 1) //Normal hierarchical file name layout
+    {
+        const QString nubaseName = fi.baseName();
+        bool firstWasPercent  = (nubaseName.length() > 0 && nubaseName.at(0) == QChar('%'));
+        bool SecondWasPercent = (nubaseName.length() > 1 && nubaseName.at(1) == QChar('%'));
+
+        QString safeFileName = Util::PercentEncodeUnicodeChars(fi.fileName());
+        if (safeFileName.length() > 50) //For WINDOWS!
+        {
+            //Shorten the file name
+            //Using 'complete' base name but 'short' suffix to resist long file names with
+            //  accidental dots in them.
+            const QFileInfo safeFileNameInfo(safeFileName);
+            const QString cbaseName = safeFileNameInfo.completeBaseName();
+            safeFileName = cbaseName.left(qMin(50, cbaseName.length()));
+            if (!safeFileNameInfo.suffix().isEmpty())
+                safeFileName += "." + safeFileNameInfo.suffix();
+        }
+
+        //We know safeFileName just contains ASCII characters.
+        //  Use the completeBaseName of the file name to not count e.g 'a.png' a two letter name.
+        //  The `if` check for file name length > 0 was put just in case we pass a file with an
+        //    empty base name e.g '.gitconfig', or for future usecases.
+        const QString cbaseName = QFileInfo(safeFileName).completeBaseName();
+        QString firstCharInit = "-";
+        if (cbaseName.length() > 0)
+            firstCharInit = FolderNameInitialsForASCIIChar(cbaseName.at(0).unicode(), firstWasPercent);
+
+        QString secondCharInit = "-";
+        if (cbaseName.length() > 1)
+            secondCharInit = FolderNameInitialsForASCIIChar(cbaseName.at(1).unicode(), SecondWasPercent);
+
+        //Put files like 'f/fi/filename.ext'.
+        QString fileArchiveURL = firstCharInit + "/" + firstCharInit + secondCharInit + "/" + safeFileName;
+        return fileArchiveURL;
+    }
 }
 
 int FileArchiveManager::FileNameHash(const QString& fileNameOnly)
@@ -126,6 +165,20 @@ int FileArchiveManager::FileNameHash(const QString& fileNameOnly)
         sum += utf8[i];
 
     return sum;
+}
+
+QString FileArchiveManager::FolderNameInitialsForASCIIChar(char c, bool startedWithPercent)
+{
+    if ('A' <= c && c <= 'Z') //Uppercase
+        return QString(QChar(c));
+    else if ('a' <= c && c <= 'z') //Lowercase
+        return QString(QChar(c - ('a' - 'A')));
+    else if ('0' <= c && c <= '9') //Numbers
+        return QString("@Digit");
+    else if (c == '%') //Percent encoded unicode
+        return QString(startedWithPercent ? "@Sign" : "@Unicode");
+    else //All other signs, including '@'.
+        return QString("@Sign");
 }
 
 QString FileArchiveManager::GetFullArchivePathForRelativeURL(const QString& fileArchiveURL)

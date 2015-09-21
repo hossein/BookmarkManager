@@ -4,6 +4,9 @@
 //TODO: Save the files with their own file name in the archive!
 
 /// This class is also known as FAM.
+/// It supports two layouts:
+///     Layout 0 stores files as :archivepath:/h/hash_of_filename.ext
+///     Layout 1 stores files as :archivepath:/f/fi/filename.ext
 class FileArchiveManager : public IArchiveManager
 {
 public:
@@ -32,6 +35,7 @@ private:
     ///       the file in the FileArchive.
     QString CalculateFileArchiveURL(const QString& fileFullPathName);
     int FileNameHash(const QString& fileNameOnly);
+    QString FolderNameInitialsForASCIIChar(char c, bool startedWithPercent);
 
 public:
     QString GetFullArchivePathForRelativeURL(const QString& fileArchiveURL);

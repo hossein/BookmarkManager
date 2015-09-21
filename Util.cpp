@@ -208,6 +208,29 @@ QByteArray Util::EncodeQuotedPrintable(const QByteArray& byteArray, bool binaryD
     return encoded;
 }
 
+QString Util::PercentEncodeUnicodeChars(const QString& input)
+{
+    QByteArray utf8;
+    QString output;
+    foreach (QChar c, input)
+    {
+        if (c.unicode() >= 32 && c.unicode() <= 126)
+        {
+            output += c;
+        }
+        else
+        {
+            utf8 = QString(c).toUtf8();
+            for (int i = 0; i < utf8.length(); i++)
+            {
+                //Without `uchar` we'd get '%FFFFFFD8'.
+                output += QString("%%1").arg((uchar)(utf8.at(i)), 2, 16, QChar('0')).toUpper();
+            }
+        }
+    }
+    return output;
+}
+
 void Util::CaseInsensitiveStringListEliminateDuplicates(QStringList& list)
 {
     QStringList temp(list);
