@@ -1,8 +1,6 @@
 #pragma once
 #include "IArchiveManager.h"
 
-//TODO: Save the files with their own file name in the archive!
-
 /// This class is also known as FAM.
 /// It supports two layouts:
 ///     Layout 0 stores files as :archivepath:/h/hash_of_filename.ext
@@ -33,8 +31,10 @@ private:
     ///       remains in the folder that it always was and doesn't change location.
     ///       Also, changing the file extension does NOT change the extension that is used with
     ///       the file in the FileArchive.
-    QString CalculateFileArchiveURL(const QString& fileFullPathName);
+    QString CalculateFileArchiveURL(const QString& fileFullPathName, const QString& groupHint);
     int FileNameHash(const QString& fileNameOnly);
+    ///Must return only ASCII characters for the file name.
+    QString SafeAndShortFSName(const QString& fsName, bool isFileName);
     QString FolderNameInitialsForASCIIChar(char c, bool startedWithPercent);
 
 public:

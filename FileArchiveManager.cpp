@@ -35,7 +35,7 @@ bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool syst
         return Error("The path \"" + filePathName + "\" does not point to a valid file!");
 
     //Decide where should the file be copied.
-    QString fileRelArchiveURL = CalculateFileArchiveURL(filePathName);
+    QString fileRelArchiveURL = CalculateFileArchiveURL(filePathName, groupHint);
     QString targetFilePathName = GetFullArchivePathForRelativeURL(fileRelArchiveURL);
     //Out param
     fileArchiveURL = m_archiveName + "/" + fileRelArchiveURL;
@@ -98,7 +98,7 @@ bool FileArchiveManager::RemoveFileFromArchive(const QString& fileRelArchiveURL,
     return true;
 }
 
-QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathName)
+QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathName, const QString& groupHint)
 {
     QFileInfo fi(fileFullPathName);
 
@@ -119,38 +119,38 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
     }
     else if (m_fileLayout == 1) //Normal hierarchical file name layout
     {
-        const QString nubaseName = fi.baseName();
-        bool firstWasPercent  = (nubaseName.length() > 0 && nubaseName.at(0) == QChar('%'));
-        bool SecondWasPercent = (nubaseName.length() > 1 && nubaseName.at(1) == QChar('%'));
+        bool isFileName = (groupHint.isEmpty());
+        QString nameForHier = (isFileName ? fi.fileName() : groupHint);
 
-        QString safeFileName = Util::PercentEncodeUnicodeChars(fi.fileName());
-        if (safeFileName.length() > 50) //For WINDOWS!
-        {
-            //Shorten the file name
-            //Using 'complete' base name but 'short' suffix to resist long file names with
-            //  accidental dots in them.
-            const QFileInfo safeFileNameInfo(safeFileName);
-            const QString cbaseName = safeFileNameInfo.completeBaseName();
-            safeFileName = cbaseName.left(qMin(50, cbaseName.length()));
-            if (!safeFileNameInfo.suffix().isEmpty())
-                safeFileName += "." + safeFileNameInfo.suffix();
-        }
+        bool firstWasPercent  = (nameForHier.length() > 0 && nameForHier.at(0) == QChar('%'));
+        bool SecondWasPercent = (nameForHier.length() > 1 && nameForHier.at(1) == QChar('%'));
 
-        //We know safeFileName just contains ASCII characters.
+        //Percent-encode as required and make it short.
+        QString sHierName = SafeAndShortFSName(nameForHier, isFileName);
+
+        //We know sHierName just contains ASCII characters.
         //  Use the completeBaseName of the file name to not count e.g 'a.png' a two letter name.
+        //    So if it's not a file name we simply don't calculate it's base name!
         //  The `if` check for file name length > 0 was put just in case we pass a file with an
         //    empty base name e.g '.gitconfig', or for future usecases.
-        const QString cbaseName = QFileInfo(safeFileName).completeBaseName();
+        QString sbaseName = sHierName;
+        if (isFileName)
+            sbaseName = QFileInfo(sHierName).completeBaseName();
+
         QString firstCharInit = "-";
-        if (cbaseName.length() > 0)
-            firstCharInit = FolderNameInitialsForASCIIChar(cbaseName.at(0).unicode(), firstWasPercent);
+        if (sbaseName.length() > 0)
+            firstCharInit = FolderNameInitialsForASCIIChar(sbaseName.at(0).unicode(), firstWasPercent);
 
         QString secondCharInit = "-";
-        if (cbaseName.length() > 1)
-            secondCharInit = FolderNameInitialsForASCIIChar(cbaseName.at(1).unicode(), SecondWasPercent);
+        if (sbaseName.length() > 1)
+            secondCharInit = FolderNameInitialsForASCIIChar(sbaseName.at(1).unicode(), SecondWasPercent);
 
-        //Put files like 'f/fi/filename.ext'.
-        QString fileArchiveURL = firstCharInit + "/" + firstCharInit + secondCharInit + "/" + safeFileName;
+        //Put files like 'f/fi/[OptionalGroupHint/]filename.ext'.
+        QString fileArchivePath = firstCharInit + "/" + firstCharInit + secondCharInit + "/";
+        if (!groupHint.isEmpty())
+            fileArchivePath += sHierName + "/";
+        QString safeFileName = SafeAndShortFSName(fi.fileName(), true);
+        QString fileArchiveURL = fileArchivePath + safeFileName;
 
         //If file exists, put it in a hashed directory.
         QFileInfo calculatedFileURLInfo(GetFullArchivePathForRelativeURL(fileArchiveURL));
@@ -159,12 +159,13 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
         {
             QString calculatedFileDir = calculatedFileURLInfo.absolutePath();
             QString randomHash = Util::NonExistentRandomFileNameInDirectory(calculatedFileDir, 8);
-            fileArchiveURL = firstCharInit + "/" + firstCharInit + secondCharInit + "/"
-                           + randomHash + "/" + safeFileName;
+            fileArchiveURL = fileArchivePath + randomHash + "/" + safeFileName;
         }
 
         return fileArchiveURL;
     }
+
+    return QString(); //Error obviously
 }
 
 int FileArchiveManager::FileNameHash(const QString& fileNameOnly)
@@ -177,6 +178,37 @@ int FileArchiveManager::FileNameHash(const QString& fileNameOnly)
         sum += utf8[i];
 
     return sum;
+}
+
+QString FileArchiveManager::SafeAndShortFSName(const QString& fsName, bool isFileName)
+{
+    //IMPORTANT: Must return only ASCII characters for the file name.
+    QString safeFileName;
+    if (isFileName) //We know it is a valid file name then
+        safeFileName = Util::PercentEncodeUnicodeChars(fsName);
+    else //Arbitrary name
+        safeFileName = Util::PercentEncodeUnicodeAndFSChars(fsName);
+
+    if (safeFileName.length() > 50) //For WINDOWS!
+    {
+        if (isFileName)
+        {
+            //Shorten the file name
+            //Using 'complete' base name but 'short' suffix to resist long file names with
+            //  accidental dots in them.
+            const QFileInfo safeFileNameInfo(safeFileName);
+            const QString cbaseName = safeFileNameInfo.completeBaseName();
+            safeFileName = cbaseName.left(qMin(50, cbaseName.length()));
+            if (!safeFileNameInfo.suffix().isEmpty())
+                safeFileName += "." + safeFileNameInfo.suffix();
+        }
+        else
+        {
+            //Is e.g an arbitrary name or a folder name
+            safeFileName = safeFileName.left(qMin(50, safeFileName.length()));
+        }
+    }
+    return safeFileName;
 }
 
 QString FileArchiveManager::FolderNameInitialsForASCIIChar(char c, bool startedWithPercent)

@@ -39,6 +39,8 @@ public:
 
     /// Note: Some derivates, e.g FAM, require that a Files Transaction MUST have been started
     /// before calling Add/Remove functions.
+    /// Also,  one must NEVER pre-calculate the file archive urls. Duplicate file names ay cause
+    /// problems, especially in case of FAM.
     virtual bool AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
                                   QString& fileArchiveURL, const QString& groupHint = QString()) = 0;
     virtual bool RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash) = 0;
