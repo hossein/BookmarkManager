@@ -243,6 +243,7 @@ bool BookmarkManager::RetrieveBookmarkExtraInfosModel(long long BID, QSqlTableMo
     while (extraInfosModel.canFetchMore())
         extraInfosModel.fetchMore();
 
+    //Indexes of empty model.record() from empty table are correct.
     SetBookmarkExtraInfoIndexes(extraInfosModel.record());
     extraInfosModel.setHeaderData(beiidx.BEIID, Qt::Horizontal, "BEIID");
     extraInfosModel.setHeaderData(beiidx.BID  , Qt::Horizontal, "BID"  );
@@ -314,7 +315,8 @@ bool BookmarkManager::RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkMa
     if (!query.exec())
         return Error(retrieveError, query.lastError());
 
-    SetBookmarkExtraInfoIndexes(query.record()); //TODO: Does this populate correctly when query doesn't have values? Same code and placement is used for the MAIN THING: bookmarks too!
+    //Indexes of empty query.record() from empty table are correct.
+    SetBookmarkExtraInfoIndexes(query.record());
     bool indexesCalculated = false;
     int beiidx_BEIID, beiidx_BID, beiidx_Name, beiidx_Type, beiidx_Value;
 
@@ -503,6 +505,7 @@ void BookmarkManager::PopulateModelsAndInternalTables()
     while (model.canFetchMore())
         model.fetchMore();
 
+    //Indexes of empty model.record() from empty table are correct.
     bidx.BID      = model.record().indexOf("BID"     );
     bidx.Name     = model.record().indexOf("Name"    );
     bidx.URL      = model.record().indexOf("URL"     );
