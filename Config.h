@@ -40,6 +40,9 @@
 //      use a flag to avoid calling app->exec then
 //TODO: Use latin digits for backup file names and logs.
 
+//TODO: Double clicking bm's in View dialog's related bookmarks must pop up their view dialog,
+//      AND they MUST show their Office-style brief information EVERYWHERE; super useful.
+
 /// TODO: Plan:
 ///   x File Manager
 ///   x Make the changes that we need to require multiple file attaching and do it.

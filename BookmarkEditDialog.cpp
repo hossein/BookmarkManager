@@ -96,9 +96,9 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long 
         ui->dialRating->setValue(editOriginalBData.Rating);
         PopulateUITags();
         PopulateUIFiles(false);
-        PopulateLinkedBookmarks();
     }
 
+    PopulateLinkedBookmarks();
     PopulateExtraInfos();
 }
 
