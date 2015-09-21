@@ -208,26 +208,58 @@ QByteArray Util::EncodeQuotedPrintable(const QByteArray& byteArray, bool binaryD
     return encoded;
 }
 
+QString Util::PercentEncodeQChar(const QChar& c)
+{
+    QString output;
+    QByteArray utf8 = QString(c).toUtf8();
+    for (int i = 0; i < utf8.length(); i++)
+    {
+        //Without `uchar` we'd get '%FFFFFFD8'.
+        output += QString("%%1").arg((uchar)(utf8.at(i)), 2, 16, QChar('0')).toUpper();
+    }
+    return output;
+}
+
 QString Util::PercentEncodeUnicodeChars(const QString& input)
 {
-    QByteArray utf8;
+    QString output;
+    foreach (QChar c, input)
+    {
+        if (c.unicode() >= 32 && c.unicode() <= 126)
+            output += c;
+        else
+            output += PercentEncodeQChar(c);
+    }
+    return output;
+}
+
+QString Util::PercentEncodeUnicodeAndFSChars(const QString& input)
+{
+    //Like `Util::PercentEncodeUnicodeChars`, but first we encode these chars too:
+    QList<ushort> invalidWinFSChars = QList<ushort>()
+            << '<' << '>' << ':' << '"' << '/' << '\\' << '|' << '?' << '*';
+
     QString output;
     foreach (QChar c, input)
     {
         if (c.unicode() >= 32 && c.unicode() <= 126)
         {
-            output += c;
+            if (invalidWinFSChars.contains(c.unicode()))
+                output += PercentEncodeQChar(c);
+            else
+                output += c;
         }
         else
         {
-            utf8 = QString(c).toUtf8();
-            for (int i = 0; i < utf8.length(); i++)
-            {
-                //Without `uchar` we'd get '%FFFFFFD8'.
-                output += QString("%%1").arg((uchar)(utf8.at(i)), 2, 16, QChar('0')).toUpper();
-            }
+            output += PercentEncodeQChar(c);
         }
     }
+
+    //Now at this point we check for valid file name. If this fails, it is because the file name is
+    //  e.g 'COM1' or '..', so we just PREPEND something to it (to avoid changing the extension).
+    if (!IsValidFileName(output))
+        output = "@Name_" + output;
+
     return output;
 }
 
@@ -410,6 +442,7 @@ bool Util::IsValidFileName(const QString& fileName)
     invalidChars.append('"');
     invalidChars.append('/');
     invalidChars.append('\\');
+    invalidChars.append('|');
     invalidChars.append('?');
     invalidChars.append('*');
 

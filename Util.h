@@ -27,7 +27,9 @@ public:
     static QByteArray EncodeQuotedPrintable(const QByteArray& byteArray, bool binaryData = false,
                                             const QEncodingOptions& qenc = QEncodingOptions());
 
+    static QString PercentEncodeQChar(const QChar& c);
     static QString PercentEncodeUnicodeChars(const QString& input);
+    static QString PercentEncodeUnicodeAndFSChars(const QString& input);
 
     // StringList Handling ////////////////////////////////////////////////////////////////////////
     static void CaseInsensitiveStringListEliminateDuplicates(QStringList& list);
