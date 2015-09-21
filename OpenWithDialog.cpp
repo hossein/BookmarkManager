@@ -17,7 +17,7 @@
 #include <QMenu>
 #include <QToolButton>
 
-OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
+OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName, bool allowNonSandbox,
                                OutParams* outParams, QWidget *parent) :
     QDialog(parent), ui(new Ui::OpenWithDialog), dbm(dbm), m_fileName(fileName),
     canShowTheDialog(false), outParams(outParams)
@@ -33,6 +33,12 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
     //Btw we have a 'Close' button instead of a 'Cancel' button, because we can make modifications
     //  in the OpenWithDialog to the application list and then Close it and have all the saves changed.
     //  'Cancel' is not a good name in this scenario.
+
+    //We can't open yet un-attached files directly. We have to set both enabled AND CHECK STATUS
+    //  because upon accept these values are read from the check box and in case non-sandbox is not
+    //  allowed we want to make sure it's checked.
+    ui->chkOpenSandboxed->setEnabled(allowNonSandbox);
+    ui->chkOpenSandboxed->setChecked(true);
 
 //TODO: These QAction shortcuts WORK NOWHERE!
 

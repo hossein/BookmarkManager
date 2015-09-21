@@ -50,7 +50,7 @@ private:
     };
 
 public:
-    explicit OpenWithDialog(DatabaseManager* dbm, const QString& fileName,
+    explicit OpenWithDialog(DatabaseManager* dbm, const QString& fileName, bool allowNonSandbox,
                             OutParams* outParams = NULL, QWidget *parent = 0);
     ~OpenWithDialog();
 

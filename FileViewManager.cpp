@@ -167,13 +167,13 @@ void FileViewManager::OpenEditable(const QString& filePathName, FileManager* fil
     GenericOpenFile(filePathName, GetPreferredOpenApplication(filePathName), false, NULL);
 }
 
-void FileViewManager::OpenWith(const QString& filePathName, DatabaseManager* dbm,
-                               QWidget* dialogParent)
+void FileViewManager::OpenWith(const QString& filePathName, bool allowNonSandbox,
+                               DatabaseManager* dbm, QWidget* dialogParent)
 {
     //Note that we do NOT use the dbm's dialogParent; as we need to make the parent of the
     //  OpenWithDialog the previous dialog which was open, NOT the MainWindow.
     OpenWithDialog::OutParams outParams;
-    OpenWithDialog openWithDlg(dbm, filePathName, &outParams, dialogParent);
+    OpenWithDialog openWithDlg(dbm, filePathName, allowNonSandbox, &outParams, dialogParent);
 
     if (!openWithDlg.canShow())
         return; //In case of errors a message is already shown.

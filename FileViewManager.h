@@ -62,7 +62,8 @@ public:
     void PreviewStandalone(const QString& filePathName, QWidget* dialogParent); //Convenience Function
     void OpenReadOnly(const QString& filePathName, FileManager* files);
     void OpenEditable(const QString& filePathName, FileManager* files);
-    void OpenWith(const QString& filePathName, DatabaseManager* dbm, QWidget* dialogParent);
+    void OpenWith(const QString& filePathName, bool allowNonSandbox,
+                  DatabaseManager* dbm, QWidget* dialogParent);
     void SaveAs(const QString& filePathName, const QString& originalFileName,
                 DatabaseManager* dbm, QWidget* dialogParent);
     void ShowProperties(const QString& filePathName);

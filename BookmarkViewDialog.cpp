@@ -341,7 +341,7 @@ void BookmarkViewDialog::af_openWith()
 
     if (SAID == FileViewManager::OWS_OpenWithDialogRequest)
     {
-        dbm->fview.OpenWith(filePathName, dbm, this);
+        dbm->fview.OpenWith(filePathName, true, dbm, this);
     }
     else if (SAID == FileViewManager::OWS_OpenWithSystemDefault)
     {

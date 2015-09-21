@@ -397,8 +397,11 @@ void BookmarkEditDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
         //  for un-attached files.
         a_saveAs->setEnabled(editedFilesList[filesListIdx].BFID != -1);
 
-        a_setDef->setEnabled(!editedFilesList[filesListIdx].Ex_IsDefaultFileForEditedBookmark);
+        //Don't allow edit and rename for unattached files either
+        a_edit->setEnabled(editedFilesList[filesListIdx].BFID != -1);
         a_rename->setEnabled(editedFilesList[filesListIdx].BFID != -1);
+
+        a_setDef->setEnabled(!editedFilesList[filesListIdx].Ex_IsDefaultFileForEditedBookmark);
     }
 
     QPoint menuPos = ui->twAttachedFiles->viewport()->mapToGlobal(pos);
@@ -517,7 +520,6 @@ void BookmarkEditDialog::af_open()
 
 void BookmarkEditDialog::af_edit()
 {
-    //NOTE: We want to allow editing of yet-unattached files?
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
     dbm->fview.OpenEditable(GetAttachedFileFullPathName(filesListIdx), &dbm->files);
 }
@@ -532,9 +534,12 @@ void BookmarkEditDialog::af_openWith()
     int filesListIdx = ui->twAttachedFiles->selectedItems()[0]->data(Qt::UserRole).toInt();
     QString filePathName = GetAttachedFileFullPathName(filesListIdx);
 
+    //We don't allow editing of yet-unattached files.
+    bool forceSandbox = (editedFilesList[filesListIdx].BFID == -1);
+
     if (SAID == FileViewManager::OWS_OpenWithDialogRequest)
     {
-        dbm->fview.OpenWith(filePathName, dbm, this);
+        dbm->fview.OpenWith(filePathName, !forceSandbox, dbm, this);
     }
     else if (SAID == FileViewManager::OWS_OpenWithSystemDefault)
     {
