@@ -164,7 +164,7 @@ private:
 protected:
     // ISubManager interface
     void CreateTables();
-    void PopulateModels();
+    void PopulateModelsAndInternalTables();
 private:
     QString GetAbsoluteFileArchivePath(const QString& fileArchivePathWithVars);
     void CreateDefaultArchives(QSqlQuery& query);

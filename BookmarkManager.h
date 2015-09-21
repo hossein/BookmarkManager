@@ -122,5 +122,5 @@ private:
 protected:
     // ISubManager interface
     void CreateTables();
-    void PopulateModels();
+    void PopulateModelsAndInternalTables();
 };

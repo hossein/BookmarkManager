@@ -491,7 +491,7 @@ void BookmarkManager::CreateTables()
                "( BEIID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, Name TEXT, Type TEXT, Value TEXT )");
 }
 
-void BookmarkManager::PopulateModels()
+void BookmarkManager::PopulateModelsAndInternalTables()
 {
     model.setQuery("SELECT * FROM Bookmark", db);
 

@@ -124,7 +124,7 @@ void TagManager::CreateTables()
                "( BTID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, TID INTEGER )");
 }
 
-void TagManager::PopulateModels()
+void TagManager::PopulateModelsAndInternalTables()
 {
     model.setQuery("SELECT * FROM Tag", db);
 

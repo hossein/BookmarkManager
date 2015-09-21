@@ -233,81 +233,6 @@ void FileViewManager::DirectOpenFile(const QString& filePathName, long long prog
                                    : systemApps[programSAID].Path));
 }
 
-void FileViewManager::PopulateInternalTables()
-{
-    //Instead we populate the internal fast-access lists.
-    //Note: We do NOT do this at `FileViewManager::PopulateModels()` as it is called multiple times
-    //      and upon Bookmark/Tag/File/etc add or edit and is expensive.
-    //So we do it at this function ONLY ONCE and then the database functions directly modify
-    //      `this->systemApps` instead of re-retrieval from DB each time.
-
-    /// System Applications Table /////////////////////////////////////////////////////////////////
-    QString retrieveError = "Could not get programs information from the database.";
-    QSqlQuery query(db);
-    query.prepare("SELECT * FROM SystemApp WHERE SAID >= 0");
-
-    if (!query.exec())
-    {
-        Error(retrieveError, query.lastError());
-        return;
-    }
-
-    systemApps.clear();
-    while (query.next())
-    {
-        SystemAppData sa;
-        const QSqlRecord record = query.record();
-        sa.SAID      = record.value("SAID").toLongLong();
-        sa.Name      = record.value("Name").toString();
-        sa.Path      = record.value("Path").toString();
-        sa.SmallIcon = Util::DeSerializeQPixmap(record.value("SmallIcon").toByteArray());
-        sa.LargeIcon = Util::DeSerializeQPixmap(record.value("LargeIcon").toByteArray());
-
-        systemApps[sa.SAID] = sa;
-    }
-
-    /// Extension Associations Table //////////////////////////////////////////////////////////////
-    retrieveError = "Could not get extention program associations information from database.";
-    query.prepare("SELECT * FROM ExtAssoc");
-
-    if (!query.exec())
-    {
-        Error(retrieveError, query.lastError());
-        return;
-    }
-
-    associatedOpenPrograms.clear();
-    while (query.next())
-    {
-        const QSqlRecord record = query.record();
-        QString lowerSuffix = record.value("LExtension").toString();
-        long long associatedSAID = record.value("SAID").toLongLong();
-        //This always works since QHash returns a default-constructed QList when value at lowerSuffix
-        //  doesn't exist.
-        associatedOpenPrograms[lowerSuffix].append(associatedSAID);
-    }
-
-    /// Extension Open With Table /////////////////////////////////////////////////////////////////
-    retrieveError = "Could not get preferred program information from database.";
-    query.prepare("SELECT * FROM ExtOpenWith");
-
-    if (!query.exec())
-    {
-        Error(retrieveError, query.lastError());
-        return;
-    }
-
-    preferredOpenProgram.clear();
-    while (query.next())
-    {
-        const QSqlRecord record = query.record();
-        long long EOWID = record.value("EOWID").toLongLong();
-        QString lowerSuffix = record.value("LExtension").toString();
-        long long preferredSAID = record.value("SAID").toLongLong();
-        preferredOpenProgram[lowerSuffix] = ExtOpenWithData(EOWID, preferredSAID);
-    }
-}
-
 bool FileViewManager::AddOrEditSystemApp(long long& SAID, FileViewManager::SystemAppData& sadata)
 {
     QString updateError = (SAID == -1
@@ -562,7 +487,79 @@ void FileViewManager::CreateTables()
                ")");
 }
 
-void FileViewManager::PopulateModels()
+void FileViewManager::PopulateModelsAndInternalTables()
 {
     //FileViewManager does not have any models.
+
+    //Instead we populate the internal fast-access lists.
+    //Note: We do NOT do this at `FileViewManager::PopulateModelsAndInternalTables()` as it is called multiple times
+    //      and upon Bookmark/Tag/File/etc add or edit and is expensive.
+    //So we do it at this function ONLY ONCE and then the database functions directly modify
+    //      `this->systemApps` instead of re-retrieval from DB each time.
+
+    /// System Applications Table /////////////////////////////////////////////////////////////////
+    QString retrieveError = "Could not get programs information from the database.";
+    QSqlQuery query(db);
+    query.prepare("SELECT * FROM SystemApp WHERE SAID >= 0");
+
+    if (!query.exec())
+    {
+        Error(retrieveError, query.lastError());
+        return;
+    }
+
+    systemApps.clear();
+    while (query.next())
+    {
+        SystemAppData sa;
+        const QSqlRecord record = query.record();
+        sa.SAID      = record.value("SAID").toLongLong();
+        sa.Name      = record.value("Name").toString();
+        sa.Path      = record.value("Path").toString();
+        sa.SmallIcon = Util::DeSerializeQPixmap(record.value("SmallIcon").toByteArray());
+        sa.LargeIcon = Util::DeSerializeQPixmap(record.value("LargeIcon").toByteArray());
+
+        systemApps[sa.SAID] = sa;
+    }
+
+    /// Extension Associations Table //////////////////////////////////////////////////////////////
+    retrieveError = "Could not get extention program associations information from database.";
+    query.prepare("SELECT * FROM ExtAssoc");
+
+    if (!query.exec())
+    {
+        Error(retrieveError, query.lastError());
+        return;
+    }
+
+    associatedOpenPrograms.clear();
+    while (query.next())
+    {
+        const QSqlRecord record = query.record();
+        QString lowerSuffix = record.value("LExtension").toString();
+        long long associatedSAID = record.value("SAID").toLongLong();
+        //This always works since QHash returns a default-constructed QList when value at lowerSuffix
+        //  doesn't exist.
+        associatedOpenPrograms[lowerSuffix].append(associatedSAID);
+    }
+
+    /// Extension Open With Table /////////////////////////////////////////////////////////////////
+    retrieveError = "Could not get preferred program information from database.";
+    query.prepare("SELECT * FROM ExtOpenWith");
+
+    if (!query.exec())
+    {
+        Error(retrieveError, query.lastError());
+        return;
+    }
+
+    preferredOpenProgram.clear();
+    while (query.next())
+    {
+        const QSqlRecord record = query.record();
+        long long EOWID = record.value("EOWID").toLongLong();
+        QString lowerSuffix = record.value("LExtension").toString();
+        long long preferredSAID = record.value("SAID").toLongLong();
+        preferredOpenProgram[lowerSuffix] = ExtOpenWithData(EOWID, preferredSAID);
+    }
 }

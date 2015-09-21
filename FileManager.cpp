@@ -580,7 +580,7 @@ void FileManager::CreateTables()
                "( BFID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, FID INTEGER )");
 }
 
-void FileManager::PopulateModels()
+void FileManager::PopulateModelsAndInternalTables()
 {
     //FileManager does not have a model.
 }

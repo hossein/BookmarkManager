@@ -101,10 +101,6 @@ private:
     QHash<QString, ExtOpenWithData> preferredOpenProgram;
 
 public:
-    /// This function is only called once upon startup. Other functions are [RESPONSIBLE] for
-    /// keeping the internal tables updated afterwards.
-    void PopulateInternalTables();
-
     //SystemApp
     /// SAID can only be -1 for adding, not anything else.
     bool AddOrEditSystemApp(long long& SAID, SystemAppData& sadata);
@@ -147,5 +143,5 @@ public:
 protected:
     // ISubManager interface
     void CreateTables();
-    void PopulateModels();
+    void PopulateModelsAndInternalTables();
 };

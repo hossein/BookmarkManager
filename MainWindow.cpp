@@ -65,7 +65,6 @@ MainWindow::MainWindow(QWidget *parent) :
     // Additional sub-parts initialization. NOTE: We don't check their return value.
     dbm.files.InitializeFileArchives();
     dbm.files.ClearSandBox();
-    dbm.fview.PopulateInternalTables();
 
     qApp->postEvent(this, new QResizeEvent(this->size(), this->size()));
 }
@@ -191,8 +190,9 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
                                       const QList<long long>& newTIDsToCheck)
 {
     //Calling this function after changes is needed, even for the bookmarks list.
-    //  The model does NOT automatically update its view. Actually calliong `PopulateModels`
-    //  DOES invalidate the selection, etc, but the tableView is not updated.
+    //  The model does NOT automatically update its view. Actually calling
+    //  `PopulateModelsAndInternalTables` DOES invalidate the selection, etc, but the tableView
+    //  is not updated.
 
     //[SavingSelectedBookmarkAndTag]
     //For saving the currently selected bookmark, we save its row in the model only. Saving bookmark
@@ -239,7 +239,7 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
 
     //Real updating here
     if (rePopulateModels)
-        dbm.PopulateModels();
+        dbm.PopulateModelsAndInternalTables();
 
     if (!(tagsAction & RA_NoRefreshView))
         RefreshTagsDisplay();

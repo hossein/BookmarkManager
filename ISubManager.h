@@ -28,7 +28,7 @@ protected:
     /// Execute queries on models and populate them. Called multiple times when refreshing by program.
     /// Subclasses must NEVER assign to their models, as the models are assigned upon program loading
     ///   to proxy models and UI elements and must change after that.
-    virtual void PopulateModels() = 0;
+    virtual void PopulateModelsAndInternalTables() = 0;
 
     void setSqlDatabase(QSqlDatabase& db_)
     {

@@ -25,7 +25,7 @@ public:
     bool BackupOpenOrCreate(const QString& fileName);
     void Close();
 
-    void PopulateModels(); //This is NOT from ISubManager.
+    void PopulateModelsAndInternalTables(); //This is NOT from ISubManager.
 
 private:
     bool BackupOpenDatabase(const QString& fileName);

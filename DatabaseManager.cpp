@@ -44,12 +44,12 @@ void DatabaseManager::Close()
         db.close();
 }
 
-void DatabaseManager::PopulateModels()
+void DatabaseManager::PopulateModelsAndInternalTables()
 {
-    bms.PopulateModels();
-    fview.PopulateModels();
-    files.PopulateModels();
-    tags.PopulateModels();
+    bms.PopulateModelsAndInternalTables();
+    files.PopulateModelsAndInternalTables();
+    fview.PopulateModelsAndInternalTables();
+    tags.PopulateModelsAndInternalTables();
 }
 
 bool DatabaseManager::BackupOpenDatabase(const QString& fileName)
