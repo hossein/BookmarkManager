@@ -40,8 +40,19 @@ bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool syst
     else if (!originalfi.isFile())
         return Error("The path \"" + filePathName + "\" does not point to a valid file!");
 
-    //We don't use `GetFullArchivePathForRelativeURL` here, we are generating the path now!
-    QString sandBoxFilePathName = m_archiveRoot + "/" + originalfi.fileName();
+    //Old:
+    //  We don't use `GetFullArchivePathForRelativeURL` here, we are generating the path now!
+    //  QString sandBoxFilePathName = m_archiveRoot + "/" + originalfi.fileName();
+    //New:
+    //  We no more put the files in the root dir. We always use a hash sub-dir now.
+
+    const QString randomHash = Util::NonExistentRandomFileNameInDirectory(m_archiveRoot, 8);
+    const QString sandBoxFilePathName = m_archiveRoot + "/" + randomHash + "/" + originalfi.fileName();
+
+    //Let's create the hashed directory
+    if (!QDir(m_archiveRoot).mkdir(randomHash))
+        return Error("Temporary sandbox sub-directory could not be created!\nPath: " +
+                     m_archiveRoot + "/" + randomHash);
 
     //Try
     QFileInfo sbfi(sandBoxFilePathName);
@@ -80,7 +91,7 @@ bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool syst
 
     //Set the Output
     //fileArchiveURL = sandBoxFilePathName; No: must be colon-ized :ArchiveName: URL.
-    fileArchiveURL = m_archiveName + "/" + originalfi.fileName();
+    fileArchiveURL = m_archiveName + "/" + randomHash + "/" + originalfi.fileName();
 
     //Remove the original file.
     if (systemTrashOriginalFile)
