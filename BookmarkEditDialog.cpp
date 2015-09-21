@@ -44,7 +44,10 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long 
     if (editBId == -1)
     {
         setWindowTitle("Add Bookmark");
-        canShowTheDialog = true;
+
+        canShowTheDialog = dbm->bms.GetEmptyExtraInfosModel(editOriginalBData.Ex_ExtraInfosModel);
+        if (!canShowTheDialog)
+            return;
     }
     else
     {
@@ -94,8 +97,9 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long 
         PopulateUITags();
         PopulateUIFiles(false);
         PopulateLinkedBookmarks();
-        PopulateExtraInfos();
     }
+
+    PopulateExtraInfos();
 }
 
 BookmarkEditDialog::~BookmarkEditDialog()

@@ -98,6 +98,7 @@ public:
     /// The returned model has its EditStrategy set to OnManualSubmit,
     /// and client code must NEVER call submit()/submitAll() on it!
     /// Submitting must be done via the update function below, which does extra jobs.
+    bool GetEmptyExtraInfosModel(QSqlTableModel& extraInfosModel);
     bool RetrieveBookmarkExtraInfosModel(long long BID, QSqlTableModel& extraInfosModel);
     /// Sets the BID on all rows BEFORE submitting.
     bool UpdateBookmarkExtraInfos(long long BID, QSqlTableModel& extraInfosModel);

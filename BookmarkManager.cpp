@@ -225,6 +225,11 @@ bool BookmarkManager::RemoveBookmarksLink(long long BID1, long long BID2)
     return true;
 }
 
+bool BookmarkManager::GetEmptyExtraInfosModel(QSqlTableModel& extraInfosModel)
+{
+    return RetrieveBookmarkExtraInfosModel(-1, extraInfosModel);
+}
+
 bool BookmarkManager::RetrieveBookmarkExtraInfosModel(long long BID, QSqlTableModel& extraInfosModel)
 {
     QString retrieveError = "Could not get bookmark extra information from database.";

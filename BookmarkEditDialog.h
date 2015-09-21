@@ -2,7 +2,7 @@
 #include <QDialog>
 
 #include "DatabaseManager.h"
-//TODO: Need an extraInfo model while Adding NEW bookmarks too.
+
 class Config;
 class FileManager;
 class QTableWidgetItem;

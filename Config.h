@@ -38,7 +38,6 @@
 //      and setting headers and initial sort must be done only once!
 //TODO: If sth in MW constructor failed, app->quit is not enough and not needed at all, must
 //      use a flag to avoid calling app->exec then
-//TODO: Fix extra info not adding while adding a bookmark! It needs an empty model or sth.
 //TODO: Use latin digits for backup file names and logs.
 
 /// TODO: Plan:
