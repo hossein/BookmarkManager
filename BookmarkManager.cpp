@@ -340,11 +340,11 @@ bool BookmarkManager::RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkMa
     return true;
 }
 
-static bool BookmarkExtraInfoNameEquals(const BookmarkManager::BookmarkExtraInfoData& exInfo1,
-                                        const BookmarkManager::BookmarkExtraInfoData& exInfo2)
+static bool BookmarkExtraInfoEquals(const BookmarkManager::BookmarkExtraInfoData& exInfo1,
+                                    const BookmarkManager::BookmarkExtraInfoData& exInfo2)
 {
-    //TODO: Must compare BEIID, not Name to allow same-name properties.
-    return 0 == QString::compare(exInfo1.Name, exInfo2.Name, Qt::CaseSensitive);
+    //Must compare BEIID, not Name to allow same-name properties.
+    return exInfo1.BEIID == exInfo2.BEIID;
 }
 
 bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, const QList<BookmarkManager::BookmarkExtraInfoData>& originalExtraInfos,
@@ -356,7 +356,7 @@ bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, const QList<Bookma
     QList<BookmarkExtraInfoData> addExtraInfos = extraInfos;
 
     //Calculate the difference
-    UtilT::ListDifference<BookmarkExtraInfoData>(removeExtraInfos, addExtraInfos, BookmarkExtraInfoNameEquals);
+    UtilT::ListDifference<BookmarkExtraInfoData>(removeExtraInfos, addExtraInfos, BookmarkExtraInfoEquals);
 
     //TODO: But does this UPDATE the VALUES of existing extra infos?  I think not!
     //          BOTH  HERE AND ALSO IN MODEL-BASED thingie.
