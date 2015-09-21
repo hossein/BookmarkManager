@@ -53,6 +53,12 @@ void BookmarksView::Initialize(DatabaseManager* dbm, Config* conf, ListMode list
     connect(hh, SIGNAL(sectionClicked(int)), this, SLOT(tvBookmarksHeaderClicked(int)));
 }
 
+void BookmarksView::focusInEvent(QFocusEvent* event)
+{
+    QWidget::focusInEvent(event);
+    tvBookmarks->setFocus();
+}
+
 QString BookmarksView::GetSelectedBookmarkName() const
 {
     if (!tvBookmarks->currentIndex().isValid())

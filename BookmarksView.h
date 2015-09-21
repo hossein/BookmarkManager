@@ -49,6 +49,10 @@ public:
     /// This class MUST be initialized by calling this function.
     void Initialize(DatabaseManager* dbm, Config* conf, ListMode listMode);
 
+    //QWidget interface
+protected:
+    virtual void focusInEvent(QFocusEvent* event);
+
     //Action and Information Functions
 public:
     QString GetSelectedBookmarkName() const;
