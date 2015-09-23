@@ -133,4 +133,35 @@ public:
         for (int r = removeList.size() - 1; r >= 0; r--)
             list2.removeAt(removeList[r]);
     }
+
+    //For correct set handling, this function requires a `key` function instead of `equals`.
+    template <typename T, typename KT>
+    static QList<int> ListIntersect(const QList<T>& list1, const QList<T>& list2, KT (*key)(const T& v))
+    {
+        //Copied from Util::CaseInsensitiveStringListDifference and may be optimized;
+        //  read the notes there.
+
+        int len1 = list1.length();
+        int len2 = list2.length();
+
+        QList<int> intersectIndexes1;
+        QSet<KT> intersectKeys;
+        for (int i1 = 0; i1 < len1; i1++)
+        {
+            KT key1 = key(list1[i1]);
+            for (int i2 = 0; i2 < len2; i2++)
+            {
+                if (key1 == key(list2[i2]))
+                {
+                    if (!intersectKeys.contains(key1))
+                    {
+                        intersectIndexes1.append(i1);
+                        intersectKeys.insert(key1);
+                    }
+                }
+            }
+        }
+
+        return intersectIndexes1;
+    }
 };

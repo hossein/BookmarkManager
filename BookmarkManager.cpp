@@ -268,6 +268,7 @@ bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, QSqlTableModel& ex
     //  BID and the BEIID generated are already set. But it's okay.
 
     //Set BIDs and set BEIIDs generated to false.
+    //Apparently this doesn't cause BEIID of existing items to change, so should be good.
     const int rowCount = extraInfosModel.rowCount();
     for (int row = 0; row < rowCount; row++)
     {
@@ -347,6 +348,12 @@ bool BookmarkManager::RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkMa
     return true;
 }
 
+static long long BookmarkExtraInfoKey(const BookmarkManager::BookmarkExtraInfoData& exInfo)
+{
+    //Use BEIID as key to allow same-name properties.
+    return exInfo.BEIID;
+}
+
 static bool BookmarkExtraInfoEquals(const BookmarkManager::BookmarkExtraInfoData& exInfo1,
                                     const BookmarkManager::BookmarkExtraInfoData& exInfo2)
 {
@@ -361,16 +368,14 @@ bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, const QList<Bookma
     QList<BookmarkExtraInfoData> removeExtraInfos = originalExtraInfos;
     //New edited extraInfo Names that were not in original extraInfos are the new extraInfos that we have to add.
     QList<BookmarkExtraInfoData> addExtraInfos = extraInfos;
-
-    //Calculate the difference
-    UtilT::ListDifference<BookmarkExtraInfoData>(removeExtraInfos, addExtraInfos, BookmarkExtraInfoEquals);
-
-    //TODO: But does this UPDATE the VALUES of existing extra infos?  I think not!
-    //          BOTH  HERE AND ALSO IN MODEL-BASED thingie.
     
     QString deleteError = "Could not alter bookmark extra information in database.";
     QString addError = "Could not add bookmark extra information to database.";
+    QString updateError = "Could not update bookmark extra information in database.";
     QSqlQuery query(db);
+
+    //Calculate the difference
+    UtilT::ListDifference<BookmarkExtraInfoData>(removeExtraInfos, addExtraInfos, BookmarkExtraInfoEquals);
 
     //Remove the un-useds
     int removeCount = 0;
@@ -406,6 +411,25 @@ bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, const QList<Bookma
 
         if (!query.exec())
             return Error(addError, query.lastError());
+    }
+
+    //The model-based equivalent of this function does deletion, insertion and updates automatically
+    //  using models. However in this function we should do the updates manually.
+    //So if we think models are efficient, this function is less efficient because it uses list
+    //  difference operations and another intersection operation here.
+    //Use `extraInfos` as the first argument to intersect function because it returns indexes of its
+    //  first argument list.
+    QList<int> updateIndexes = UtilT::ListIntersect(extraInfos, originalExtraInfos, BookmarkExtraInfoKey);
+    foreach (int updateIndex, updateIndexes)
+    {
+        query.prepare("UPDATE BookmarkExtraInfo SET Name = ?, Type = ?, Value = ? WHERE BEIID = ?");
+        query.addBindValue(extraInfos[updateIndex].Name);
+        query.addBindValue(static_cast<int>(extraInfos[updateIndex].Type));
+        query.addBindValue(extraInfos[updateIndex].Value);
+        query.addBindValue(extraInfos[updateIndex].BEIID);
+
+        if (!query.exec())
+            return Error(updateError, query.lastError());
     }
 
     return true;
