@@ -25,7 +25,8 @@
 //- Deleting 30 seconds after startup: Maybe, but user may have again opened a file; that new file
 //  gets deleted too.
 //- Deleting on start-up: Slows down startup... but not too much! So we do it.
-//  TODO: Add as note: But then we need to allow only one instance. This is also necessary do to database file usage.
+//  Note: And this method is another reason we need to allow only one app instance (as well as
+//  because of database file usage).
 //Other methods such as renaming the sandbox folder on start-up and remove it 30 seconds later, or
 //  keep the list of newly opened files and don't delete them in the 30 seconds later clean up is
 //  also possible; but we don't do it for now.

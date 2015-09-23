@@ -16,7 +16,8 @@ LIBS += Shell32.lib User32.lib Version.lib
 #https://qt-project.org/forums/viewreply/82432/
 LOCAL_INCLUDE_DIRS = $$_PRO_FILE_PWD_ \
     $$_PRO_FILE_PWD_/BookmarkImporters \
-    $$_PRO_FILE_PWD_/PreviewHandlers
+    $$_PRO_FILE_PWD_/PreviewHandlers \
+    $$_PRO_FILE_PWD_/qtsingleapplication
 DEPENDPATH *= $$(LOCAL_INCLUDE_DIRS)
 
 #Without this on Qt5 files inside the subfolders can't access the higher-level files directly.
@@ -59,7 +60,10 @@ SOURCES += main.cpp\
     ImportedBookmarksProcessor.cpp \
     MHTSaver.cpp \
     SettingsManager.cpp \
-    CtLogger.cpp
+    CtLogger.cpp \
+    BMApplication.cpp \
+    qtsingleapplication/qtlocalpeer.cpp \
+    qtsingleapplication/qtsingleapplication.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -102,7 +106,10 @@ HEADERS  += MainWindow.h \
     MHTSaver.h \
     SettingsManager.h \
     ListWidgetWithEmptyPlaceholder.h \
-    CtLogger.h
+    CtLogger.h \
+    BMApplication.h \
+    qtsingleapplication/qtlocalpeer.h \
+    qtsingleapplication/qtsingleapplication.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \

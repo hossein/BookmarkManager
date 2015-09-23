@@ -1,4 +1,4 @@
-#include <QApplication>
+#include "BMApplication.h"
 #include "MainWindow.h"
 
 #include "CtLogger.h"
@@ -10,11 +10,20 @@ int main(int argc, char *argv[])
 
     Util::SeedRandomWithTime();
 
-    QApplication app(argc, argv);
+    BMApplication app("uniqueid.BookmarkManager", argc, argv);
+
+    //QtSingleApplication
+    //This app needs to be single instance both because of database usage, and because we delete
+    //  SandBox folder contents on startup, and also we use only one log file.
+    if (app.isRunning())
+        return !app.sendMessage("Activate");
+
     MainWindow w;
 
     //CtLogger
     setMessageOutputFileParent(&w);
+    //QtSingleApplication
+    app.setActivationWindow(&w, true);
 
     if (w.shouldExit())
         return -1; //Don't even run the app if constructor failed.
