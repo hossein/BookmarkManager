@@ -118,6 +118,8 @@
 ///   - Save bookmark extra data as whole JSON files and edit them using a JSON editor.
 ///   - Find similar urls in imported bookmarks and our collection that escaped our 'almost'
 ///     similar/exact check.
+///   - Support full url and arg definition for Open With. This would allow e.g bat, vbs, py progs
+///     to open files.
 
 class Config
 {

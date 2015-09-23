@@ -364,7 +364,8 @@ void OpenWithDialog::filter()
     if (fi.isFile())
     {
 #if defined(Q_OS_WIN32)
-        if (fi.suffix().toLower() == "exe")
+        QString lSuffix = fi.suffix().toLower();
+        if (lSuffix == "exe" || lSuffix == "com")
         {
             //We can't rely on displayName or largeIcon being empty for error handling.
             //  If the program hasn't set a name in its resources, GetProgramDisplayName returns
@@ -414,16 +415,18 @@ void OpenWithDialog::filter()
 void OpenWithDialog::pact_browse()
 {
 #if defined(Q_OS_WIN32)
-    //NOTE: BAT files don't have icon, etc. They are a more general idea than supporting arbitrary
-    //      parameters for executables. However we should also set the *.lnk extension as Start Menu
-    //      programs (the default directory) are all shortcuts.
+    //Note: BAT files don't have icon, etc. They are a more general idea than supporting arbitrary
+    //      parameters for executables. However we need extra code to support them, so for now we
+    //      forget them. Maybe in the future we do a full custom command-line Open With.
+    //Note: We don't need to set the *.lnk extension as the filter for the open dialog below, Qt
+    //      handles them. (Start Menu programs (the default directory) are all shortcuts.)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     QString programsDir = QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation);
 #else
     QString programsDir = QDesktopServices::storageLocation(QDesktopServices::ApplicationsLocation);
 #endif
     QString exeFileName = QFileDialog::getOpenFileName(this, "Select Program", programsDir,
-                                                       "Executables (*.exe *.com *.bat)");
+                                                       "Executables (*.exe *.com)");
     if (exeFileName.length() > 0)
         ui->leFilterBrowse->setText(exeFileName);
 #else
