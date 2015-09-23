@@ -442,8 +442,6 @@ void OpenWithDialog::pact_browse()
 
 void OpenWithDialog::pact_rename()
 {
-    //TODO: Seems there is a NULL byte at the end of the prog names. Try putting sth after them.
-
     //We can't reach here if there is no item selected, as the 'Rename' menu would be disabled.
     QListWidgetItem* selItem = ui->lwProgs->selectedItems()[0];
     long long SAID = selItem->data(AppItemRole::SAID).toLongLong();

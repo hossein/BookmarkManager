@@ -77,6 +77,13 @@ QString WinFunctions::GetProgramDisplayName(const QString& exePathName)
     if (success == 0) //Error
         return failSafeName;
 
+    //The `size` is size of bytes, not characters! So we have a null character at the end.
+    //  See http://blogs.msdn.com/b/oldnewthing/archive/2006/12/22/1348663.aspx.
+    //  Let's assume it's not just always one zero byte, or it ever is. So use a while to delete
+    //  all, if any, zero bytes.
+    while (lpBuffer[size - 1] == L'\0')
+        size -= 1;
+
     //Note: QString::toWCharArray produces UTF-16, BUT QString::fromWCharArray assumes input is UCS-2!
     //      QString::fromUtf16 gets input from UTF-16.
     QString displayName = QString::fromUtf16((ushort*)lpBuffer, size); //The size is correct.
