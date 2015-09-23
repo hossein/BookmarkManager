@@ -129,8 +129,8 @@ public:
         //// CONSTANTS
         concurrentBookmarkProcessings = 3;
 
-        nominalDatabaseVersion = 1;
-        nominalDatabasetFileName = "bmmgr.sqlite";
+        programDatabaseVersion = 1;
+        programDatabasetFileName = "bmmgr.sqlite";
 
         nominalFileArchiveDirName = "FileArchive";
         fileArchiveNamePATTERN = ":arch%1:";
@@ -150,8 +150,8 @@ public:
     //// CONSTANTS
     int concurrentBookmarkProcessings;
 
-    int nominalDatabaseVersion;
-    QString nominalDatabasetFileName;
+    int programDatabaseVersion;
+    QString programDatabasetFileName;
 
     QString nominalFileArchiveDirName;
     QString fileArchiveNamePATTERN;

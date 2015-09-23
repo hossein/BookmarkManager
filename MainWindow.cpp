@@ -190,7 +190,7 @@ bool MainWindow::LoadDatabaseAndUI()
 {
     bool success;
 
-    QString databaseFilePath = QDir::currentPath() + "/" + conf.nominalDatabasetFileName;
+    QString databaseFilePath = QDir::currentPath() + "/" + conf.programDatabasetFileName;
     success = dbm.BackupOpenOrCreate(databaseFilePath);
     if (!success)
         return false;

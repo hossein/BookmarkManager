@@ -118,7 +118,7 @@ bool DatabaseManager::CreateDatabase(const QString& fileName)
     QSqlQuery query(db);
 
     query.exec("CREATE TABLE Info( Version INTEGER )");
-    query.exec("INSERT INTO Info(Version) VALUES(" + QString::number(conf->nominalDatabaseVersion) + ")");
+    query.exec("INSERT INTO Info(Version) VALUES(" + QString::number(conf->programDatabaseVersion) + ")");
 
     bms.CreateTables();
     files.CreateTables();
@@ -200,9 +200,9 @@ bool DatabaseManager::CheckVersion()
     if (!okay)
         return Error(versionError, query.lastError());
 
-    if (version < conf->nominalDatabaseVersion)
+    if (version < conf->programDatabaseVersion)
         return UpgradeDatabase();
-    else if (version > conf->nominalDatabaseVersion)
+    else if (version > conf->programDatabaseVersion)
         return Error("Database file format is newer than current application!\n"
                      "Please update the application.");
 
