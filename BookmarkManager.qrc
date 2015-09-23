@@ -13,5 +13,7 @@
         <file>res/import_folder.png</file>
         <file>res/import_dontimport.png</file>
         <file>res/import_folderdontimport.png</file>
+        <file>res/web_refresh.png</file>
+        <file>res/web_stop.png</file>
     </qresource>
 </RCC>
