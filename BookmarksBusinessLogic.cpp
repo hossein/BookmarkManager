@@ -3,6 +3,9 @@
 #include "Config.h"
 #include "DatabaseManager.h"
 
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QMessageBox>
 
 BookmarksBusinessLogic::BookmarksBusinessLogic(DatabaseManager* dbm, Config* conf, QWidget* dialogParent)
@@ -148,16 +151,25 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
         //Convert tag names to csv.
         QString tagNames = bdata.Ex_TagsList.join(",");
 
-        //Convert extra info to one big chunk of data.
-        //TODO: TO JSON: bdata.Ex_ExtraInfosList[0]
-        QString extraInfoJSonText = "???";
+        //Convert extra info to one big chunk of json text.
+        QJsonArray exInfoJsonArray;
+        foreach (const BookmarkManager::BookmarkExtraInfoData& exInfo, bdata.Ex_ExtraInfosList)
+        {
+            QJsonObject exInfoJsonObject;
+            exInfoJsonObject.insert("Name", QJsonValue(exInfo.Name));
+            exInfoJsonObject.insert("Type", QJsonValue(BookmarkManager::BookmarkExtraInfoData::DataTypeName(exInfo.Type)));
+            exInfoJsonObject.insert("Value", QJsonValue(exInfo.Value));
+            exInfoJsonArray.append(QJsonValue(exInfoJsonObject));
+        }
+        QString extraInfoJSonText = QString::fromUtf8(QJsonDocument(exInfoJsonArray).toJson(QJsonDocument::Compact));
 
         //Do nothing about linked bookmarks. //TODO: Why not? How about bms that this bm is linked to them?
         //Okay!
 
         //Move the information to BookmarkTrash table
         success = dbm->bms.InsertBookmarkIntoTrash(bdata.Name, bdata.URL, bdata.Desc, tagNames,
-                                                   attachedFIDsStr, defaultFID, bdata.Rating, bdata.AddDate);
+                                                   attachedFIDsStr, defaultFID, bdata.Rating,
+                                                   bdata.AddDate, extraInfoJSonText);
         if (!success)
             return DoRollBackAction();
 

@@ -36,6 +36,20 @@ public:
             Type_Boolean = 3
         };
 
+        static QString DataTypeName(DataType dataType)
+        {
+            QString ret;
+            switch (dataType)
+            {
+            case Type_Null   : ret = "Null"   ; break;
+            case Type_Text   : ret = "Text"   ; break;
+            case Type_Number : ret = "Number" ; break;
+            case Type_Boolean: ret = "Boolean"; break;
+            default          : ret = "Unknown"; break;
+            }
+            return ret;
+        }
+
         long long BEIID;
         long long BID;
         QString Name;
@@ -86,7 +100,8 @@ public:
 
     bool InsertBookmarkIntoTrash(
             const QString& Name, const QString& URL, const QString& Description, const QString& Tags,
-            const QString& AttachedFIDs, const long long DefFID, const int Rating, long long AddDate);
+            const QString& AttachedFIDs, const long long DefFID, const int Rating, long long AddDate,
+            const QString& ExtraInfos);
 
     bool RetrieveLinkedBookmarks(long long BID, QList<long long>& linkedBIDs);
     bool UpdateLinkedBookmarks(long long BID, const QList<long long>& originalLinkedBIDs,

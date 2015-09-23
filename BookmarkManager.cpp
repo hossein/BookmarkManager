@@ -113,13 +113,12 @@ bool BookmarkManager::RemoveBookmark(long long BID)
     return true;
 }
 
-bool BookmarkManager::InsertBookmarkIntoTrash(
-        const QString& Name, const QString& URL, const QString& Description, const QString& Tags,
-        const QString& AttachedFIDs, const long long DefFID, const int Rating, long long AddDate)
+bool BookmarkManager::InsertBookmarkIntoTrash(const QString& Name, const QString& URL, const QString& Description, const QString& Tags,
+        const QString& AttachedFIDs, const long long DefFID, const int Rating, long long AddDate, const QString& ExtraInfos)
 {
     QSqlQuery query(db);
     query.prepare("INSERT INTO BookmarkTrash(Name, URL, Desc, AttachedFIDs, DefFID, Rating, Tags, "
-                  "                          DeleteDate, AddDate) VALUES (?,?,?,?,?,?,?,?,?)");
+                  "                          ExtraInfos, DeleteDate, AddDate) VALUES (?,?,?,?,?,?,?,?,?,?)");
     query.addBindValue(Name);
     query.addBindValue(URL);
     query.addBindValue(Description);
@@ -127,6 +126,7 @@ bool BookmarkManager::InsertBookmarkIntoTrash(
     query.addBindValue(DefFID);
     query.addBindValue(Rating);
     query.addBindValue(Tags);
+    query.addBindValue(ExtraInfos);
     query.addBindValue(QDateTime::currentMSecsSinceEpoch());
     query.addBindValue(AddDate);
 
@@ -513,7 +513,7 @@ void BookmarkManager::CreateTables()
     query.exec("CREATE TABLE BookmarkTrash"
                "( BID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, URL TEXT, "
                "  Desc TEXT, AttachedFIDs TEXT, DefFID INTEGER, Rating INTEGER, "
-               "  Tags TEXT, DeleteDate INTEGER, AddDate INTEGER )");
+               "  Tags TEXT, ExtraInfos TEXT, DeleteDate INTEGER, AddDate INTEGER )");
 
     query.exec("CREATE Table BookmarkLink"
                "( BLID INTEGER PRIMARY KEY AUTOINCREMENT, BID1 INTEGER, BID2 INTEGER )");
