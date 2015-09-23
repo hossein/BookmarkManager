@@ -5,7 +5,6 @@
 
 #include <QBoxLayout>
 #include <QFrame>
-#include <QLabel>
 #include <QProgressBar>
 #include <QToolButton>
 #include <QWebView>
@@ -76,11 +75,6 @@ QWidget* LocalHTMLPreviewHandler::CreateAndFreeWidget(QWidget* parent)
 
     toolbarLayout->addStretch(1);
 
-    webStatusLabel = new QLabel(toolbarWidget);
-    webStatusLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    webStatusLabel->setStyleSheet("background: red;");
-    toolbarLayout->addWidget(webStatusLabel, 1);
-
     QProgressBar* prgLoadProgress = new QProgressBar(toolbarWidget);
     prgLoadProgress->setFixedWidth(100);
     prgLoadProgress->setMinimum(0);
@@ -100,7 +94,6 @@ QWidget* LocalHTMLPreviewHandler::CreateAndFreeWidget(QWidget* parent)
     //Start, stop, progress
     webViewWidget->connect(tbRefresh, SIGNAL(clicked()), webViewWidget, SLOT(reload()));
     webViewWidget->connect(tbStop, SIGNAL(clicked()), webViewWidget, SLOT(stop()));
-    //webViewWidget->connect(webViewWidget->page(), SIGNAL(statusBarMessage(QString)), webStatusLabel, SLOT(setText(QString)));
     webViewWidget->connect(webViewWidget, SIGNAL(loadProgress(int)), prgLoadProgress, SLOT(setValue(int)));
 
     //Can't connect web view's load started/finished signal to toolbuttons' setenabled/disabled
@@ -165,8 +158,6 @@ bool LocalHTMLPreviewHandler::ClearAndSetDataToWidget(const QString& filePathNam
     //In Qt5 this works decently.
     webViewWidget->setUrl(QUrl::fromLocalFile(filePathName));
 #endif
-
-    webViewWidget->connect(webViewWidget, SIGNAL(statusBarMessage(QString)), webStatusLabel, SLOT(setText(QString)));
 
     return true;
 }
