@@ -39,6 +39,8 @@
 
 //TODO: Double clicking bm's in View dialog's related bookmarks must pop up their view dialog,
 //      AND they MUST show their Office-style brief information EVERYWHERE; super useful.
+//TODO: Now that local html previewer is easily navigatable, where are its cookies stored and
+//      do they persist (and do we want them to persist) between closing/reopening previews?
 
 /// TODO: Plan:
 ///   x File Manager

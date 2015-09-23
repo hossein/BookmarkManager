@@ -131,11 +131,12 @@ void BookmarkViewDialog::resizeEvent(QResizeEvent* event)
     //Do BEFORE anything.
     QDialog::resizeEvent(event);
 
-    //TODO: But there is still a 1px error! Maybe should calculate column width ourselves or catch tw's resize event?
+    //But there is still a 1px error! Maybe should calculate column width ourselves or catch tw's resize event?
+    //Update: I don't get what that was about.
     /** int widthForAllColumns = 0;
     for (int i = 0; i < ui->twAttachedFiles->columnCount(); i++)
         widthForAllColumns += ui->twAttachedFiles->columnWidth(i);
-    qDebug() << widthForAllColumns << ui->twAttachedFiles->frameSize() << ui->twAttachedFiles->sizeHint() << ui->twAttachedFiles->size();*/
+    qDebug() << widthForAllColumns << ui->twAttachedFiles->frameSize() << ui->twAttachedFiles->sizeHint() << ui->twAttachedFiles->size();**/
 
     //Don't use `ui->twAttachedFiles->isVisible()` as condition, maybe it's destroyed.
     if (viewBData.Ex_FilesList.size() > 0)

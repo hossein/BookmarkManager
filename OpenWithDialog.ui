@@ -51,7 +51,7 @@
    <item>
     <widget class="QCheckBox" name="chkPreferProgram">
      <property name="text">
-      <string>&amp;Always use this program to ppen this file type</string>
+      <string>&amp;Always use this program to open this file type</string>
      </property>
      <property name="checked">
       <bool>true</bool>
