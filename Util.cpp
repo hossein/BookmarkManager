@@ -20,8 +20,6 @@ QString Util::RandomHash(int length)
     };
     int randomHashCharsSize = sizeof(randomHashChars) / sizeof(char);
 
-    Util::SeedRandomWithTime(); //We do it for each file we are adding.
-
     QString randomHash = "";
     for (int i = 0; i < length; i++)
     {

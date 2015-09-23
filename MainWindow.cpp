@@ -165,12 +165,12 @@ void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
 
 void MainWindow::on_action_importFirefoxBookmarks_triggered()
 {
-
+    //TODO [IMPORT]
 }
 
 void MainWindow::on_actionImportFirefoxBookmarksJSONfile_triggered()
 {
-    //TODO: Real url
+    //TODO [IMPORT]: Real url
     ImportFirefoxJSONFile("C:\\Users\\Hossein\\Desktop\\bookmarks-2014-11-09_1730 - Pretty.json");
 }
 

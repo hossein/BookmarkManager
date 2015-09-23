@@ -178,7 +178,7 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
 
 bool BookmarkImporter::Import(ImportedEntityList& elist)
 {
-    //TODO
+    //TODO [IMPORT]
     return true;
 }
 
