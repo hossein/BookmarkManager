@@ -450,9 +450,11 @@ void BookmarkViewDialog::PopulateExtraInfos()
 
 void BookmarkViewDialog::PreviewFile(int index)
 {
-    //TODO: The override cursor must show for the rendering of the webkit contents too!
     if (dbm->fview.HasPreviewHandler(viewBData.Ex_FilesList[index].OriginalName))
     {
+        //If any preview handler does asynchronous loading or long operations (e.g webkit), it must do
+        //  another level of override cursor management itself. It doesn't cause problems because qApp
+        //  keeps a stack of cursors.
         QApplication::setOverrideCursor(Qt::BusyCursor);
         {
             QString fileArchiveURL = viewBData.Ex_FilesList[index].ArchiveURL;

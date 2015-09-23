@@ -2,13 +2,30 @@
 
 #include <QDebug>
 #include <QFileInfo>
+#include <QApplication>
 
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QWebView>
 
+void LocalHTMLPreviewCursorChanger::SetBusyLoadingCursor()
+{
+    qApp->setOverrideCursor(Qt::BusyCursor);
+}
+
+void LocalHTMLPreviewCursorChanger::RestoreCursor()
+{
+    qApp->restoreOverrideCursor();
+}
+
 LocalHTMLPreviewHandler::LocalHTMLPreviewHandler()
 {
+    m_cursorChanger = new LocalHTMLPreviewCursorChanger;
+}
+
+LocalHTMLPreviewHandler::~LocalHTMLPreviewHandler()
+{
+    m_cursorChanger->deleteLater();
 }
 
 QString LocalHTMLPreviewHandler::GetUniqueName()
@@ -37,6 +54,10 @@ QWidget* LocalHTMLPreviewHandler::CreateAndFreeWidget(QWidget* parent)
 
     QWebView* webViewWidget = new QWebView(webViewFrame);
     frameLayout->addWidget(webViewWidget, 1);
+
+    //Loading and rendering webkit contents os a long asynchronous operation, so we manage cursors.
+    webViewWidget->connect(webViewWidget, SIGNAL(loadStarted()), m_cursorChanger, SLOT(SetBusyLoadingCursor()));
+    webViewWidget->connect(webViewWidget, SIGNAL(loadFinished(bool)), m_cursorChanger, SLOT(RestoreCursor()));
 
     return webViewFrame;
 }
