@@ -36,9 +36,6 @@
 //TODO: selection model MUST not be connected everytime.
 //TODO: views ARE refreshed automatically by their models! RefreshView
 //      and setting headers and initial sort must be done only once!
-//TODO: If sth in MW constructor failed, app->quit is not enough and not needed at all, must
-//      use a flag to avoid calling app->exec then
-//TODO: Use latin digits for backup file names and logs.
 
 //TODO: Double clicking bm's in View dialog's related bookmarks must pop up their view dialog,
 //      AND they MUST show their Office-style brief information EVERYWHERE; super useful.

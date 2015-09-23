@@ -92,7 +92,7 @@ bool DatabaseManager::BackupDatabase(const QString& fileName)
     }
 
     QString newFileName = fileInfo.baseName()
-            + "-" + QDateTime::currentDateTime().toString("yyyy-MM-dd.hh.mm.ss")
+            + "-" + QLocale("en-us").toString(QDateTime::currentDateTime(), "yyyy-MM-dd.hh.mm.ss")
             + "." + fileInfo.completeSuffix() + ".bak";
     QString newFilePath = backupDirInfo.absoluteFilePath() + "/" + newFileName;
 
