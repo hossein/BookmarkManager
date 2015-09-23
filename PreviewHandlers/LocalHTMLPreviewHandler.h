@@ -13,24 +13,6 @@ public slots:
     void RestoreCursor();
 };
 
-class QToolButton;
-class QWebView;
-class LocalHTMLLoadButtonEnabler : public QObject
-{
-    Q_OBJECT
-private:
-    QToolButton* m_refreshButton;
-    QToolButton* m_stopButton;
-    QWebView* m_webView;
-public:
-    LocalHTMLLoadButtonEnabler(QToolButton* refreshButton, QToolButton* stopButton,
-                               QWebView* webView, QObject* parent);
-    ~LocalHTMLLoadButtonEnabler() { }
-private slots:
-    void WebViewLoadStarted();
-    void WebViewLoadFinished();
-};
-
 class LocalHTMLPreviewHandler : public FilePreviewHandler
 {
 private:

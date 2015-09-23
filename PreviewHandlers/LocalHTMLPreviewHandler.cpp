@@ -19,26 +19,6 @@ void LocalHTMLPreviewCursorChanger::RestoreCursor()
     qApp->restoreOverrideCursor();
 }
 
-LocalHTMLLoadButtonEnabler::LocalHTMLLoadButtonEnabler(
-        QToolButton* refreshButton, QToolButton* stopButton, QWebView* webView, QObject* parent)
-    : QObject(parent), m_refreshButton(refreshButton), m_stopButton(stopButton), m_webView(webView)
-{
-    connect(m_webView, SIGNAL(loadStarted()), this, SLOT(WebViewLoadStarted()));
-    connect(m_webView, SIGNAL(loadFinished(bool)), this, SLOT(WebViewLoadFinished()));
-}
-
-void LocalHTMLLoadButtonEnabler::WebViewLoadStarted()
-{
-    m_refreshButton->setEnabled(false);
-    m_stopButton->setEnabled(true);
-}
-
-void LocalHTMLLoadButtonEnabler::WebViewLoadFinished()
-{
-    m_refreshButton->setEnabled(true);
-    m_stopButton->setEnabled(false);
-}
-
 LocalHTMLPreviewHandler::LocalHTMLPreviewHandler()
 {
     m_cursorChanger = new LocalHTMLPreviewCursorChanger;
@@ -117,12 +97,13 @@ QWidget* LocalHTMLPreviewHandler::CreateAndFreeWidget(QWidget* parent)
     webViewWidget->connect(webViewWidget, SIGNAL(loadProgress(int)), prgLoadProgress, SLOT(setValue(int)));
 
     //Can't connect web view's load started/finished signal to toolbuttons' setenabled/disabled
-    //  because the slots need required arguments. So we use a helper class.
-    //Unlike m_cursorChanger, this keeps references to items so it should get deleted together with
-    //  the web view widget, hence assignment of webViewWidget as parent. Instantiating it is enough.
-    //  (Actually now I think more about it we should be able to just define one of it, anyway if the
-    //  objects are destroyed their signal/slots connection is destroyed automatically too.)
-    new LocalHTMLLoadButtonEnabler(tbRefresh, tbStop, webViewWidget, webViewWidget);
+    //  because the slots need required arguments. So we used to have a helper class called
+    //  `LocalHTMLLoadButtonEnabler` at 13a0342f; but that crashed the system because if we
+    //  destroyed the web view while it was loading the buttons' pointer got invalid. Using Qt's
+    //  smart pointers doesn't help because the API does not use them! (See
+    //  http://stackoverflow.com/questions/9541693/what-happens-if-an-object-held-by-a-smart-pointer-gets-deleted-elsewhere)
+    //  So we simply don't enable/disable the buttons manually.
+    //new LocalHTMLLoadButtonEnabler(tbRefresh, tbStop, webViewWidget, webViewWidget);
 
     return webViewFrame;
 }
