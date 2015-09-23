@@ -63,8 +63,8 @@ QString WinFunctions::GetProgramDisplayName(const QString& exePathName)
     success = VerQueryValue(verData, L"\\VarFileInfo\\Translation",
                             (LPVOID*)&lpTranslate, &lpTranslateSize);
 
+    //Note: We can search user's language in the array, but we don't.
     //Now we pick JUST THE FIRST LANG! It's either English or not, whatever.
-    //NOTE: We can search user's language in the array, but we don't.
 
     //We assume this function always succeeds.
     WCHAR QueryWStr[100];

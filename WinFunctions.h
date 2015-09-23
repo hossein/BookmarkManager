@@ -10,6 +10,7 @@ class WinFunctions
 public:
     static bool MoveFileToRecycleBin(const QString& filePathName);
 
+    ///Gets the display name from the first string it finds, it doesn't search for e.g English name.
     static QString GetProgramDisplayName(const QString& exePathName);
     static QPixmap GetProgramSmallIcon(const QString& exePathName);
     static QPixmap GetProgramLargeIcon(const QString& exePathName);
