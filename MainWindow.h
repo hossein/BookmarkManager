@@ -19,10 +19,13 @@ private:
     Config conf;
     DatabaseManager dbm;
     QHash<long long, QListWidgetItem*> tagItems;
+    bool m_shouldExit;
 
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+    bool shouldExit() const;
 
 private slots:
     //// Private slots responding to UI ///////////////////////////////////////////////////////////
@@ -41,7 +44,7 @@ private slots:
 private:
     /// Initialization functions, to be called JUST ONCE for loading //////////////////////////////
     void PreAssignModels();
-    void LoadDatabaseAndUI();
+    bool LoadDatabaseAndUI();
 
     /// Master functions for data refresh and display /////////////////////////////////////////////
     enum RefreshAction

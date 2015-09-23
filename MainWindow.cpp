@@ -18,7 +18,7 @@
 #include <QToolButton>
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent), ui(new Ui::MainWindow), conf(), dbm(this, &conf),
+    QMainWindow(parent), ui(new Ui::MainWindow), conf(), dbm(this, &conf), m_shouldExit(false),
     m_allTagsChecked(TCSR_NoneChecked)
 {
     ui->setupUi(this);
@@ -60,10 +60,19 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Load the application and logic
     PreAssignModels();
-    LoadDatabaseAndUI();
+    if (!LoadDatabaseAndUI())
+    {
+        m_shouldExit = true;
+        return;
+    }
 
-    // Additional sub-parts initialization. NOTE: We don't check their return value.
-    dbm.files.InitializeFileArchives();
+    // Additional sub-parts initialization.
+    if (!dbm.files.InitializeFileArchives())
+    {
+        m_shouldExit = true;
+        return;
+    }
+    //The following is not a big deal, we overlook its fails and don't check its return value.
     dbm.files.ClearSandBox();
 
     qApp->postEvent(this, new QResizeEvent(this->size(), this->size()));
@@ -72,6 +81,11 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+bool MainWindow::shouldExit() const
+{
+    return m_shouldExit;
 }
 
 void MainWindow::on_btnNew_clicked()
@@ -172,16 +186,17 @@ void MainWindow::PreAssignModels()
     //ui->tvBookmarks->sortByColumn(dbm.bms.bidx.Name, Qt::AscendingOrder);
 }
 
-void MainWindow::LoadDatabaseAndUI()
+bool MainWindow::LoadDatabaseAndUI()
 {
     bool success;
 
     QString databaseFilePath = QDir::currentPath() + "/" + conf.nominalDatabasetFileName;
     success = dbm.BackupOpenOrCreate(databaseFilePath);
     if (!success)
-        return;
+        return false;
 
     RefreshUIDataDisplay(true, RA_Focus);
+    return true;
 }
 
 void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
