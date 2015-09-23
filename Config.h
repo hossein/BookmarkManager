@@ -31,7 +31,6 @@
 //  also possible; but we don't do it for now.
 
 //TO-DOs from VT:
-//TODO: implement logging, and for logging imanager errors copy vt's logic.
 //TODO: in PopulateModelsAndInternalTables call error function to at least show a message.
 //TODO: selection model MUST not be connected everytime.
 //TODO: views ARE refreshed automatically by their models! RefreshView

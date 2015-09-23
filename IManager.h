@@ -1,4 +1,5 @@
 #pragma once
+#include <QDebug>
 #include <QString>
 #include <QMessageBox>
 #include <QtSql/QSqlError>
@@ -29,12 +30,17 @@ protected:
 
     bool Error(const QString& errorText)
     {
+        qDebug() << "IManager::Error: " << errorText;
         QMessageBox::critical(dialogParent, "Error", errorText);
         return false;
     }
 
     bool Error(const QString& errorText, const QSqlError& sqlError)
     {
+        qDebug() << "IManager::Error: " << errorText << "\n"
+                 << "  - SQL native error: " << sqlError.nativeErrorCode() << "\n"
+                 << "  - Error number/text: " << sqlError.number() << " " << sqlError.text() << "\n"
+                 << "  - DB/Driver text: " << sqlError.databaseText() << "/" << sqlError.driverText();
         QMessageBox::critical(dialogParent, "Error", errorText
                               + "\n\nSQLite Error:\n" + sqlError.text());
         return false;
