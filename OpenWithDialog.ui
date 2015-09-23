@@ -36,7 +36,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QListWidget" name="lwProgs">
+    <widget class="ListWidgetWithEmptyPlaceholder" name="lwProgs">
      <property name="contextMenuPolicy">
       <enum>Qt::CustomContextMenu</enum>
      </property>
@@ -80,6 +80,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ListWidgetWithEmptyPlaceholder</class>
+   <extends>QListWidget</extends>
+   <header>ListWidgetWithEmptyPlaceholder.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>leFilterBrowse</tabstop>
   <tabstop>btnBrowse</tabstop>

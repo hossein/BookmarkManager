@@ -28,6 +28,8 @@ OpenWithDialog::OpenWithDialog(DatabaseManager* dbm, const QString& fileName, bo
     QFileInfo fileInfo(m_fileName);
     setWindowTitle(QString("Open File '%1'").arg(fileInfo.fileName()));
 
+    ui->lwProgs->setPlaceholderText("(no program found)");
+
     //Don't enable until user selects something.
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
     //Btw we have a 'Close' button instead of a 'Cancel' button, because we can make modifications
@@ -408,7 +410,11 @@ void OpenWithDialog::filter()
     }
     else if (!systemAppFound)
     {
-        //NOTE: Showing a 'no program found' is more beautiful!
+        //We have a ListWidgetWithEmptyPlaceholder, not a simple QListWidget so it will show
+        //  'no program found' here!
+        //We couldn't use a disabled, unselectable item for this purpose. It didn't show up e.g
+        //  when deleting the only filtered program and maybe when an invalid file name was entered
+        //  into the filter box.
     }
 }
 

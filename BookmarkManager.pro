@@ -99,7 +99,8 @@ HEADERS  += MainWindow.h \
     ImportedBookmarkProcessor.h \
     ImportedBookmarksProcessor.h \
     MHTSaver.h \
-    SettingsManager.h
+    SettingsManager.h \
+    ListWidgetWithEmptyPlaceholder.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \
