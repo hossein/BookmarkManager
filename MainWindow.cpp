@@ -629,7 +629,7 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     if (result != QDialog::Accepted)
         return;
 
-    //TODO: Start transaction?
+    //TODO [IMPORT]: Start transaction?
     success = bmim.Import(elist);
     if (!success)
         return;

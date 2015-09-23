@@ -178,11 +178,11 @@ bool BookmarksBusinessLogic::DoRollBackAction()
     bool rollbackResult = dbm->files.RollBackFilesTransaction();
     if (!rollbackResult)
     {
-        QMessageBox::critical(dialogParent, "File Transaction Rollback Error", "Not all changes made "
-                              "to your filesystem in the intermediary process of adding the "
-                              "bookmark could not be reverted.<br/><br/>"
-                              "<b>Your filesystem may be in inconsistent state!</b>");
-        //TODO: ^ Now a message like this requires a detailed log written to some log file!
+        const QString errorText = "Not all changes made to your filesystem in the intermediary "
+                                  "process of adding the bookmark could not be reverted.<br/><br/>"
+                                  "<b>Your filesystem may be in inconsistent state!</b>";
+        qDebug() << "File Transaction Rollback Error\n" << errorText;
+        QMessageBox::critical(dialogParent, "File Transaction Rollback Error", errorText);
     }
 
     return false;

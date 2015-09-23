@@ -33,7 +33,9 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, Config* conf, long 
     ui->fvsRating->setStarSize(ui->lblName->sizeHint().height());
 
     //Without this the scroll area resized to less than the minimum width of what it contains.
-    //NOTE: On Qt 5.2+ maybe we can use the sizeAdjustPolicy property.
+    //Note: On Qt 5.2+ maybe we can use the sizeAdjustPolicy property.
+    //Update: As of using 5.4, I don't get what this line actually does, nor can I reproduce any
+    //  bug in its absence.
     ui->scrlFileData->setMinimumSize(ui->scrlFileDataWidgetContents->minimumSizeHint());
 
     InitializeFilesUI();
