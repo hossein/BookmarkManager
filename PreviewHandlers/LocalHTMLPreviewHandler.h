@@ -1,4 +1,4 @@
-#pragma
+#pragma once
 #include <QObject>
 #include "FilePreviewHandler.h"
 
