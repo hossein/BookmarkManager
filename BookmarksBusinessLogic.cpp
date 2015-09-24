@@ -146,7 +146,7 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
 
         success = dbm->files.TrashAllBookmarkFiles(BID);
         if (!success)
-            return DoRollBackAction(); //NOTE: Maybe we can use a class and control scopes instead of such returning?
+            return DoRollBackAction();
 
         //Convert tag names to csv.
         QString tagNames = bdata.Ex_TagsList.join(",");

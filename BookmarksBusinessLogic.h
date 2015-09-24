@@ -25,6 +25,9 @@ public:
 
 private:
     /// Rolls back transactions and shows error if they failed, also sets editBId to originalEditBId.
+    /// Note: We could use a class in such a way that when we return it goes out of scope and does
+    ///   these actions. It just has the advantage of typing `return false` instead of
+    ///   return `DoRollBackAction(...)` though; and we prefer not to mess around in destructors.
     bool DoRollBackAction();
     bool DoRollBackAction(long long& editBId, const long long originalEditBId);
 };

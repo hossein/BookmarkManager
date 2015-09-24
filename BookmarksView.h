@@ -70,7 +70,8 @@ public:
 public:
     void setModel(QAbstractItemModel* model);
 
-    //Imitate QTableView behaviour, but NOTE: probably can be changed.
+    //Imitate QTableView behaviour, but (Old) Note: probably can be changed.
+    //                                  (Update): I don't know what it refered to.
 public:
     QItemSelectionModel* selectionModel() const;
     void setCurrentIndex(const QModelIndex& index);
