@@ -9,7 +9,7 @@ class QTableView;
 
 class Config;
 class DatabaseManager;
-class BookmarksFilteredByTagsSortProxyModel;
+class BookmarksSortFilterProxyModel;
 
 /// To make this class work, caller needs to create an instance AND call `Initialize`.
 class BookmarksView : public QWidget
@@ -23,7 +23,7 @@ private:
     QTableView* tvBookmarks;
     DatabaseManager* dbm;
     Config* conf;
-    BookmarksFilteredByTagsSortProxyModel* filteredBookmarksModel;
+    BookmarksSortFilterProxyModel* filteredBookmarksModel;
     int sortNextLogicalIndex;
     Qt::SortOrder sortNextOrder;
     bool m_shrinkHeight;

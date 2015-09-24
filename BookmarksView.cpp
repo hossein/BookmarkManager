@@ -5,7 +5,7 @@
 #include <QHeaderView>
 #include <QTableView>
 
-#include "BookmarksFilteredByTagsSortProxyModel.h"
+#include "BookmarksSortFilterProxyModel.h"
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #   define setSectionResizeMode setResizeMode
@@ -53,7 +53,7 @@ void BookmarksView::Initialize(DatabaseManager* dbm, Config* conf, ListMode list
     connect(hh, SIGNAL(sectionClicked(int)), this, SLOT(tvBookmarksHeaderClicked(int)));
 
     //Models
-    filteredBookmarksModel = new BookmarksFilteredByTagsSortProxyModel(dbm, dialogParent, conf, this);
+    filteredBookmarksModel = new BookmarksSortFilterProxyModel(dbm, dialogParent, conf, this);
     connect(filteredBookmarksModel, SIGNAL(layoutChanged()), this, SLOT(modelLayoutChanged()));
 
     filteredBookmarksModel->setSourceModel(model);

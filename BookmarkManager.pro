@@ -36,7 +36,6 @@ SOURCES += main.cpp\
     Util.cpp \
     TransactionalFileOperator.cpp \
     FileViewManager.cpp \
-    BookmarksFilteredByTagsSortProxyModel.cpp \
     FiveStarRatingWidget.cpp \
     BookmarkViewDialog.cpp \
     FilePreviewerWidget.cpp \
@@ -63,7 +62,8 @@ SOURCES += main.cpp\
     CtLogger.cpp \
     BMApplication.cpp \
     qtsingleapplication/qtlocalpeer.cpp \
-    qtsingleapplication/qtsingleapplication.cpp
+    qtsingleapplication/qtsingleapplication.cpp \
+    BookmarksSortFilterProxyModel.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -79,7 +79,6 @@ HEADERS  += MainWindow.h \
     Util.h \
     TransactionalFileOperator.h \
     FileViewManager.h \
-    BookmarksFilteredByTagsSortProxyModel.h \
     FiveStarRatingWidget.h \
     BookmarkViewDialog.h \
     FilePreviewerWidget.h \
@@ -109,7 +108,8 @@ HEADERS  += MainWindow.h \
     CtLogger.h \
     BMApplication.h \
     qtsingleapplication/qtlocalpeer.h \
-    qtsingleapplication/qtsingleapplication.h
+    qtsingleapplication/qtsingleapplication.h \
+    BookmarksSortFilterProxyModel.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \

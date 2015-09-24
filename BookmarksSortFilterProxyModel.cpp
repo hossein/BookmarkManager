@@ -1,24 +1,24 @@
-#include "BookmarksFilteredByTagsSortProxyModel.h"
+#include "BookmarksSortFilterProxyModel.h"
 
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
 #include <QtSql/QSqlResult>
 
-BookmarksFilteredByTagsSortProxyModel::BookmarksFilteredByTagsSortProxyModel
+BookmarksSortFilterProxyModel::BookmarksSortFilterProxyModel
     (DatabaseManager* dbm, QWidget* dialogParent, Config* conf, QObject* parent)
     : QSortFilterProxyModel(parent), IManager(dialogParent, conf), dbm(dbm), allowAllBookmarks(true)
 {
 
 }
 
-void BookmarksFilteredByTagsSortProxyModel::ClearFilters()
+void BookmarksSortFilterProxyModel::ClearFilters()
 {
     allowAllBookmarks = true;
     filteredBookmarkIDs.clear();
     invalidateFilter(); //Read function header docs
 }
 
-bool BookmarksFilteredByTagsSortProxyModel::FilterSpecificBookmarkIDs(const QList<long long>& BIDs)
+bool BookmarksSortFilterProxyModel::FilterSpecificBookmarkIDs(const QList<long long>& BIDs)
 {
     allowAllBookmarks = false;
     filteredBookmarkIDs.clear();
@@ -28,7 +28,7 @@ bool BookmarksFilteredByTagsSortProxyModel::FilterSpecificBookmarkIDs(const QLis
     return true;
 }
 
-bool BookmarksFilteredByTagsSortProxyModel::FilterSpecificTagIDs(const QSet<long long>& tagIDs)
+bool BookmarksSortFilterProxyModel::FilterSpecificTagIDs(const QSet<long long>& tagIDs)
 {
     allowAllBookmarks = false;
     bool populateSuccess = populateValidBookmarkIDs(tagIDs);
@@ -36,7 +36,7 @@ bool BookmarksFilteredByTagsSortProxyModel::FilterSpecificTagIDs(const QSet<long
     return populateSuccess;
 }
 
-bool BookmarksFilteredByTagsSortProxyModel::populateValidBookmarkIDs(const QSet<long long>& tagIDs)
+bool BookmarksSortFilterProxyModel::populateValidBookmarkIDs(const QSet<long long>& tagIDs)
 {
     //NOTE: We should show a "loading" cursor to user when this class is initialized.
 
@@ -70,7 +70,7 @@ bool BookmarksFilteredByTagsSortProxyModel::populateValidBookmarkIDs(const QSet<
     return true;
 }
 
-bool BookmarksFilteredByTagsSortProxyModel::filterAcceptsRow
+bool BookmarksSortFilterProxyModel::filterAcceptsRow
     (int source_row, const QModelIndex& source_parent) const
 {
     Q_UNUSED(source_parent);

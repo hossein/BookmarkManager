@@ -5,7 +5,7 @@
 #include "DatabaseManager.h"
 #include <QSet>
 
-class BookmarksFilteredByTagsSortProxyModel : public QSortFilterProxyModel, public IManager
+class BookmarksSortFilterProxyModel : public QSortFilterProxyModel, public IManager
 {
     Q_OBJECT
 
@@ -15,7 +15,7 @@ private:
     QSet<long long> filteredBookmarkIDs;
 
 public:
-    BookmarksFilteredByTagsSortProxyModel(DatabaseManager* dbm, QWidget* dialogParent, Config* conf,
+    BookmarksSortFilterProxyModel(DatabaseManager* dbm, QWidget* dialogParent, Config* conf,
                                           QObject* parent = NULL);
 
     //These functions change the state of the this class as the filterer, so IMPORTANT:
