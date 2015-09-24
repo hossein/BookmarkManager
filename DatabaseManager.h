@@ -7,7 +7,6 @@
 #include "TagManager.h"
 #include <QtSql/QSqlDatabase>
 
-//TODO: It's never necessary to pass both dbm and conf together to a class. Fix it everywhere.
 class DatabaseManager : public IManager
 {
 public:

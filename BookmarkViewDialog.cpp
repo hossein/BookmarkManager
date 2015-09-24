@@ -16,9 +16,9 @@
 #   define setSectionResizeMode setResizeMode
 #endif
 
-BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, Config* conf, long long viewBId, QWidget *parent) :
+BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkViewDialog),
-    dbm(dbm), conf(conf), canShowTheDialog(false)
+    dbm(dbm), canShowTheDialog(false)
 {
     ui->setupUi(this);
 
@@ -384,7 +384,7 @@ QString BookmarkViewDialog::GetAttachedFileFullPathName(int filesListIdx)
 
 void BookmarkViewDialog::InitializeLinkedBookmarksUI()
 {
-    ui->bvLinkedBookmarks->Initialize(dbm, conf, BookmarksView::LM_NameOnlyDisplayWithoutHeaders, &dbm->bms.model);
+    ui->bvLinkedBookmarks->Initialize(dbm, BookmarksView::LM_NameOnlyDisplayWithoutHeaders, &dbm->bms.model);
     ui->bvLinkedBookmarks->setShrinkHeight(true);
     connect(ui->bvLinkedBookmarks, SIGNAL(activated(long long)),
             this, SLOT(bvLinkedBookmarksActivated(long long)));

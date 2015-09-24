@@ -5,8 +5,8 @@
 #include <QScrollBar>
 
 QuickBookmarkSelectDialog::QuickBookmarkSelectDialog(
-        DatabaseManager* dbm, Config* conf, bool scrollToBottom, OutParams* outParams, QWidget *parent)
-    : QDialog(parent), ui(new Ui::QuickBookmarkSelectDialog), dbm(dbm), conf(conf), outParams(outParams)
+        DatabaseManager* dbm, bool scrollToBottom, OutParams* outParams, QWidget *parent)
+    : QDialog(parent), ui(new Ui::QuickBookmarkSelectDialog), dbm(dbm), outParams(outParams)
 {
     ui->setupUi(this);
 
@@ -15,7 +15,7 @@ QuickBookmarkSelectDialog::QuickBookmarkSelectDialog(
     ui->leFilter->setModelColumn(dbm->tags.tidx.TagName);
 
     //BookmarksView
-    ui->bvBookmarks->Initialize(dbm, conf, BookmarksView::LM_LimitedDisplayWithHeaders, &dbm->bms.model);
+    ui->bvBookmarks->Initialize(dbm, BookmarksView::LM_LimitedDisplayWithHeaders, &dbm->bms.model);
     connect(ui->bvBookmarks, SIGNAL(activated(long long)), this, SLOT(bvBookmarksActivated(long long)));
     connect(ui->bvBookmarks, SIGNAL(currentRowChanged(long long,long long)),
             this, SLOT(bvBookmarksCurrentRowChanged(long long,long long)));

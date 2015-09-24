@@ -29,9 +29,9 @@
 #   define setSectionResizeMode setResizeMode
 #endif
 
-BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, Config* conf, long long editBId,
+BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId,
                                        OutParams* outParams, QWidget *parent) :
-    QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm), conf(conf),
+    QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm),
     canShowTheDialog(false), outParams(outParams),
     originalEditBId(editBId), editBId(editBId) //[why-two-editbids]
 {
@@ -154,7 +154,7 @@ void BookmarkEditDialog::accept()
     QList<long long> associatedTIDs;
     QStringList tagsList = ui->leTags->text().split(' ', QString::SkipEmptyParts);
 
-    BookmarksBusinessLogic bbLogic(dbm, conf, this);
+    BookmarksBusinessLogic bbLogic(dbm, this);
     bool success = bbLogic.AddOrEditBookmark(editBId, bdata, originalEditBId, editOriginalBData, editedLinkedBookmarks,
                                         tagsList, associatedTIDs, editedFilesList, DefaultFileIndex());
 
@@ -654,7 +654,7 @@ QString BookmarkEditDialog::GetAttachedFileFullPathName(int filesListIdx)
 
 void BookmarkEditDialog::InitializeLinkedBookmarksUI()
 {
-    ui->bvLinkedBookmarks->Initialize(dbm, conf, BookmarksView::LM_LimitedDisplayWithoutHeaders, &dbm->bms.model);
+    ui->bvLinkedBookmarks->Initialize(dbm, BookmarksView::LM_LimitedDisplayWithoutHeaders, &dbm->bms.model);
     connect(ui->bvLinkedBookmarks, SIGNAL(currentRowChanged(long long,long long)),
             this, SLOT(bvLinkedBookmarksCurrentRowChanged(long long,long long)));
 }
@@ -676,7 +676,7 @@ void BookmarkEditDialog::bvLinkedBookmarksCurrentRowChanged(long long currentBID
 void BookmarkEditDialog::on_btnLinkBookmark_clicked()
 {
     QuickBookmarkSelectDialog::OutParams bsOutParams;
-    QuickBookmarkSelectDialog dlgBookmarkSelect(dbm, conf, true, &bsOutParams, this);
+    QuickBookmarkSelectDialog dlgBookmarkSelect(dbm, true, &bsOutParams, this);
 
     int result = dlgBookmarkSelect.exec();
     if (result != QDialog::Accepted)

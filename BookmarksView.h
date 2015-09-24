@@ -7,7 +7,6 @@ class QItemSelectionModel;
 class QScrollBar;
 class QTableView;
 
-class Config;
 class DatabaseManager;
 struct BookmarkFilter;
 class BookmarksSortFilterProxyModel;
@@ -23,7 +22,6 @@ private:
     QWidget* dialogParent;
     QTableView* tvBookmarks;
     DatabaseManager* dbm;
-    Config* conf;
     BookmarksSortFilterProxyModel* filteredBookmarksModel;
     int sortNextLogicalIndex;
     Qt::SortOrder sortNextOrder;
@@ -44,7 +42,7 @@ public:
     explicit BookmarksView(QWidget* parent = 0);
 
     /// This class MUST be initialized by calling this function.
-    void Initialize(DatabaseManager* dbm, Config* conf, ListMode listMode, QAbstractItemModel* model);
+    void Initialize(DatabaseManager* dbm, ListMode listMode, QAbstractItemModel* model);
 
     //QWidget interface
 protected:

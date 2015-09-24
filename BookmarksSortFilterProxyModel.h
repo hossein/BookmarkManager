@@ -17,8 +17,8 @@ private:
     QSet<long long> filteredBookmarkIDs;
 
 public:
-    BookmarksSortFilterProxyModel(DatabaseManager* dbm, QWidget* dialogParent, Config* conf,
-                                          QObject* parent = NULL);
+    BookmarksSortFilterProxyModel(DatabaseManager* dbm, QWidget* dialogParent,
+                                  QObject* parent = NULL);
 
     //This function may change the state of the this class as the filterer, so IMPORTANT:
     //  Call `invalidateFilter()` after changing the state. This causes the `layoutChanged()`

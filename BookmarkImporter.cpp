@@ -3,8 +3,7 @@
 #include <QDebug>
 #include <QUrl>
 
-BookmarkImporter::BookmarkImporter(DatabaseManager* dbm, Config* conf)
-    : dbm(dbm), conf(conf)
+BookmarkImporter::BookmarkImporter(DatabaseManager* dbm) : dbm(dbm)
 {
 
 }

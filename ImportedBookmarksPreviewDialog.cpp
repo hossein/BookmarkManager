@@ -6,9 +6,9 @@
 
 #include <QDebug>
 
-ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* dbm, Config* conf,
+ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* dbm,
                                                                ImportedEntityList* elist, QWidget *parent)
-    : QDialog(parent), ui(new Ui::ImportedBookmarksPreviewDialog), dbm(dbm), conf(conf)
+    : QDialog(parent), ui(new Ui::ImportedBookmarksPreviewDialog), dbm(dbm)
     , canShowTheDialog(false), elist(elist)
 {
     ui->setupUi(this);
@@ -28,7 +28,7 @@ ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* 
     connect(ui->chkImportBookmark, SIGNAL(toggled(bool)), ui->leTagsForBookmark, SLOT(setEnabled(bool)));
     connect(ui->chkImportFolder  , SIGNAL(toggled(bool)), ui->leTagsForFolder  , SLOT(setEnabled(bool)));
 
-    m_bookmarksProcessor = new ImportedBookmarksProcessor(conf->concurrentBookmarkProcessings, this, this);
+    m_bookmarksProcessor = new ImportedBookmarksProcessor(dbm->conf->concurrentBookmarkProcessings, this, this);
     connect(m_bookmarksProcessor, SIGNAL(ProcessingDone()), this, SLOT(ProcessingDone()));
     connect(m_bookmarksProcessor, SIGNAL(ProcessingCanceled()), this, SLOT(ProcessingCanceled()));
 

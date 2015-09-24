@@ -13,7 +13,7 @@
 
 BookmarksView::BookmarksView(QWidget *parent)
     : QWidget(parent)
-    , dialogParent(parent), tvBookmarks(NULL), dbm(NULL), conf(NULL), filteredBookmarksModel(NULL)
+    , dialogParent(parent), tvBookmarks(NULL), dbm(NULL), filteredBookmarksModel(NULL)
 {
     //Initialize this here to protect from some crashes
     tvBookmarks = new QTableView(this);
@@ -25,11 +25,10 @@ BookmarksView::BookmarksView(QWidget *parent)
     tvBookmarks->setWordWrap(false);
 }
 
-void BookmarksView::Initialize(DatabaseManager* dbm, Config* conf, ListMode listMode, QAbstractItemModel* model)
+void BookmarksView::Initialize(DatabaseManager* dbm, ListMode listMode, QAbstractItemModel* model)
 {
     //Class members
     this->dbm = dbm;
-    this->conf = conf;
     this->m_listMode = listMode;
     this->m_shrinkHeight = false;
 
@@ -53,7 +52,7 @@ void BookmarksView::Initialize(DatabaseManager* dbm, Config* conf, ListMode list
     connect(hh, SIGNAL(sectionClicked(int)), this, SLOT(tvBookmarksHeaderClicked(int)));
 
     //Models
-    filteredBookmarksModel = new BookmarksSortFilterProxyModel(dbm, dialogParent, conf, this);
+    filteredBookmarksModel = new BookmarksSortFilterProxyModel(dbm, dialogParent, this);
     connect(filteredBookmarksModel, SIGNAL(layoutChanged()), this, SLOT(modelLayoutChanged()));
 
     filteredBookmarksModel->setSourceModel(model);

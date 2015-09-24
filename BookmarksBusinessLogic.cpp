@@ -8,8 +8,8 @@
 #include <QJsonObject>
 #include <QMessageBox>
 
-BookmarksBusinessLogic::BookmarksBusinessLogic(DatabaseManager* dbm, Config* conf, QWidget* dialogParent)
-    : dbm(dbm), conf(conf), dialogParent(dialogParent)
+BookmarksBusinessLogic::BookmarksBusinessLogic(DatabaseManager* dbm, QWidget* dialogParent)
+    : dbm(dbm), dialogParent(dialogParent)
 {
 
 }
@@ -54,7 +54,7 @@ bool BookmarksBusinessLogic::AddOrEditBookmark(long long& editBId, BookmarkManag
         QList<long long> updatedBFIDs;
         success = dbm->files.UpdateBookmarkFiles(editBId, bdata.Name,
                                                  editOriginalBData.Ex_FilesList, editedFilesList,
-                                                 updatedBFIDs, conf->currentFileArchiveForAddingFiles);
+                                                 updatedBFIDs, dbm->conf->currentFileArchiveForAddingFiles);
         if (!success)
             return DoRollBackAction(editBId, originalEditBId);
 

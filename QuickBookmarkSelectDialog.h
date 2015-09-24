@@ -19,11 +19,10 @@ public:
 private:
     Ui::QuickBookmarkSelectDialog *ui;
     DatabaseManager* dbm;
-    Config* conf;
     OutParams* outParams;
 
 public:
-    explicit QuickBookmarkSelectDialog(DatabaseManager* dbm, Config* conf, bool scrollToBottom,
+    explicit QuickBookmarkSelectDialog(DatabaseManager* dbm, bool scrollToBottom,
                                        OutParams* outParams = NULL, QWidget *parent = 0);
     ~QuickBookmarkSelectDialog();
 

@@ -5,8 +5,8 @@
 #include <QtSql/QSqlResult>
 
 BookmarksSortFilterProxyModel::BookmarksSortFilterProxyModel
-    (DatabaseManager* dbm, QWidget* dialogParent, Config* conf, QObject* parent)
-    : QSortFilterProxyModel(parent), IManager(dialogParent, conf), dbm(dbm), allowAllBookmarks(true)
+    (DatabaseManager* dbm, QWidget* dialogParent, QObject* parent)
+    : QSortFilterProxyModel(parent), IManager(dialogParent, dbm->conf), dbm(dbm), allowAllBookmarks(true)
 {
 
 }

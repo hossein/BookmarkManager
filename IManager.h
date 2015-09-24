@@ -16,6 +16,8 @@ class IManager
 {
 protected:
     QWidget* dialogParent;
+
+public:
     Config* conf;
 
 protected:

@@ -3,7 +3,6 @@
 
 #include "DatabaseManager.h"
 
-class Config;
 class QTableWidgetItem;
 namespace Ui { class BookmarkViewDialog; }
 
@@ -14,14 +13,13 @@ class BookmarkViewDialog : public QDialog
 private:
     Ui::BookmarkViewDialog *ui;
     DatabaseManager* dbm;
-    Config* conf;
     bool canShowTheDialog;
     int twAttachedFilesRequiredHeight;
 
     BookmarkManager::BookmarkData viewBData;
 
 public:
-    explicit BookmarkViewDialog(DatabaseManager* dbm, Config* conf, long long viewBId = -1,
+    explicit BookmarkViewDialog(DatabaseManager* dbm, long long viewBId = -1,
                                 QWidget *parent = 0);
     ~BookmarkViewDialog();
 

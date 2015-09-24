@@ -19,7 +19,6 @@ class ImportedBookmarksPreviewDialog : public QDialog
 private:
     Ui::ImportedBookmarksPreviewDialog *ui;
     DatabaseManager* dbm;
-    Config* conf;
     bool canShowTheDialog;
     ImportedEntityList* elist;
     ImportedBookmarksProcessor* m_bookmarksProcessor;
@@ -45,7 +44,7 @@ private:
     };
 
 public:
-    explicit ImportedBookmarksPreviewDialog(DatabaseManager* dbm, Config* conf,
+    explicit ImportedBookmarksPreviewDialog(DatabaseManager* dbm,
                                             ImportedEntityList* elist, QWidget *parent = 0);
     ~ImportedBookmarksPreviewDialog();
 

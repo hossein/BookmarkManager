@@ -2,18 +2,16 @@
 #include <QString>
 #include "BookmarkManager.h"
 
-class Config;
 class DatabaseManager;
 
 class BookmarksBusinessLogic
 {
 private:
     DatabaseManager* dbm;
-    Config* conf;
     QWidget* dialogParent;
 
 public:
-    BookmarksBusinessLogic(DatabaseManager* dbm, Config* conf, QWidget* dialogParent);
+    BookmarksBusinessLogic(DatabaseManager* dbm, QWidget* dialogParent);
 
     bool AddOrEditBookmark(long long& editBId, BookmarkManager::BookmarkData& bdata,
                            long long originalEditBId, BookmarkManager::BookmarkData& editOriginalBData,

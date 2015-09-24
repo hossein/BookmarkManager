@@ -61,7 +61,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     // Initialize important controls
-    ui->bv->Initialize(&dbm, &conf, BookmarksView::LM_FullInformationAndEdit, &dbm.bms.model);
+    ui->bv->Initialize(&dbm, BookmarksView::LM_FullInformationAndEdit, &dbm.bms.model);
     connect(ui->bv, SIGNAL(activated(long long)), this, SLOT(bvActivated(long long)));
     connect(ui->bv, SIGNAL(currentRowChanged(long long,long long)),
             this, SLOT(bvCurrentRowChanged(long long,long long)));
@@ -389,7 +389,7 @@ void MainWindow::NewBookmark()
     //  http://qt-project.org/forums/viewthread/15361
 
     BookmarkEditDialog::OutParams outParams;
-    BookmarkEditDialog bmEditDialog(&dbm, &conf, -1, &outParams, this);
+    BookmarkEditDialog bmEditDialog(&dbm, -1, &outParams, this);
 
     int result = bmEditDialog.exec();
     if (result != QDialog::Accepted)
@@ -401,7 +401,7 @@ void MainWindow::NewBookmark()
 
 void MainWindow::ViewSelectedBookmark()
 {
-    BookmarkViewDialog bmViewDialog(&dbm, &conf, ui->bv->GetSelectedBookmarkID(), this);
+    BookmarkViewDialog bmViewDialog(&dbm, ui->bv->GetSelectedBookmarkID(), this);
 
     if (!bmViewDialog.canShow())
         return; //In case of errors a message is already shown.
@@ -415,7 +415,7 @@ void MainWindow::EditSelectedBookmark()
 {
     BookmarkEditDialog::OutParams outParams;
     const long long BID = ui->bv->GetSelectedBookmarkID();
-    BookmarkEditDialog bmEditDialog(&dbm, &conf, BID, &outParams, this);
+    BookmarkEditDialog bmEditDialog(&dbm, BID, &outParams, this);
 
     if (!bmEditDialog.canShow())
         return; //In case of errors a message is already shown.
@@ -440,7 +440,7 @@ void MainWindow::DeleteSelectedBookmark()
                               QMessageBox::Yes | QMessageBox::No, QMessageBox::No))
         return;
 
-    BookmarksBusinessLogic bbLogic(&dbm, &conf, this);
+    BookmarksBusinessLogic bbLogic(&dbm, this);
     bool success = bbLogic.DeleteBookmark(ui->bv->GetSelectedBookmarkID());
     if (!success)
         return;
@@ -594,7 +594,7 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     if (!success)
         return;
 
-    BookmarkImporter bmim(&dbm, &conf);
+    BookmarkImporter bmim(&dbm);
     success = bmim.Initialize();
     if (!success)
         return;
@@ -603,7 +603,7 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     if (!success)
         return;
 
-    ImportedBookmarksPreviewDialog importPreviewDialog(&dbm, &conf, &elist, this);
+    ImportedBookmarksPreviewDialog importPreviewDialog(&dbm, &elist, this);
     success = importPreviewDialog.canShow();
     if (!success)
         return;
