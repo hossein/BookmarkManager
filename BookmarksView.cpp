@@ -15,20 +15,7 @@ BookmarksView::BookmarksView(QWidget *parent)
     : QWidget(parent)
     , dialogParent(parent), tvBookmarks(NULL), dbm(NULL), conf(NULL), filteredBookmarksModel(NULL)
 {
-}
-
-void BookmarksView::Initialize(DatabaseManager* dbm, Config* conf, ListMode listMode)
-{
-    //Class members
-    this->dbm = dbm;
-    this->conf = conf;
-    this->m_listMode = listMode;
-    this->m_shrinkHeight = false;
-
-    filteredBookmarksModel = new BookmarksFilteredByTagsSortProxyModel(dbm, dialogParent, conf, this);
-    connect(filteredBookmarksModel, SIGNAL(layoutChanged()), this, SLOT(modelLayoutChanged()));
-
-    //UI
+    //Initialize this here to protect from some crashes
     tvBookmarks = new QTableView(this);
     tvBookmarks->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tvBookmarks->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -36,7 +23,17 @@ void BookmarksView::Initialize(DatabaseManager* dbm, Config* conf, ListMode list
     tvBookmarks->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     tvBookmarks->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     tvBookmarks->setWordWrap(false);
+}
 
+void BookmarksView::Initialize(DatabaseManager* dbm, Config* conf, ListMode listMode, QAbstractItemModel* model)
+{
+    //Class members
+    this->dbm = dbm;
+    this->conf = conf;
+    this->m_listMode = listMode;
+    this->m_shrinkHeight = false;
+
+    //UI
     QHeaderView* hh = tvBookmarks->horizontalHeader();
     QHeaderView* vh = tvBookmarks->verticalHeader();
     hh->setVisible(listMode >= LM_LimitedDisplayWithHeaders);
@@ -49,112 +46,20 @@ void BookmarksView::Initialize(DatabaseManager* dbm, Config* conf, ListMode list
     myLayout->setContentsMargins(0, 0, 0, 0);
     this->setLayout(myLayout);
 
-    //First time connections.
+    //First time connections, sort and activation
+    //tvBookmarks->setSortingEnabled(true); Leave it false, we're managing header clicks manually.
     connect(tvBookmarks, SIGNAL(activated(QModelIndex)), this, SLOT(tvBookmarksActivated(QModelIndex)));
     connect(hh, SIGNAL(sectionPressed(int)), this, SLOT(tvBookmarksHeaderPressed(int)));
     connect(hh, SIGNAL(sectionClicked(int)), this, SLOT(tvBookmarksHeaderClicked(int)));
-}
 
-void BookmarksView::focusInEvent(QFocusEvent* event)
-{
-    QWidget::focusInEvent(event);
-    tvBookmarks->setFocus();
-}
+    //Models
+    filteredBookmarksModel = new BookmarksFilteredByTagsSortProxyModel(dbm, dialogParent, conf, this);
+    connect(filteredBookmarksModel, SIGNAL(layoutChanged()), this, SLOT(modelLayoutChanged()));
 
-QString BookmarksView::GetSelectedBookmarkName() const
-{
-    if (!tvBookmarks->currentIndex().isValid())
-        return QString();
-
-    int selRow = tvBookmarks->currentIndex().row();
-    return filteredBookmarksModel->data(filteredBookmarksModel->index(selRow, dbm->bms.bidx.Name))
-            .toString();
-}
-
-long long BookmarksView::GetSelectedBookmarkID() const
-{
-    if (!tvBookmarks->currentIndex().isValid())
-        return -1;
-
-    int selRow = tvBookmarks->currentIndex().row();
-    long long selectedBId =
-            filteredBookmarksModel->data(filteredBookmarksModel->index(selRow, dbm->bms.bidx.BID))
-                                   .toLongLong();
-    return selectedBId;
-}
-
-void BookmarksView::SelectBookmarkWithID(long long bookmarkId)
-{
-    QModelIndexList matches = filteredBookmarksModel->match(
-                filteredBookmarksModel->index(0, dbm->bms.bidx.BID), Qt::DisplayRole,
-                bookmarkId, 1, Qt::MatchExactly);
-
-    if (matches.length() != 1)
-        return; //Not found for some reason, e.g filtered out.
-
-    tvBookmarks->setCurrentIndex(matches[0]);
-    tvBookmarks->scrollTo(matches[0], QAbstractItemView::EnsureVisible);
-}
-
-void BookmarksView::ClearFilters()
-{
-    filteredBookmarksModel->ClearFilters();
-}
-
-bool BookmarksView::FilterSpecificBookmarkIDs(const QList<long long>& BIDs)
-{
-    return filteredBookmarksModel->FilterSpecificBookmarkIDs(BIDs);
-}
-
-bool BookmarksView::FilterSpecificTagIDs(const QSet<long long>& tagIDs)
-{
-    return filteredBookmarksModel->FilterSpecificTagIDs(tagIDs);
-}
-
-int BookmarksView::GetTotalBookmarksCount() const
-{
-    return filteredBookmarksModel->sourceModel()->rowCount();
-}
-
-int BookmarksView::GetDisplayedBookmarksCount() const
-{
-    return filteredBookmarksModel->rowCount();
-}
-
-void BookmarksView::setModel(QAbstractItemModel* model)
-{
     filteredBookmarksModel->setSourceModel(model);
     tvBookmarks->setModel(filteredBookmarksModel);
-}
 
-QItemSelectionModel*BookmarksView::selectionModel() const
-{
-    return tvBookmarks->selectionModel();
-}
-
-void BookmarksView::setCurrentIndex(const QModelIndex& index)
-{
-    tvBookmarks->setCurrentIndex(index);
-}
-
-QScrollBar*BookmarksView::horizontalScrollBar() const
-{
-    return tvBookmarks->horizontalScrollBar();
-}
-
-QScrollBar*BookmarksView::verticalScrollBar() const
-{
-    return tvBookmarks->verticalScrollBar();
-}
-
-void BookmarksView::ResetHeadersAndSort()
-{
-    QHeaderView* hh = tvBookmarks->horizontalHeader();
-    //TODO: Sorts must be here?
-    Qt::SortOrder sortOrder = hh->sortIndicatorOrder();
-    int sortColumn = hh->sortIndicatorSection();
-
-    //TODO: Seems this can be done only once, like the signal connection.
+    //Must hide the sections AFTER setting the model.
     BookmarkManager::BookmarkIndexes const& bidx = dbm->bms.bidx;
     if (hh->count() > 0) //This can happen on database errors.
     {
@@ -176,16 +81,128 @@ void BookmarksView::ResetHeadersAndSort()
         hh->resizeSection(bidx.Rating, 50);
     }
 
+    ///Initial sort, let it be unsorted
+    ///Qt::SortOrder sortOrder = hh->sortIndicatorOrder();
+    ///int sortColumn = hh->sortIndicatorSection();
+    ///filteredBookmarksModel->sort(sortColumn, sortOrder);
     //ui->tvBookmarks->sortByColumn(sortColumn);
-    filteredBookmarksModel->sort(sortColumn, sortOrder);
     //hh->setSortIndicator(sortColumn, sortOrder);
 
-    QHeaderView* vh = tvBookmarks->verticalHeader();
     vh->setSectionResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
 
     //Need to connect everytime we change the model.
     connect(tvBookmarks->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
             this, SLOT(tvBookmarksCurrentRowChanged(QModelIndex,QModelIndex)));
+}
+
+void BookmarksView::focusInEvent(QFocusEvent* event)
+{
+    QWidget::focusInEvent(event);
+    tvBookmarks->setFocus();
+}
+
+QString BookmarksView::GetSelectedBookmarkName() const
+{
+    if (!filteredBookmarksModel)
+        return QString();
+
+    if (!tvBookmarks->currentIndex().isValid())
+        return QString();
+
+    int selRow = tvBookmarks->currentIndex().row();
+    return filteredBookmarksModel->data(filteredBookmarksModel->index(selRow, dbm->bms.bidx.Name))
+            .toString();
+}
+
+long long BookmarksView::GetSelectedBookmarkID() const
+{
+    if (!filteredBookmarksModel)
+        return -1;
+
+    if (!tvBookmarks->currentIndex().isValid())
+        return -1;
+
+    int selRow = tvBookmarks->currentIndex().row();
+    long long selectedBId =
+            filteredBookmarksModel->data(filteredBookmarksModel->index(selRow, dbm->bms.bidx.BID))
+                                   .toLongLong();
+    return selectedBId;
+}
+
+void BookmarksView::SelectBookmarkWithID(long long bookmarkId)
+{
+    if (!filteredBookmarksModel)
+        return;
+
+    QModelIndexList matches = filteredBookmarksModel->match(
+                filteredBookmarksModel->index(0, dbm->bms.bidx.BID), Qt::DisplayRole,
+                bookmarkId, 1, Qt::MatchExactly);
+
+    if (matches.length() != 1)
+        return; //Not found for some reason, e.g filtered out.
+
+    tvBookmarks->setCurrentIndex(matches[0]);
+    tvBookmarks->scrollTo(matches[0], QAbstractItemView::EnsureVisible);
+}
+
+void BookmarksView::ClearFilters()
+{
+    if (!filteredBookmarksModel)
+        return;
+    filteredBookmarksModel->ClearFilters();
+}
+
+bool BookmarksView::FilterSpecificBookmarkIDs(const QList<long long>& BIDs)
+{
+    if (!filteredBookmarksModel)
+        return false;
+    return filteredBookmarksModel->FilterSpecificBookmarkIDs(BIDs);
+}
+
+bool BookmarksView::FilterSpecificTagIDs(const QSet<long long>& tagIDs)
+{
+    if (!filteredBookmarksModel)
+        return false;
+    return filteredBookmarksModel->FilterSpecificTagIDs(tagIDs);
+}
+
+int BookmarksView::GetTotalBookmarksCount() const
+{
+    if (!filteredBookmarksModel)
+        return 0;
+    return filteredBookmarksModel->sourceModel()->rowCount();
+}
+
+int BookmarksView::GetDisplayedBookmarksCount() const
+{
+    if (!filteredBookmarksModel)
+        return 0;
+    return filteredBookmarksModel->rowCount();
+}
+
+QItemSelectionModel* BookmarksView::selectionModel() const
+{
+    return tvBookmarks->selectionModel();
+}
+
+void BookmarksView::setCurrentIndex(const QModelIndex& index)
+{
+    tvBookmarks->setCurrentIndex(index);
+}
+
+QScrollBar*BookmarksView::horizontalScrollBar() const
+{
+    return tvBookmarks->horizontalScrollBar();
+}
+
+QScrollBar*BookmarksView::verticalScrollBar() const
+{
+    return tvBookmarks->verticalScrollBar();
+}
+
+void BookmarksView::RefreshView()
+{
+
 }
 
 void BookmarksView::modelLayoutChanged()

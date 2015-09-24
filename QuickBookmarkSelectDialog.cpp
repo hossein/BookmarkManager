@@ -15,9 +15,7 @@ QuickBookmarkSelectDialog::QuickBookmarkSelectDialog(
     ui->leFilter->setModelColumn(dbm->tags.tidx.TagName);
 
     //BookmarksView
-    ui->bvBookmarks->Initialize(dbm, conf, BookmarksView::LM_LimitedDisplayWithHeaders);
-    ui->bvBookmarks->setModel(&dbm->bms.model);
-    ui->bvBookmarks->ResetHeadersAndSort();
+    ui->bvBookmarks->Initialize(dbm, conf, BookmarksView::LM_LimitedDisplayWithHeaders, &dbm->bms.model);
     connect(ui->bvBookmarks, SIGNAL(activated(long long)), this, SLOT(bvBookmarksActivated(long long)));
     connect(ui->bvBookmarks, SIGNAL(currentRowChanged(long long,long long)),
             this, SLOT(bvBookmarksCurrentRowChanged(long long,long long)));

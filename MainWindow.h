@@ -43,7 +43,6 @@ private slots:
 
 private:
     /// Initialization functions, to be called JUST ONCE for loading //////////////////////////////
-    void PreAssignModels();
     bool LoadDatabaseAndUI();
 
     /// Master functions for data refresh and display /////////////////////////////////////////////

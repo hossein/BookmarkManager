@@ -653,8 +653,7 @@ QString BookmarkEditDialog::GetAttachedFileFullPathName(int filesListIdx)
 
 void BookmarkEditDialog::InitializeLinkedBookmarksUI()
 {
-    ui->bvLinkedBookmarks->Initialize(dbm, conf, BookmarksView::LM_LimitedDisplayWithoutHeaders);
-    ui->bvLinkedBookmarks->setModel(&dbm->bms.model);
+    ui->bvLinkedBookmarks->Initialize(dbm, conf, BookmarksView::LM_LimitedDisplayWithoutHeaders, &dbm->bms.model);
     connect(ui->bvLinkedBookmarks, SIGNAL(currentRowChanged(long long,long long)),
             this, SLOT(bvLinkedBookmarksCurrentRowChanged(long long,long long)));
 }
@@ -662,7 +661,7 @@ void BookmarkEditDialog::InitializeLinkedBookmarksUI()
 void BookmarkEditDialog::PopulateLinkedBookmarks()
 {
     ui->bvLinkedBookmarks->FilterSpecificBookmarkIDs(editedLinkedBookmarks);
-    ui->bvLinkedBookmarks->ResetHeadersAndSort();
+    ui->bvLinkedBookmarks->RefreshView();
 }
 
 void BookmarkEditDialog::bvLinkedBookmarksCurrentRowChanged(long long currentBID, long long previousBID)

@@ -23,12 +23,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // Initialize important controls
-    ui->bv->Initialize(&dbm, &conf, BookmarksView::LM_FullInformationAndEdit);
-    connect(ui->bv, SIGNAL(activated(long long)), this, SLOT(bvActivated(long long)));
-    connect(ui->bv, SIGNAL(currentRowChanged(long long,long long)),
-            this, SLOT(bvCurrentRowChanged(long long,long long)));
-
     // Set size and position
     int dWidth = QApplication::desktop()->availableGeometry().width();
     int dHeight = QApplication::desktop()->availableGeometry().height();
@@ -59,12 +53,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->mainToolBar->addWidget(btn);
 
     // Load the application and logic
-    PreAssignModels();
     if (!LoadDatabaseAndUI())
     {
         m_shouldExit = true;
         return;
     }
+
+    // Initialize important controls
+    ui->bv->Initialize(&dbm, &conf, BookmarksView::LM_FullInformationAndEdit, &dbm.bms.model);
+    connect(ui->bv, SIGNAL(activated(long long)), this, SLOT(bvActivated(long long)));
+    connect(ui->bv, SIGNAL(currentRowChanged(long long,long long)),
+            this, SLOT(bvCurrentRowChanged(long long,long long)));
 
     // Additional sub-parts initialization.
     if (!dbm.files.InitializeFileArchives())
@@ -172,18 +171,6 @@ void MainWindow::on_actionImportFirefoxBookmarksJSONfile_triggered()
 {
     //TODO [IMPORT]: Real url
     ImportFirefoxJSONFile("C:\\Users\\Hossein\\Desktop\\bookmarks-2014-11-09_1730 - Pretty.json");
-}
-
-void MainWindow::PreAssignModels()
-{
-    //TODO: Why they are at reverse sort order on startup?
-
-    //Note: Sorting won't work here, as sorting is done when populating proxy model and tvBookmarks.
-    ui->bv->setModel(&dbm.bms.model);
-    //filteredBookmarksModel.setSourceModel(&dbm.bms.model);
-    //filteredBookmarksModel.sort(dbm.bms.bidx.Name, Qt::AscendingOrder);
-    //ui->tvBookmarks->setModel(&filteredBookmarksModel);
-    //ui->tvBookmarks->sortByColumn(dbm.bms.bidx.Name, Qt::AscendingOrder);
 }
 
 bool MainWindow::LoadDatabaseAndUI()
@@ -396,7 +383,7 @@ void MainWindow::RefreshTVBookmarksModelView()
 
     //!!ui->tvBookmarks->setModel(&filteredBookmarksModel);
 
-    ui->bv->ResetHeadersAndSort();
+    ui->bv->RefreshView();
 }
 
 void MainWindow::NewBookmark()
