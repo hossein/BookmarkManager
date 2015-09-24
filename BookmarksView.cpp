@@ -202,16 +202,16 @@ QScrollBar*BookmarksView::verticalScrollBar() const
 
 void BookmarksView::RefreshView()
 {
-    //TODO: Doesn't solve the problem of 'sort screwing header sections size'
-    QHeaderView* hh = tvBookmarks->horizontalHeader();
-    if (hh->count() > 0) //Happens on start-up, and on database errors
-        hh->setSectionResizeMode(dbm->bms.bidx.Name, QHeaderView::Stretch);
+    //Currently this does nothing. Maybe the point is to remove it because things are automatic?
 }
 
 void BookmarksView::modelLayoutChanged()
 {
-    tvBookmarks->resizeColumnsToContents();
-    tvBookmarks->resizeRowsToContents();
+    //Note: This caused the 'Name' column stretch to be gone when user clicked headers for sort
+    //  (see b75a9ea4). On adding/editing bookmarks the stretch returned back again correctly!
+    //  Don't know what was their usage.
+    //tvBookmarks->resizeColumnsToContents();
+    //tvBookmarks->resizeRowsToContents();
 
     if (m_shrinkHeight)
     {
@@ -228,7 +228,6 @@ void BookmarksView::modelLayoutChanged()
         //  that it doesn't show up automatically, it switched to text eliding (`...`).
         this->setFixedHeight(hackedSuitableHeightForTvBookmarks);
     }
-
 }
 
 void BookmarksView::tvBookmarksActivated(const QModelIndex& index)
