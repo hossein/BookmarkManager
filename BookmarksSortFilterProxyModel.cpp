@@ -13,6 +13,7 @@ BookmarksSortFilterProxyModel::BookmarksSortFilterProxyModel
 
 bool BookmarksSortFilterProxyModel::SetFilter(const BookmarkFilter& filter)
 {
+    //If the number of bookmarks is big, we can show a busy cursor to user while filtering.
     if (!m_filter.FilterEquals(filter))
     {
         m_filter = filter;
@@ -63,8 +64,6 @@ bool BookmarksSortFilterProxyModel::populateFilteredBookmarkIDs()
 
 bool BookmarksSortFilterProxyModel::getBookmarkIDsForTags(const QSet<long long>& tagIDs, QSet<long long>& bookmarkIDs)
 {
-    //NOTE: We should show a "loading" cursor to user when this class is initialized.
-
     QString commaSeparatedTIDs;
     foreach (long long TID, tagIDs)
         commaSeparatedTIDs += QString::number(TID) + ",";

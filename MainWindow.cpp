@@ -623,8 +623,33 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
 
 #include "MHTSaver.h"
 
+class MHTDataReceiver : public QObject
+{
+    Q_OBJECT
+public:
+    MHTDataReceiver(QObject* parent = NULL) : QObject(parent) { }
+    ~MHTDataReceiver() { qDebug() << "MHTDataWritten"; }
+public slots:
+    void MHTDataReady(const QByteArray& data, const MHTSaver::Status& status)
+    {
+        Q_UNUSED(status);
+        qDebug() << "MHTDataReady";
+
+        QFile mhtfile("C:\\Users\\Hossein\\Desktop\\LastMHT.mht");
+        mhtfile.open(QIODevice::WriteOnly);
+        mhtfile.write(data);
+        mhtfile.close();
+
+        sender()->deleteLater();
+        this->deleteLater();
+    }
+};
+#include "MainWindow.moc" //Just for the above test mht to work (moc_MainWindow.cpp didn't work btw)
+
 void MainWindow::on_actionGetMHT_triggered()
 {
     MHTSaver* saver = new MHTSaver(this);
     saver->GetMHTData("http://www.classpad.ir/farsinegar/");
+    MHTDataReceiver* datarecv = new MHTDataReceiver(this);
+    connect(saver, SIGNAL(MHTDataReady(QByteArray,MHTSaver::Status)), datarecv, SLOT(MHTDataReady(QByteArray,MHTSaver::Status)));
 }

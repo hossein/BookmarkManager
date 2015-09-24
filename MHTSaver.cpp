@@ -1,7 +1,6 @@
 #include "MHTSaver.h"
 
 #include "Util.h"
-#include <QFile> //TODO temporary
 #include <QRegularExpression>
 
 #include <QNetworkAccessManager>
@@ -359,13 +358,6 @@ void MHTSaver::GenerateMHT()
 
     //Last one has an additional '--' at end.
     mhtdata += "--" + boundary + "--\r\n";
-
-    qDebug() << "MHTDataReady";
-
-    QFile mhtfile("C:\\Users\\Hossein\\Desktop\\LastMHT.mht");
-    mhtfile.open(QIODevice::WriteOnly);
-    mhtfile.write(mhtdata);
-    mhtfile.close();
 
     emit MHTDataReady(mhtdata, m_status);
 }
