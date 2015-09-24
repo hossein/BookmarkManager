@@ -145,25 +145,11 @@ void BookmarksView::SelectBookmarkWithID(long long bookmarkId)
     tvBookmarks->scrollTo(matches[0], QAbstractItemView::EnsureVisible);
 }
 
-void BookmarksView::ClearFilters()
-{
-    if (!filteredBookmarksModel)
-        return;
-    filteredBookmarksModel->ClearFilters();
-}
-
-bool BookmarksView::FilterSpecificBookmarkIDs(const QList<long long>& BIDs)
+bool BookmarksView::SetFilter(const BookmarkFilter& filter)
 {
     if (!filteredBookmarksModel)
         return false;
-    return filteredBookmarksModel->FilterSpecificBookmarkIDs(BIDs);
-}
-
-bool BookmarksView::FilterSpecificTagIDs(const QSet<long long>& tagIDs)
-{
-    if (!filteredBookmarksModel)
-        return false;
-    return filteredBookmarksModel->FilterSpecificTagIDs(tagIDs);
+    return filteredBookmarksModel->SetFilter(filter);
 }
 
 int BookmarksView::GetTotalBookmarksCount() const

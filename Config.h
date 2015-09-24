@@ -67,6 +67,7 @@
 ///     the system default Open dialog, because we want to be system-independent and not use
 ///     Windows' registry CLASSES, etc) and let user (only!) Remove the apps he needs. Also a
 ///     dialog for the global programs that are used for every extension. Done in OpenWithDialog.
+///   - Filtering, and top label should show what are we filtering by.
 ///
 /// LATER:
 ///   - Show %'ed urls, e.g Persian wikipedia urls in their decoded forms everywhere, including

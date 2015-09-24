@@ -109,7 +109,8 @@ HEADERS  += MainWindow.h \
     BMApplication.h \
     qtsingleapplication/qtlocalpeer.h \
     qtsingleapplication/qtsingleapplication.h \
-    BookmarksSortFilterProxyModel.h
+    BookmarksSortFilterProxyModel.h \
+    BookmarkFilter.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \

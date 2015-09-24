@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
+#include "BookmarkFilter.h"
 #include "BookmarkEditDialog.h"
 #include "BookmarkViewDialog.h"
 #include "BookmarksBusinessLogic.h"
@@ -360,13 +361,10 @@ void MainWindow::RefreshTVBookmarksModelView()
     bool allTagsOrNoneOfTheTags = (m_allTagsChecked == TCSR_AllChecked
                                 || m_allTagsChecked == TCSR_NoneChecked);
 
-    //TODO: Needed everytime? if we're changing the model each time in the lines below, we should
-    //  reconnect the signal as well, like what we are doing right now. Can it be eliminated?
-    //!!filteredBookmarksModel.setSourceModel(&dbm.bms.model);
+    BookmarkFilter bfilter;
     if (allTagsOrNoneOfTheTags)
     {
-        //filteredBookmarksModel.ClearFilters();
-        ui->bv->ClearFilters();
+        //Let bfilter stay clear.
     }
     else
     {
@@ -377,12 +375,10 @@ void MainWindow::RefreshTVBookmarksModelView()
             if (it.value()->checkState() == Qt::Checked)
                 tagIDs.insert(it.key());
 
-        //filteredBookmarksModel.FilterSpecificTagIDs(tagIDs);
-        ui->bv->FilterSpecificTagIDs(tagIDs);
+        bfilter.FilterSpecificTagIDs(tagIDs);
     }
 
-    //!!ui->tvBookmarks->setModel(&filteredBookmarksModel);
-
+    ui->bv->SetFilter(bfilter);
     ui->bv->RefreshView();
 }
 

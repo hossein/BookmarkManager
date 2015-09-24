@@ -6,6 +6,7 @@
 #include "FileViewManager.h"
 #include "Util.h"
 
+#include "BookmarkFilter.h"
 #include "BookmarksBusinessLogic.h"
 #include "BookmarkExtraInfoTypeChooser.h"
 #include "BookmarkExtraInfoAddEditDialog.h"
@@ -660,7 +661,9 @@ void BookmarkEditDialog::InitializeLinkedBookmarksUI()
 
 void BookmarkEditDialog::PopulateLinkedBookmarks()
 {
-    ui->bvLinkedBookmarks->FilterSpecificBookmarkIDs(editedLinkedBookmarks);
+    BookmarkFilter bfilter;
+    bfilter.FilterSpecificBookmarkIDs(editedLinkedBookmarks);
+    ui->bvLinkedBookmarks->SetFilter(bfilter);
     ui->bvLinkedBookmarks->RefreshView();
 }
 

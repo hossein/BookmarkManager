@@ -1,6 +1,7 @@
 #include "BookmarkViewDialog.h"
 #include "ui_BookmarkViewDialog.h"
 
+#include "BookmarkFilter.h"
 #include "Util.h"
 
 #include <QApplication>
@@ -391,7 +392,9 @@ void BookmarkViewDialog::InitializeLinkedBookmarksUI()
 
 void BookmarkViewDialog::PopulateLinkedBookmarks()
 {
-    ui->bvLinkedBookmarks->FilterSpecificBookmarkIDs(viewBData.Ex_LinkedBookmarksList);
+    BookmarkFilter bfilter;
+    bfilter.FilterSpecificBookmarkIDs(viewBData.Ex_LinkedBookmarksList);
+    ui->bvLinkedBookmarks->SetFilter(bfilter);
     ui->bvLinkedBookmarks->RefreshView();
 }
 

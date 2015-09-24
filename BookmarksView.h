@@ -9,6 +9,7 @@ class QTableView;
 
 class Config;
 class DatabaseManager;
+struct BookmarkFilter;
 class BookmarksSortFilterProxyModel;
 
 /// To make this class work, caller needs to create an instance AND call `Initialize`.
@@ -55,9 +56,8 @@ public:
     long long GetSelectedBookmarkID() const;
     void SelectBookmarkWithID(long long bookmarkId);
 
-    void ClearFilters();
-    bool FilterSpecificBookmarkIDs(const QList<long long>& BIDs);
-    bool FilterSpecificTagIDs(const QSet<long long>& tagIDs);
+    //Passes to BookmarksSortFilterProxyModel
+    bool SetFilter(const BookmarkFilter& filter);
 
     int GetTotalBookmarksCount() const;
     int GetDisplayedBookmarksCount() const;

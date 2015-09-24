@@ -11,32 +11,57 @@ BookmarksSortFilterProxyModel::BookmarksSortFilterProxyModel
 
 }
 
-void BookmarksSortFilterProxyModel::ClearFilters()
+bool BookmarksSortFilterProxyModel::SetFilter(const BookmarkFilter& filter)
 {
-    allowAllBookmarks = true;
-    filteredBookmarkIDs.clear();
-    invalidateFilter(); //Read function header docs
-}
-
-bool BookmarksSortFilterProxyModel::FilterSpecificBookmarkIDs(const QList<long long>& BIDs)
-{
-    allowAllBookmarks = false;
-    filteredBookmarkIDs.clear();
-    foreach (long long BID, BIDs)
-        filteredBookmarkIDs.insert(BID);
-    invalidateFilter(); //Read function header docs
+    if (!m_filter.FilterEquals(filter))
+    {
+        m_filter = filter;
+        bool success = populateFilteredBookmarkIDs();
+        invalidateFilter(); //Read function header docs
+        return success;
+    }
     return true;
 }
 
-bool BookmarksSortFilterProxyModel::FilterSpecificTagIDs(const QSet<long long>& tagIDs)
+bool BookmarksSortFilterProxyModel::populateFilteredBookmarkIDs()
 {
-    allowAllBookmarks = false;
-    bool populateSuccess = populateValidBookmarkIDs(tagIDs);
-    invalidateFilter(); //Read function header docs
-    return populateSuccess;
+    bool first = true;
+    bool success = true;
+    allowAllBookmarks = true;
+    filteredBookmarkIDs.clear();
+
+    //We will add items of the first filter to the master filter set, then we will intersect it with
+    //  the future filters. Hence the unite/intersect function choices below. (Well `intersect` for
+    //  the first filter is unused.) Can't use `if (filteredBookmarkIDs.empty())` because it may
+    //  have become empty in the previous filters, So we use a `first` variable.
+
+    if (!m_filter.filterBIDs.empty())
+    {
+        allowAllBookmarks = false;
+        if (first)
+            filteredBookmarkIDs.unite(m_filter.filterBIDs);
+        else
+            filteredBookmarkIDs.intersect(m_filter.filterBIDs);
+        first = false;
+    }
+
+    if (!m_filter.filterTIDs.empty())
+    {
+        allowAllBookmarks = false;
+        QSet<long long> bookmarkIDsForTags;
+        if (!getBookmarkIDsForTags(m_filter.filterTIDs, bookmarkIDsForTags))
+            success = false;
+        if (first)
+            filteredBookmarkIDs.unite(bookmarkIDsForTags);
+        else
+            filteredBookmarkIDs.intersect(bookmarkIDsForTags);
+        first = false;
+    }
+
+    return success;
 }
 
-bool BookmarksSortFilterProxyModel::populateValidBookmarkIDs(const QSet<long long>& tagIDs)
+bool BookmarksSortFilterProxyModel::getBookmarkIDsForTags(const QSet<long long>& tagIDs, QSet<long long>& bookmarkIDs)
 {
     //NOTE: We should show a "loading" cursor to user when this class is initialized.
 
@@ -56,8 +81,8 @@ bool BookmarksSortFilterProxyModel::populateValidBookmarkIDs(const QSet<long lon
     if (!query.exec())
         return Error(retrieveError, query.lastError());
 
-    //Might have remained from previous filter; called without calling `ClearFilters` first.
-    filteredBookmarkIDs.clear();
+    //Do it for caller.
+    bookmarkIDs.clear();
 
     //`query.record()` works even if zero bookmarks were returned (related: query.isActive|isValid).
     //  Moreover, the indexes are also correct in this case, just the record is empty.
@@ -65,7 +90,7 @@ bool BookmarksSortFilterProxyModel::populateValidBookmarkIDs(const QSet<long lon
     //  return true;
     int indexOfBID = query.record().indexOf("BID");
     while (query.next())
-        filteredBookmarkIDs.insert(query.value(indexOfBID).toLongLong());
+        bookmarkIDs.insert(query.value(indexOfBID).toLongLong());
 
     return true;
 }
