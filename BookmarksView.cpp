@@ -202,7 +202,10 @@ QScrollBar*BookmarksView::verticalScrollBar() const
 
 void BookmarksView::RefreshView()
 {
-
+    //TODO: Doesn't solve the problem of 'sort screwing header sections size'
+    QHeaderView* hh = tvBookmarks->horizontalHeader();
+    if (hh->count() > 0) //Happens on start-up, and on database errors
+        hh->setSectionResizeMode(dbm->bms.bidx.Name, QHeaderView::Stretch);
 }
 
 void BookmarksView::modelLayoutChanged()
