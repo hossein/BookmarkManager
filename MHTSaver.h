@@ -77,7 +77,7 @@ public:
 public slots:
     void GetMHTData(const QString& url);
 signals:
-    void MHTDataReady(const QByteArray& data, const Status& status);
+    void MHTDataReady(const QByteArray& data, const MHTSaver::Status& status);
 
 private:
     //// Loading Resources From Web ///////////////////////////////////////////
