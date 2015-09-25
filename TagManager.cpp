@@ -121,7 +121,8 @@ void TagManager::CreateTables()
     query.exec("CREATE TABLE Tag( TID INTEGER PRIMARY KEY AUTOINCREMENT, TagName TEXT )");
 
     query.exec("CREATE TABLE BookmarkTag"
-               "( BTID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, TID INTEGER )");
+               "( BTID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, TID INTEGER, "
+               "  FOREIGN KEY(BID) REFERENCES Bookmark(BID) ON DELETE CASCADE )");
 }
 
 void TagManager::PopulateModelsAndInternalTables()

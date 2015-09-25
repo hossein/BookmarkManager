@@ -576,8 +576,11 @@ void FileManager::CreateTables()
                "  FileLayout INTEGER )");
     CreateDefaultArchives(query);
 
+    //Require explicitly deleting the relationship before deleting bookmark and file.
     query.exec("CREATE TABLE BookmarkFile"
-               "( BFID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, FID INTEGER )");
+               "( BFID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, FID INTEGER, "
+               "  FOREIGN KEY(BID) REFERENCES Bookmark(BID) ON DELETE RESTRICT,"
+               "  FOREIGN KEY(FID) REFERENCES File(FID) ON DELETE RESTRICT )");
 }
 
 void FileManager::PopulateModelsAndInternalTables()

@@ -141,17 +141,19 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
         //to [KeepDefaultFile-1] explanation. and can use that condition then.
         //// BUT UPDATE AGAIN: Now we use the previous loop to find the def FID anyway and DO NOT NEED SUCH GUARANTEES.
 
-        //Remove BookmarkFile attachment information.
+        //Remove BookmarkFile attachment information. This is necessary as foreign keys restrict
+        //  deleting a bookmark having associated files with it.
         //Send files to trash (if they're not shared).
-
         success = dbm->files.TrashAllBookmarkFiles(BID);
         if (!success)
             return DoRollBackAction();
 
         //Convert tag names to csv.
+        //Foreign keys cascades will later delete the tags.
         QString tagNames = bdata.Ex_TagsList.join(",");
 
         //Convert extra info to one big chunk of json text.
+        //TODO: Make linked bookmarks titles extra info.
         QJsonArray exInfoJsonArray;
         foreach (const BookmarkManager::BookmarkExtraInfoData& exInfo, bdata.Ex_ExtraInfosList)
         {
@@ -163,7 +165,7 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
         }
         QString extraInfoJSonText = QString::fromUtf8(QJsonDocument(exInfoJsonArray).toJson(QJsonDocument::Compact));
 
-        //Do nothing about linked bookmarks. //TODO: Why not? How about bms that this bm is linked to them?
+        //Do nothing about linked bookmarks. Foreign keys cascades will later delete the links.
         //Okay!
 
         //Move the information to BookmarkTrash table

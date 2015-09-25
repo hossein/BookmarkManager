@@ -516,10 +516,14 @@ void BookmarkManager::CreateTables()
                "  Tags TEXT, ExtraInfos TEXT, DeleteDate INTEGER, AddDate INTEGER )");
 
     query.exec("CREATE Table BookmarkLink"
-               "( BLID INTEGER PRIMARY KEY AUTOINCREMENT, BID1 INTEGER, BID2 INTEGER )");
+               "( BLID INTEGER PRIMARY KEY AUTOINCREMENT, BID1 INTEGER, BID2 INTEGER,"
+               "  FOREIGN KEY(BID1) REFERENCES Bookmark(BID) ON DELETE CASCADE "
+               "  FOREIGN KEY(BID2) REFERENCES Bookmark(BID) ON DELETE CASCADE )");
 
     query.exec("CREATE Table BookmarkExtraInfo"
-               "( BEIID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, Name TEXT, Type TEXT, Value TEXT )");
+               "( BEIID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, "
+               "  Name TEXT, Type TEXT, Value TEXT,"
+               "  FOREIGN KEY(BID) REFERENCES Bookmark(BID) ON DELETE CASCADE )");
 }
 
 void BookmarkManager::PopulateModelsAndInternalTables()
