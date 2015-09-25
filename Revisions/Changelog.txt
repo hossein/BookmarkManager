@@ -58,3 +58,8 @@
 2015-03-19  56  Import logic complete, but real processing is still to happen.
 2015-03-21  58  MHT Saving url getting logic done, file parsers and mht format remaining.
 2015-03-22  57  MHT Saving done.
+2015-09-16  68  Prepare for new dev streak, added to-dos from vt.
+2015-09-21  68  File layouts for file archives, the new file layout with hints.
+2015-09-21  55  TODO Smashing
+2015-09-23  41  TODO Smashing
+2015-09-24  32  TODO Smashing

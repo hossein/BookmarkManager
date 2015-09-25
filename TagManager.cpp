@@ -128,6 +128,12 @@ void TagManager::PopulateModelsAndInternalTables()
 {
     model.setQuery("SELECT * FROM Tag", db);
 
+    if (model.lastError().isValid())
+    {
+        Error("Error while populating tag models.", model.lastError());
+        return;
+    }
+
     while (model.canFetchMore())
         model.fetchMore();
 

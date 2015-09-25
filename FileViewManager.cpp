@@ -532,8 +532,8 @@ void FileViewManager::PopulateModelsAndInternalTables()
     //FileViewManager does not have any models.
 
     //Instead we populate the internal fast-access lists.
-    //Note: We do NOT do this at `FileViewManager::PopulateModelsAndInternalTables()` as it is called multiple times
-    //      and upon Bookmark/Tag/File/etc add or edit and is expensive.
+    //Note: We do NOT do this at `FileViewManager::PopulateModelsAndInternalTables()` as it is
+    //      called multiple times and upon Bookmark/Tag/File/etc add or edit and is expensive.
     //So we do it at this function ONLY ONCE and then the database functions directly modify
     //      `this->systemApps` instead of re-retrieval from DB each time.
 

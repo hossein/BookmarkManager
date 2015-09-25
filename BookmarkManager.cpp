@@ -526,6 +526,12 @@ void BookmarkManager::PopulateModelsAndInternalTables()
 {
     model.setQuery("SELECT * FROM Bookmark", db);
 
+    if (model.lastError().isValid())
+    {
+        Error("Error while populating bookmark models.", model.lastError());
+        return;
+    }
+
     while (model.canFetchMore())
         model.fetchMore();
 

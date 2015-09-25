@@ -286,6 +286,7 @@ void BookmarksView::tvBookmarksHeaderClicked(int logicalIndex)
 {
     Q_UNUSED(logicalIndex);
 
+    //TODO: Do we need BOTH indicator setting and sorting the proxy model?
     QHeaderView* hh = tvBookmarks->horizontalHeader();
     hh->setSortIndicatorShown(sortNextLogicalIndex != -1);
     hh->setSortIndicator(sortNextLogicalIndex, sortNextOrder);

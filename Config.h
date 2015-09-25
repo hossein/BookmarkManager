@@ -31,7 +31,6 @@
 //  keep the list of newly opened files and don't delete them in the 30 seconds later clean up is
 //  also possible; but we don't do it for now.
 
-//TODO: in PopulateModelsAndInternalTables call error function to at least show a message.
 //TODO: Double clicking bm's in View dialog's related bookmarks must pop up their view dialog,
 //      AND they MUST show their Office-style brief information EVERYWHERE; super useful.
 //TODO: Now that local html previewer is easily navigatable, where are its cookies stored and
