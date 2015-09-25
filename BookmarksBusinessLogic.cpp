@@ -14,6 +14,40 @@ BookmarksBusinessLogic::BookmarksBusinessLogic(DatabaseManager* dbm, QWidget* di
 
 }
 
+bool BookmarksBusinessLogic::RetrieveBookmarkEx(long long BID, BookmarkManager::BookmarkData& bdata,
+                                                bool extraInfosModel, bool filesModel)
+{
+    bool success = true;
+
+    success = dbm->bms.RetrieveBookmark(BID, bdata);
+    if (!success)
+        return false;
+
+    success = dbm->bms.RetrieveLinkedBookmarks(BID, bdata.Ex_LinkedBookmarksList);
+    if (!success)
+        return false;
+
+    if (extraInfosModel)
+        success = dbm->bms.RetrieveBookmarkExtraInfosModel(BID, bdata.Ex_ExtraInfosModel);
+    else
+        success = dbm->bms.RetrieveBookmarkExtraInfos(BID, bdata.Ex_ExtraInfosList);
+    if (!success)
+        return false;
+
+    success = dbm->tags.RetrieveBookmarkTags(BID, bdata.Ex_TagsList);
+    if (!success)
+        return false;
+
+    if (filesModel)
+        success = dbm->files.RetrieveBookmarkFilesModel(BID, bdata.Ex_FilesModel);
+    else
+        success = dbm->files.RetrieveBookmarkFiles(BID, bdata.Ex_FilesList);
+    if (!success)
+        return false;
+
+    return success; //i.e `true`
+}
+
 bool BookmarksBusinessLogic::AddOrEditBookmark(long long& editBId, BookmarkManager::BookmarkData& bdata,
                                                long long originalEditBId, BookmarkManager::BookmarkData& editOriginalBData,
                                                const QList<long long>& editedLinkedBookmarks,
@@ -93,25 +127,7 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
     bool success = true;
     BookmarkManager::BookmarkData bdata;
 
-    //NOTE: The following sequence of retrieval occurs in BMEditDlg,BMViewDlg AND here.
-    //      Maybe unify them as another business logic function?
-    success = dbm->bms.RetrieveBookmark(BID, bdata);
-    if (!success)
-        return false;
-
-    success = dbm->bms.RetrieveLinkedBookmarks(BID, bdata.Ex_LinkedBookmarksList);
-    if (!success)
-        return false;
-
-    success = dbm->bms.RetrieveBookmarkExtraInfos(BID, bdata.Ex_ExtraInfosList);
-    if (!success)
-        return false;
-
-    success = dbm->tags.RetrieveBookmarkTags(BID, bdata.Ex_TagsList);
-    if (!success)
-        return false;
-
-    success = dbm->files.RetrieveBookmarkFiles(BID, bdata.Ex_FilesList);
+    success = RetrieveBookmarkEx(BID, bdata, false, false);
     if (!success)
         return false;
 

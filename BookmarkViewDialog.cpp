@@ -2,6 +2,7 @@
 #include "ui_BookmarkViewDialog.h"
 
 #include "BookmarkFilter.h"
+#include "BookmarksBusinessLogic.h"
 #include "Util.h"
 
 #include <QApplication>
@@ -42,25 +43,10 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
     InitializeFilesUI();
     InitializeLinkedBookmarksUI();
 
-    canShowTheDialog = dbm->bms.RetrieveBookmark(viewBId, viewBData);
-    if (!canShowTheDialog)
-        return;
-
-    canShowTheDialog = dbm->bms.RetrieveLinkedBookmarks(viewBId, viewBData.Ex_LinkedBookmarksList);
-    if (!canShowTheDialog)
-        return;
-
-    canShowTheDialog = dbm->bms.RetrieveBookmarkExtraInfos(viewBId, viewBData.Ex_ExtraInfosList);
-    if (!canShowTheDialog)
-        return;
-
-    canShowTheDialog = dbm->tags.RetrieveBookmarkTags(viewBId, viewBData.Ex_TagsList);
-    if (!canShowTheDialog)
-        return;
-
     //[No-File-Model-Yet]
     //Note: We don't retrieve the files model and use custom QList's and QTableWidget instead.
-    canShowTheDialog = dbm->files.RetrieveBookmarkFiles(viewBId, viewBData.Ex_FilesList);
+    BookmarksBusinessLogic bbLogic(dbm, this);
+    canShowTheDialog = bbLogic.RetrieveBookmarkEx(viewBId, viewBData, false, false);
     if (!canShowTheDialog)
         return;
 

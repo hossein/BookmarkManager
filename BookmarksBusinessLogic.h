@@ -13,6 +13,9 @@ private:
 public:
     BookmarksBusinessLogic(DatabaseManager* dbm, QWidget* dialogParent);
 
+    bool RetrieveBookmarkEx(long long BID, BookmarkManager::BookmarkData& bdata,
+                            bool extraInfosModel, bool filesModel);
+
     bool AddOrEditBookmark(long long& editBId, BookmarkManager::BookmarkData& bdata,
                            long long originalEditBId, BookmarkManager::BookmarkData& editOriginalBData,
                            const QList<long long>& editedLinkedBookmarks,

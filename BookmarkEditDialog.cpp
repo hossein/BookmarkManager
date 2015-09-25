@@ -55,38 +55,18 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId,
         setWindowTitle("Edit Bookmark");
         //`canShowTheDialog` a.k.a `bool success;`
 
-        canShowTheDialog = dbm->bms.RetrieveBookmark(editBId, editOriginalBData);
-        if (!canShowTheDialog)
-            return;
-
-        canShowTheDialog = dbm->bms.RetrieveLinkedBookmarks
-                (editBId, editOriginalBData.Ex_LinkedBookmarksList);
-        editedLinkedBookmarks = editOriginalBData.Ex_LinkedBookmarksList;
-        if (!canShowTheDialog)
-            return;
-
-        //Unlike files, we do use models for extra info editing. They are much simpler.
-        //canShowTheDialog = dbm->bms.RetrieveBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosList);
-        canShowTheDialog = dbm->bms.RetrieveBookmarkExtraInfosModel(editBId, editOriginalBData.Ex_ExtraInfosModel);
-        //editedExtraInfos = editOriginalBData.Ex_ExtraInfosList;
-        if (!canShowTheDialog)
-            return;
-
-        canShowTheDialog = dbm->tags.RetrieveBookmarkTags(editBId, editOriginalBData.Ex_TagsList);
-        if (!canShowTheDialog)
-            return;
-
         //[No-File-Model-Yet]
         //Note: We don't retrieve the files model and use custom QList's and QTableWidget instead.
-        //canShowTheDialog = dbm->files.RetrieveBookmarkFilesModel(editBId, editOriginalBData.Ex_FilesModel);
-        //if (!canShowTheDialog)
-        //    return;
-
-        canShowTheDialog = dbm->files.RetrieveBookmarkFiles(editBId, editOriginalBData.Ex_FilesList);
+        //  However, unlike files, we do use models for extra info editing. They are much simpler.
+        BookmarksBusinessLogic bbLogic(dbm, this);
+        canShowTheDialog = bbLogic.RetrieveBookmarkEx(editBId, editOriginalBData, true, false);
         if (!canShowTheDialog)
             return;
 
-        //Additional file variables.
+        //Additional variable settings and set-up.
+        editedLinkedBookmarks = editOriginalBData.Ex_LinkedBookmarksList;
+        //editedExtraInfos = editOriginalBData.Ex_ExtraInfosList; We're using models instead
+
         editedFilesList = editOriginalBData.Ex_FilesList;
         SetDefaultBFID(editOriginalBData.DefBFID); //Needed; retrieving functions don't set this.
 

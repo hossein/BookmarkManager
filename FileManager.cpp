@@ -140,6 +140,7 @@ bool FileManager::RetrieveBookmarkFiles(long long BID, QList<FileManager::Bookma
 
     SetBookmarkFileIndexes(query.record());
 
+    bookmarkFiles.clear(); //Do it for caller
     while (query.next())
     {
         BookmarkFile bf;

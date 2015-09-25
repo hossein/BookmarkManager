@@ -20,6 +20,7 @@ bool TagManager::RetrieveBookmarkTags(long long BID, QStringList& tagsList)
     if (!query.exec())
         return Error(retrieveError, query.lastError());
 
+    tagsList.clear(); //Do it for caller
     const int indexOfTagName = query.record().indexOf("TagName");
     while (query.next())
         tagsList.append(query.value(indexOfTagName).toString());

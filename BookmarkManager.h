@@ -78,8 +78,10 @@ public:
         int Rating;
         long long AddDate;
 
-        /// The following members ARE NOT filled by the `RetrieveBookmark` function.
-        /// and ARE NOT saved by the `AddOrEditBookmark` function.
+        /// The following members are for storing additional information related to bookmarks from
+        /// other tables in the same struct as the bookmark data. They ARE NOT filled by the
+        /// `RetrieveBookmark` function and ARE NOT saved by the `AddOrEditBookmark` function.
+        /// However `BookmarksBusinessLogic` functions are designed to handle them.
         QList<long long> Ex_LinkedBookmarksList;
         QSqlTableModel Ex_ExtraInfosModel;
         QList<BookmarkExtraInfoData> Ex_ExtraInfosList;
