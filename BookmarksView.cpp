@@ -76,7 +76,7 @@ void BookmarksView::Initialize(DatabaseManager* dbm, ListMode listMode, QAbstrac
         hh->setSectionResizeMode(bidx.Name, QHeaderView::Stretch);
 
         hh->resizeSection(bidx.URL, 200);
-        //TODO: How to show tags? hh->resizeSection(dbm.bidx.Tags, 100);
+        //TODO [handle]: How to show tags? hh->resizeSection(dbm.bidx.Tags, 100);
         hh->resizeSection(bidx.Rating, 50);
     }
 
@@ -84,6 +84,7 @@ void BookmarksView::Initialize(DatabaseManager* dbm, ListMode listMode, QAbstrac
     ///Qt::SortOrder sortOrder = hh->sortIndicatorOrder();
     ///int sortColumn = hh->sortIndicatorSection();
     ///filteredBookmarksModel->sort(sortColumn, sortOrder);
+    //Wrong ways to sort:
     //ui->tvBookmarks->sortByColumn(sortColumn);
     //hh->setSortIndicator(sortColumn, sortOrder);
 
@@ -286,7 +287,7 @@ void BookmarksView::tvBookmarksHeaderClicked(int logicalIndex)
 {
     Q_UNUSED(logicalIndex);
 
-    //TODO: Do we need BOTH indicator setting and sorting the proxy model?
+    //TODO [handle]: Do we need BOTH indicator setting and sorting the proxy model?
     QHeaderView* hh = tvBookmarks->horizontalHeader();
     hh->setSortIndicatorShown(sortNextLogicalIndex != -1);
     hh->setSortIndicator(sortNextLogicalIndex, sortNextOrder);

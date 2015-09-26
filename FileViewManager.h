@@ -113,7 +113,7 @@ public:
 
     //ExtAssoc
     /// Only file extension will be verified. Returns an empty list if there isn't any association
-    /// for the default program. TODO: What about the default '' extension?
+    /// for the default program. TODO [handle]: What about the default '' extension?
     QList<long long> GetAssociatedOpenApplications(const QString& fileName);
 
     /// If the file type is already associated, this function returns `true` without modifying

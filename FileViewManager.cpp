@@ -65,7 +65,7 @@ int FileViewManager::ChooseADefaultFileBasedOnExtension(const QStringList& files
     else if (filesList.count() == 0)
         return -1; //[KeepDefaultFile-1].Generalization
 
-    //TODO: Sort by the FilePreviewHandler::FileCategory categories.
+    //TODO [handle]: Sort by the FilePreviewHandler::FileCategory categories.
     QList<QStringList> extensionPriority;
     extensionPriority.append(QString("mht|mhtml|htm|html|maff"          ).split('|'));
     extensionPriority.append(QString("doc|docx|ppt|pptx|xls|xlsx|rtf"   ).split('|'));
@@ -225,7 +225,7 @@ void FileViewManager::SaveAs(const QString& filePathName, const QString& origina
 
 void FileViewManager::ShowProperties(const QString& filePathName)
 {
-    //NOTE: This needs to show REAL file name and attaching date also.
+    //NOTE [handle]: This needs to show REAL file name and attaching date also.
 }
 
 void FileViewManager::GenericOpenFile(const QString& filePathName, long long programSAID,
@@ -499,7 +499,7 @@ void FileViewManager::CreateTables()
     //Extensions are meant to be LOWERCASE WITHOUT THE FIRST DOT character.
     //There is also a special extension called '' (empty string!) which appears in OpenWith list
     //  of all files after the extension's specialized openers, before the others.
-    //TODO: ^ No there isn't a '' extension! We should make special care in Open with dialog preference,
+    //TODO [handle]: ^ No there isn't a '' extension! We should make special care in Open with dialog preference,
     //  etc to make sure we exempt '' from other extensions even!
 
     QSqlQuery query(db);

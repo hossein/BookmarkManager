@@ -129,7 +129,7 @@ void BookmarkEditDialog::accept()
         //editedDefBFID = editedFilesList[editedDefBFIDindex].BFID;
     }
 
-    //TODO: If already exists, show warning, switch to the already existent, etc etc
+    //TODO [handle]: If already exists, show warning, switch to the already existent, etc etc
     BookmarkManager::BookmarkData bdata;
     bdata.BID = editBId; //Not important.
     bdata.Name = ui->leName->text().trimmed();

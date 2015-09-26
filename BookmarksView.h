@@ -30,7 +30,11 @@ private:
 public:
     enum ListMode
     {
-        LM_NameOnlyDisplayWithoutHeaders, //TODO: Use suitable tooltips WHICH SHOW URL in this mode. For BMViewDlg.
+        //TODO: In NameOnly and Limited modes, (used e.g in EditDlg and ViewDlg's related bookmarks)
+        //  must pop up their view dialog, AND they MUST show their Office-style brief information
+        //  EVERYWHERE; super useful. Also we have to use suitable tooltips WHICH SHOW URL too for
+        //  whenever user hovers any of them.
+        LM_NameOnlyDisplayWithoutHeaders,
         LM_LimitedDisplayWithoutHeaders,
         LM_LimitedDisplayWithHeaders,
         LM_FullInformationAndEdit,

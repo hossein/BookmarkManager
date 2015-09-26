@@ -485,11 +485,12 @@ bool FileManager::MoveOrCopyAux(long long FID, const QString& destArchiveName,
         return false;
 
     //Add the file to destArchiveName (e.g ':trash:').
-    //NOTE: We could just set the second parameter of `AddFileToArchive` to true to remove the
+    //Note: We could just set the second parameter of `AddFileToArchive` to true to remove the
     //  original file from the old archive. This is fine with the current implementation as
     //  ArchiveMans don't store extra information about the files. However we do it in two-steps of
     //  adding to new archive then removing from the old archive for more integrity, although
-    //  that way we didn't even needed to get `originalFileArchiveName`.
+    //  that way we didn't even needed to get `originalFileArchiveName` (but `AddFileToArchive`
+    //  could only (System)Trash the file, not fully delete it by the way).
 
     bool success = fileArchives[destArchiveName]->AddFileToArchive(
                 fullArchiveFilePath, false, QString(), errorWhileContext, newFileArchiveURL);

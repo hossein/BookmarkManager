@@ -31,11 +31,6 @@
 //  keep the list of newly opened files and don't delete them in the 30 seconds later clean up is
 //  also possible; but we don't do it for now.
 
-//TODO: Double clicking bm's in View dialog's related bookmarks must pop up their view dialog,
-//      AND they MUST show their Office-style brief information EVERYWHERE; super useful.
-//TODO: Now that local html previewer is easily navigatable, where are its cookies stored and
-//      do they persist (and do we want them to persist) between closing/reopening previews?
-
 /// TODO: Plan:
 ///   x File Manager
 ///   x Make the changes that we need to require multiple file attaching and do it.
@@ -114,6 +109,8 @@
 ///     similar/exact check.
 ///   - Support full url and arg definition for Open With. This would allow e.g bat, vbs, py progs
 ///     to open files.
+///   - Option for persisting cookies and cache, because local html previewer is easily navigatable.
+///     Now maybe add a mini-browser too. Useful for occasional link clicking inside the app.
 
 class Config
 {
