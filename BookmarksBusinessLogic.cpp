@@ -136,7 +136,7 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
     dbm->files.BeginFilesTransaction();
     {
         //Convert attached file FIDs to CSV string.
-        //Get the FID of the default file
+        //Get the FID of the default file (we have BFID, need FID, [KeepDefaultFile-1] matters).
         long long defaultFID = -1;
         QList<long long> attachedFIDs;
         foreach (const FileManager::BookmarkFile& bf, bdata.Ex_FilesList)
@@ -149,13 +149,6 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
         foreach (long long FID, attachedFIDs)
             attachedFIDsStrList.append(QString::number(FID));
         QString attachedFIDsStr = attachedFIDsStrList.join(",");
-
-        //long long defaultFID = -1;
-        //if (bdata.DefBFID == -1) We can NOT guarantee this if user has removed files of a bookmark. TODO: When user removes files, does default change? when user removes the last file, does it become -1? If yes we can add the following lines:
-        ////Generalization: If a bookmark doesn't have any files, set its DefBFID to -1.
-        ////      This can be used when trashing to detect whether any file exists or not, and whether we can find the FID of it.
-        //to [KeepDefaultFile-1] explanation. and can use that condition then.
-        //// BUT UPDATE AGAIN: Now we use the previous loop to find the def FID anyway and DO NOT NEED SUCH GUARANTEES.
 
         //Remove BookmarkFile attachment information. This is necessary as foreign keys restrict
         //  deleting a bookmark having associated files with it.

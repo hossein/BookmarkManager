@@ -61,9 +61,9 @@ FilePreviewHandler* FileViewManager::GetPreviewHandler(const QString& fileName)
 int FileViewManager::ChooseADefaultFileBasedOnExtension(const QStringList& filesList)
 {
     if (filesList.count() == 1)
-        return 0;
+        return 0; //[KeepDefaultFile-1].Generalization
     else if (filesList.count() == 0)
-        return -1;
+        return -1; //[KeepDefaultFile-1].Generalization
 
     //TODO: Sort by the FilePreviewHandler::FileCategory categories.
     QList<QStringList> extensionPriority;

@@ -24,6 +24,12 @@
 //      choose it again or it will be automatically choosed or remained -1 if no files are
 //      remaining. We achieve this by not keeping a editedDefBFID and instead having a bool field
 //      editedFilesList.
+//      So when user removes files, default file changes. When user removes the last file, default
+//      file becomes -1.
+//Generalization: If a bookmark doesn't have any files, set its DefBFID to -1. If a bookmark has any
+//      files, its DefBFID MUST NOT BE -1.
+//      This can be used when trashing to detect whether any file exists or not, and whether we can
+//      find the FID of it.
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #   define setSectionResizeMode setResizeMode
@@ -111,6 +117,7 @@ void BookmarkEditDialog::accept()
         return;
 
     //Choose a default file ourselves if user hasn't made a choice.
+    //[KeepDefaultFile-1].Generalization: Any bookmark MUST have a default file if it has files.
     if (editedFilesList.size() > 0 && DefaultFileIndex() == -1)
     {
         QStringList fileNames;
@@ -128,15 +135,17 @@ void BookmarkEditDialog::accept()
     bdata.Name = ui->leName->text().trimmed();
     bdata.URL = ui->leURL->text().trimmed();
     bdata.Desc = ui->ptxDesc->toPlainText();
-    bdata.DefBFID = -1; //[KeepDefaultFile-1]
+    bdata.DefBFID = -1; //[KeepDefaultFile-1] We always set this to -1.
+                        //bbLogic will set the correct defbfid later.
     bdata.Rating = ui->dialRating->value();
 
     QList<long long> associatedTIDs;
     QStringList tagsList = ui->leTags->text().split(' ', QString::SkipEmptyParts);
 
     BookmarksBusinessLogic bbLogic(dbm, this);
-    bool success = bbLogic.AddOrEditBookmark(editBId, bdata, originalEditBId, editOriginalBData, editedLinkedBookmarks,
-                                        tagsList, associatedTIDs, editedFilesList, DefaultFileIndex());
+    bool success = bbLogic.AddOrEditBookmark(
+                editBId, bdata, originalEditBId, editOriginalBData, editedLinkedBookmarks,
+                tagsList, associatedTIDs, editedFilesList, DefaultFileIndex());
 
     if (success)
     {
