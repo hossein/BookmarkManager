@@ -152,6 +152,9 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
 
         //Remove BookmarkFile attachment information. This is necessary as foreign keys restrict
         //  deleting a bookmark having associated files with it.
+        //Note that file transaction undo is expensive and we may want to postpone this until the
+        //  very last minutes of deleting the bookmark, BUT we think sql transactions won't fail so
+        //  do this expensive tasks at the beginning.
         //Send files to trash (if they're not shared).
         success = dbm->files.TrashAllBookmarkFiles(BID);
         if (!success)
@@ -238,7 +241,7 @@ bool BookmarksBusinessLogic::DoRollBackAction()
         const QString errorText = "Not all changes made to your filesystem in the intermediary "
                                   "process of adding the bookmark could not be reverted.<br/><br/>"
                                   "<b>Your filesystem may be in inconsistent state!</b>";
-        qDebug() << "File Transaction Rollback Error\n" << errorText;
+        qDebug() << "File Transaction Rollback Error\n" << errorText; //Will be written to log file
         QMessageBox::critical(dialogParent, "File Transaction Rollback Error", errorText);
     }
 
