@@ -161,8 +161,45 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
         //Foreign keys cascades will later delete the tags.
         QString tagNames = bdata.Ex_TagsList.join(",");
 
+        //Stor linked bookmarks' title as extra info.
+        //No need to delete linked bookmarks. Foreign keys cascades will later delete the links.
+        if (!bdata.Ex_LinkedBookmarksList.empty())
+        {
+            QStringList linkedBookmarkNames;
+            success = dbm->bms.RetrieveBookmarkNames(bdata.Ex_LinkedBookmarksList, linkedBookmarkNames);
+            if (!success)
+                return DoRollBackAction();
+
+            //Don't prepend their count to them. Why make it complicated when we already don't want to
+            //  link them again and we can't manage '||' in bookmark names in this case? This will
+            //  complicate the following 'merge' too.
+            //  linkedBookmarkNames.insert(0, QString::number(linkedBookmarkNames.count()));
+            //Join them using '||'.
+            QString linkedBookmarkNamesStr = linkedBookmarkNames.join("||");
+            //Add or merge them into extra info.
+            bool hasLinkedBookmarkExInfo = false;
+            for (int i = 0; i < bdata.Ex_ExtraInfosList.size(); i++)
+            {
+                if (bdata.Ex_ExtraInfosList[i].Name == "BM-LinkedBookmarks")
+                {
+                    //The `empty()` check of the parent `if` prevents appending useless '||'s.
+                    bdata.Ex_ExtraInfosList[i].Type = BookmarkManager::BookmarkExtraInfoData::Type_Text;
+                    bdata.Ex_ExtraInfosList[i].Value += "||" + linkedBookmarkNamesStr;
+                    hasLinkedBookmarkExInfo = true;
+                    break;
+                }
+            }
+            if (!hasLinkedBookmarkExInfo)
+            {
+                BookmarkManager::BookmarkExtraInfoData exInfo;
+                exInfo.Name = "BM-LinkedBookmarks";
+                exInfo.Type = BookmarkManager::BookmarkExtraInfoData::Type_Text;
+                exInfo.Value = linkedBookmarkNamesStr;
+                bdata.Ex_ExtraInfosList.append(exInfo);
+            }
+        }
+
         //Convert extra info to one big chunk of json text.
-        //TODO: Make linked bookmarks titles extra info.
         QJsonArray exInfoJsonArray;
         foreach (const BookmarkManager::BookmarkExtraInfoData& exInfo, bdata.Ex_ExtraInfosList)
         {
@@ -173,9 +210,6 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
             exInfoJsonArray.append(QJsonValue(exInfoJsonObject));
         }
         QString extraInfoJSonText = QString::fromUtf8(QJsonDocument(exInfoJsonArray).toJson(QJsonDocument::Compact));
-
-        //Do nothing about linked bookmarks. Foreign keys cascades will later delete the links.
-        //Okay!
 
         //Move the information to BookmarkTrash table
         success = dbm->bms.InsertBookmarkIntoTrash(bdata.Name, bdata.URL, bdata.Desc, tagNames,

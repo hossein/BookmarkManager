@@ -129,6 +129,8 @@ public:
     bool UpdateBookmarkExtraInfos(long long BID, const QList<BookmarkExtraInfoData>& originalExtraInfos,
                                   const QList<BookmarkExtraInfoData>& extraInfos);
 
+    /// Convenience function mainly to get linked bookmarks' names. Preserves the order.
+    bool RetrieveBookmarkNames(const QList<long long>& BIDs, QStringList& names);
     /// Convenience functions used during importing.
     bool RetrieveAllFullURLs(QHash<long long, QString>& bookmarkURLs);
     /// Works case-sensitively.

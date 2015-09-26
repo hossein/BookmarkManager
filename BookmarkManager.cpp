@@ -435,6 +435,40 @@ bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, const QList<Bookma
     return true;
 }
 
+bool BookmarkManager::RetrieveBookmarkNames(const QList<long long>& BIDs, QStringList& names)
+{
+    names.clear(); //Do it for caller
+    if (BIDs.empty())
+        return true;
+
+    QString BIDsStr;
+    foreach(long long BID, BIDs)
+        BIDsStr += QString::number(BID) + ",";
+    BIDsStr.chop(1); //Remove the last comma
+
+    QString retrieveError = "Could not get bookmarks name from database.";
+    QSqlQuery query(db);
+    query.prepare(QString("SELECT BID, Name FROM Bookmark WHERE BID IN (%1)").arg(BIDsStr));
+
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    //We stores names in a map then sort them by the original BIDs list. Because SQLite probably
+    //  doesn't return the rows in the 'IN (...)' order we passed to it; they're probably ordered
+    //  by BID but we want them to be ordered by the explicit BIDs user passed in, e.g in the order
+    //  bookmarks were linked.
+    QMap<long long, QString> namesMap;
+    while (query.next())
+        //We indexed explicitly in our select statement; indexes are constant.
+        namesMap.insert(query.value(0).toLongLong(), query.value(1).toString());
+
+    //names.clear() already called.
+    foreach (long long BID, BIDs)
+        names.append(namesMap[BID]);
+
+    return true;
+}
+
 bool BookmarkManager::RetrieveAllFullURLs(QHash<long long, QString>& bookmarkURLs)
 {
     QString retrieveError = "Could not get bookmarks information from database.";
