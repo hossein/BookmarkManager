@@ -9,8 +9,12 @@
 
 bool WinFunctions::MoveFileToRecycleBin(const QString& filePathName)
 {
-    //TODO: Check with unicode file names. and if delete returns 0 on a non-existent file or not!
-    //      Should we append \\\\?\\ or whatever? http://blogs.msdn.com/b/emreknlk/archive/2010/12/03/remove-max-path-limitations.aspx
+    //Unicode file names work in the following. Deleting non-existent files or deleting files whose
+    //  path names is longer than MAX_PATH results in DE_INVALIDFILES result (124, 0x7C).
+    //Appending "\\?\" before the file names does not solve the problem of MAX_PATH; it just causes
+    //  everything to fail as SHFileOperation does not support it:
+    //  http://blogs.msdn.com/b/emreknlk/archive/2010/12/03/remove-max-path-limitations.aspx
+    //Actually docs suggest using the new IFileOperation in Vista+.
 
     int len = filePathName.length();
     wchar_t* wsFilePathName = new wchar_t[len + 2];
@@ -23,8 +27,10 @@ bool WinFunctions::MoveFileToRecycleBin(const QString& filePathName)
     fileOp.wFunc = FO_DELETE;
     fileOp.pFrom = wsFilePathName;
     fileOp.pTo = NULL;
-    //TODO: Test these flags and enable all of them...
-    fileOp.fFlags = FOF_ALLOWUNDO /* | FOF_NOCONFIRMATION */ | FOF_NOERRORUI /* | FOF_SILENT| FOF_WANTNUKEWARNING */;
+    //FOF_WANTNUKEWARNING can be useful to prevent permanently deleting e.g large files or those
+    //  with long names. As per the docs it partially overrides FOF_NOCONFIRMATION, however it
+    //  doesn't block our UI and user can cancel it. So won't use it.
+    fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT /*| FOF_WANTNUKEWARNING*/;
 
     int result = SHFileOperationW(&fileOp);
 
