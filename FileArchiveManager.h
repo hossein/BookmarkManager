@@ -21,8 +21,10 @@ public:
 
     /// A Files Transaction MUST have been started before calling Add/Remove functions.
     bool AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
-                          QString& fileArchiveURL, const QString& groupHint = QString());
-    bool RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash);
+                          const QString& groupHint, const QString& errorWhileContext,
+                          QString& fileArchiveURL);
+    bool RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash,
+                               const QString& errorWhileContext);
 
 private:
     /// Could be called `CreateFileArchiveURL` too.

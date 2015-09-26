@@ -235,7 +235,7 @@ void FileViewManager::GenericOpenFile(const QString& filePathName, long long pro
 
     if (sandboxed)
     {
-        filePathNameToOpen = files->CopyFileToSandBoxAndGetAddress(filePathName);
+        files->CopyFileToSandBoxAndGetAddress(filePathName, filePathNameToOpen);
         if (filePathNameToOpen.isEmpty()) //Error on copying, etc
             return;
     }

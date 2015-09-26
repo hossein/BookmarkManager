@@ -21,18 +21,23 @@ FileArchiveManager::~FileArchiveManager()
 }
 
 bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
-                                          QString& fileArchiveURL, const QString& groupHint)
+                                          const QString& groupHint, const QString& errorWhileContext,
+                                          QString& fileArchiveURL)
 {
     //This is like an assert.
     if (!filesTransaction->isTransactionStarted())
-        return Error("No file transaction was started before adding files to archive.");
+        return Error(QString("Error while %1:\n"
+                             "No file transaction was started before adding files to archive.")
+                     .arg(errorWhileContext));
 
     //Check if file is valid.
     QFileInfo fi(filePathName);
     if (!fi.exists())
-        return Error("The selected file \"" + filePathName + "\" does not exist!");
+        return Error(QString("Error while %1:\nThe selected file \"%2\" does not exist!")
+                     .arg(errorWhileContext, filePathName));
     else if (!fi.isFile())
-        return Error("The path \"" + filePathName + "\" does not point to a valid file!");
+        return Error(QString("Error while %1:\nThe path \"%2\" does not point to a valid file!")
+                     .arg(errorWhileContext, filePathName));
 
     //Decide where should the file be copied.
     QString fileRelArchiveURL = CalculateFileArchiveURL(filePathName, groupHint);
@@ -48,42 +53,50 @@ bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool syst
         //Can NOT use `canonicalFilePath`, since the directory still doesn't exist, it will just
         //  return an empty string.
         if (!filesTransaction->MakePath(".", tdi.absoluteFilePath()))
-            return Error("Could not create the directory for placing the attached file."
-                         "\n\nDirectory: " + tdi.absoluteFilePath());
+            return Error(QString("Error while %1:\nCould not create the directory for placing "
+                                 "the attached file.\n\nDirectory: %2")
+                         .arg(errorWhileContext, tdi.absoluteFilePath()));
     }
     else if (!tdi.isDir())
     {
-        return Error("The path for placing the attached file is not a directory!"
-                     "\n\nDirectory: " + tdi.absoluteFilePath());
+        return Error(QString("Error while %1:\nThe path for placing the attached file is not a directory!"
+                     "\n\nDirectory: %2").arg(errorWhileContext, tdi.absoluteFilePath()));
     }
 
     //Copy the file.
     bool success = filesTransaction->CopyFile(filePathName, targetFilePathName);
     if (!success)
-        return Error(QString("Could not copy the source file to destination directory!"
-                             "\n\nSource File: %1\nDestination File: %2")
-                             .arg(filePathName, targetFilePathName));
+        return Error(QString("Error while %1:\n"
+                             "Could not copy the source file to destination directory!"
+                             "\n\nSource File: %2\nDestination File: %3")
+                             .arg(errorWhileContext, filePathName, targetFilePathName));
 
     //Remove the original file.
     if (systemTrashOriginalFile)
     {
         success = filesTransaction->SystemTrashFile(filePathName);
         //We do NOT return FALSE in case of failure.
-        Error(QString("Could not delete the original file from your filesystem. "
-                      "You should manually delete it yourself.\n\nFile: %1").arg(filePathName));
+        Error(QString("Error while %1:\nCould not delete the original file from your filesystem. "
+                      "You should manually delete it yourself.\n\nFile: %2")
+              .arg(errorWhileContext, filePathName));
     };
 
     return true;
 }
 
-bool FileArchiveManager::RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash)
+bool FileArchiveManager::RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash,
+                                               const QString& errorWhileContext)
 {
     //This is like an assert.
     if (!filesTransaction->isTransactionStarted())
-        return Error("No file transaction was started before removing files from archive.");
+        return Error(QString("Error while %1:\n"
+                             "No file transaction was started before removing files from archive.")
+                     .arg(errorWhileContext));
 
     bool success;
-    QString fileOperationError = "Unable to remove a file from the FileArchive.";
+    QString fileOperationError = "Error while %1:\n"
+                                 "Unable to remove a file from the FileArchive.\n\n"
+                                 "File name: %2";
 
     QString fullFilePathName = GetFullArchivePathForRelativeURL(fileRelArchiveURL);
 
@@ -93,7 +106,7 @@ bool FileArchiveManager::RemoveFileFromArchive(const QString& fileRelArchiveURL,
         success = filesTransaction->DeleteFile(fullFilePathName);
 
     if (!success)
-        return Error(fileOperationError + QString("\n\nFile Name: ") + fullFilePathName);
+        return Error(fileOperationError.arg(errorWhileContext, fullFilePathName));
 
     return true;
 }

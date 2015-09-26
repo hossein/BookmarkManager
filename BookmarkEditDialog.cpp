@@ -635,8 +635,8 @@ QString BookmarkEditDialog::GetAttachedFileFullPathName(int filesListIdx)
     if (editedFilesList[filesListIdx].BFID == -1)
         fullFilePathName = editedFilesList[filesListIdx].OriginalName;
     else
-        fullFilePathName = dbm->files.GetFullArchiveFilePath(
-                           editedFilesList[filesListIdx].ArchiveURL);
+        dbm->files.GetFullArchiveFilePath(editedFilesList[filesListIdx].ArchiveURL,
+                                          "getting attached file path", fullFilePathName);
 
     return fullFilePathName;
 }

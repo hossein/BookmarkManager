@@ -9,6 +9,11 @@
 class DatabaseManager;
 class IArchiveManager;
 
+/// FileManager which acts as an interface to file archives and can manage storing, deleting, moving,
+///   copying and finally retrieving files from/among multiple different file archives.
+/// Note: The errors of many functions might not be evident to user, so many functions use a string
+///   `errorWhileContext` argument to give some context for the error that just happened. So e.g it
+///   adds 'Error while deleting file:' to the bare 'could not get file information' message.
 class FileManager : public ISubManager
 {
     friend class DatabaseManager;
@@ -61,8 +66,14 @@ public:
     /// Get a path that only contains the Archive name and the file name, e.g for a file
     /// with ArchiveURL of ":arch0:/F/FA/FA3D4FBE.html" and OriginalName of "Index.html",
     /// it returns ":arch0:/Index.html". Must be called on ATTACHED files ONLY.
+    /// In case of input errors it returns an invalid path
     QString GetUserReadableArchiveFilePath(const BookmarkFile& bf);
-    QString GetFullArchiveFilePath(const QString& fileArchiveURL);
+    /// The opposite of the above function. fsFilePath will contain empty QString without showing
+    /// any error message on error, i.e if archive doesn't exist or URL is wrong. Also fsFilePath
+    /// will be empty on error.
+    bool GetFullArchiveFilePath(const QString& fileArchiveURL, const QString& errorWhileContext,
+                                QString& fsFilePath);
+    /// Other simple URL manipulation or info-getting functions.
     static QString GetFileNameOnlyFromOriginalNameField(const QString& originalName);
     static QString ChangeOriginalNameField(const QString& originalName, const QString& newName);
 
@@ -89,46 +100,49 @@ public:
                              const QList<BookmarkFile>& originalBookmarkFiles,
                              const QList<BookmarkFile>& editedBookmarkFiles,
                              QList<long long>& editedBFIDs,
-                             const QString& fileArchiveNameForNewFiles);
+                             const QString& fileArchiveNameForNewFiles,
+                             const QString& errorWhileContext);
 
     //NEEDS Transaction.
     /// Remove all file attachment information of a bookmark and send all the files for to the trash
     ///     (only if they are not shared).
-    bool TrashAllBookmarkFiles(long long BID);
+    bool TrashAllBookmarkFiles(long long BID, const QString& errorWhileContext);
 
     //Sandbox
 public:
     bool ClearSandBox();
     /// This function gets and returns ABSOLUTE path names, NOT ArchiveURLs. This can change though!
     /// Returns empty QString on error. [Why we don't delete file after app]
-    QString CopyFileToSandBoxAndGetAddress(const QString& filePathName);
+    bool CopyFileToSandBoxAndGetAddress(const QString& filePathName, QString& fsFilePath);
     /// The following overload implements sandboxing files in theory using the `CopyFile` function,
-    /// but isn't used throughout the code.
-    QString CopyFileToSandBoxAndGetAddress(long long FID);
+    /// but isn't used throughout the code. Details are exactly like its other overload.
+    bool CopyFileToSandBoxAndGetAddress(long long FID, QString& fsFilePath);
 
 private:
     //Adding bookmarks
-    bool AddBookmarkFile(long long BID, long long FID, long long& addedBFID);
+    bool AddBookmarkFile(long long BID, long long FID, long long& addedBFID,
+                         const QString& errorWhileContext);
     /// Merely updates OriginalName, ModifyDate, Size and MD5; i.e [DISTINCT PROPERTY]s.
     /// `bf.FID` WILL BE DISREGARDED! The `FID` argument will be used to determine the file.
     /// This functions can not be used to change ArchiveURL of BookmarkFiles to move files to
     /// other archives
-    bool UpdateFile(long long FID, const BookmarkFile& bf);
+    bool UpdateFile(long long FID, const BookmarkFile& bf, const QString& errorWhileContext);
     /// Adds the file into the FileArchive folder and Updates the "FID" and "ArchiveURL" fields.
     /// Make sure 'fileArchiveName` exists before calling this function.
-    bool AddFile(BookmarkFile& bf, const QString& fileArchiveName, const QString& groupHint);
+    bool AddFile(BookmarkFile& bf, const QString& fileArchiveName,
+                 const QString& groupHint, const QString& errorWhileContext);
 
     //Removing bookmarks
     /// This function will clean-up the no-more-used files automatically by calling "RemoveFile"
     /// for FIDs who are not in use by any other bookmarks.
-    bool RemoveBookmarkFile(long long BFID, long long FID);
+    bool RemoveBookmarkFile(long long BFID, long long FID, const QString& errorWhileContext);
     /// Removes a file from database and the FileArchive folder.
     /// A File Transaction MUST HAVE BEEN STARTED before calling this function.
-    bool TrashFile(long long FID);
+    bool TrashFile(long long FID, const QString& errorWhileContext);
 
     /// A convenience function that calls the appropriate ArchiveMan's 'RemoveFileFromArchive' function.
     /// A File Transaction MUST HAVE BEEN STARTED before calling this function.
-    bool RemoveFileFromArchive(const QString& fileArchiveURL, bool trash);
+    bool RemoveFileFromArchive(const QString& fileArchiveURL, bool trash, const QString& errorWhileContext);
 
     /// Moving files to trash, and opening files in sandboxed mode are done with the Move/Copy
     ///   functions below.
@@ -140,11 +154,13 @@ private:
     ///   so we must do it).
     ///   If the ArchiveMan doesn't need transactions and we are simply copying, no transaction is
     ///   required.
-    bool MoveFile(long long FID, const QString& destArchiveName, QString& newFileArchiveURL);
-    bool CopyFile(long long FID, const QString& destArchiveName, QString& newFileArchiveURL);
+    bool MoveFile(long long FID, const QString& destArchiveName,
+                  const QString& errorWhileContext, QString& newFileArchiveURL);
+    bool CopyFile(long long FID, const QString& destArchiveName,
+                  const QString& errorWhileContext, QString& newFileArchiveURL);
     /// Auxiliary function used by the above functions.
     bool MoveOrCopyAux(long long FID, const QString& destArchiveName, bool removeOriginal,
-                       QString& newFileArchiveURL);
+                       const QString& errorWhileContext, QString& newFileArchiveURL);
 
 private:
     //Standard queries

@@ -38,23 +38,35 @@ QString FileManager::GetUserReadableArchiveFilePath(const FileManager::BookmarkF
     return archiveName + "/" + bf.OriginalName;
 }
 
-QString FileManager::GetFullArchiveFilePath(const QString& fileArchiveURL)
+bool FileManager::GetFullArchiveFilePath(const QString& fileArchiveURL, const QString& errorWhileContext,
+                                         QString& fsFilePath)
 {
-    //TODO: Need to test to make sure the URL is a valid colonized archive URL and that
-    //      the archive exists(user can change the DB, or simply can remove the archives?, errors may happen, etc)
-    //      , etc AND should we set these as requirements on this function?
+    //Need to test to make sure the URL is a valid colonized archive URL and that the archive exists
+    //(user can change the DB, or simply can remove the archives?, errors may happen, etc).
+
+    //As per function docs, fsFilePath MUST be empty in case of errors. So it's not just for
+    fsFilePath = QString();                                             //doing it for caller.
+
+    if (!(fileArchiveURL.count(':') == 2 && fileArchiveURL.count(":/") == 1))
+    {
+        return Error(QString("Error while %1:\nInvalid file archive URL: %2")
+                     .arg(errorWhileContext, fileArchiveURL));
+    }
+
     foreach (const QString& archiveName, fileArchives.keys())
     {
         if (fileArchiveURL.left(archiveName.length()) == archiveName)
         {
             //Strip the ":ArhiveName:/" part from the file url.
             QString relativeFileURLToArchive = fileArchiveURL.mid(archiveName.length() + 1);
-            return fileArchives[archiveName]->GetFullArchivePathForRelativeURL(relativeFileURLToArchive);
+            fsFilePath = fileArchives[archiveName]->GetFullArchivePathForRelativeURL(relativeFileURLToArchive);
+            return true;
         }
     }
 
-    //TODO: If not found return what? or do the error handling where?
-    return QString();
+    //Archive not found.
+    return Error(QString("Error while %1:\nSpecified file archive not found in URL: %2")
+                 .arg(errorWhileContext, fileArchiveURL));
 }
 
 QString FileManager::GetFileNameOnlyFromOriginalNameField(const QString& originalName)
@@ -164,7 +176,8 @@ bool FileManager::UpdateBookmarkFiles(long long BID, const QString& groupHint,
                                       const QList<BookmarkFile>& originalBookmarkFiles,
                                       const QList<BookmarkFile>& editedBookmarkFiles,
                                       QList<long long>& editedBFIDs,
-                                      const QString& fileArchiveNameForNewFiles)
+                                      const QString& fileArchiveNameForNewFiles,
+                                      const QString& errorWhileContext)
 {
     //Find the bookmarks that were removed. We used BFID, not FID. No difference. Not even in
     //  supporting sharing a file between two bookmarks.
@@ -180,7 +193,7 @@ bool FileManager::UpdateBookmarkFiles(long long BID, const QString& groupHint,
                 //The user might have changed the file information as a result of renaming the file
                 //  or editing it.
                 if (nbf != obf)
-                    if (!UpdateFile(nbf.FID, nbf))
+                    if (!UpdateFile(nbf.FID, nbf, errorWhileContext))
                         return false;
 
                 break;
@@ -188,7 +201,7 @@ bool FileManager::UpdateBookmarkFiles(long long BID, const QString& groupHint,
         }
 
         if (!originalBookmarkRelationUsed)
-            if (!RemoveBookmarkFile(obf.BFID, obf.FID))
+            if (!RemoveBookmarkFile(obf.BFID, obf.FID, errorWhileContext))
                 return false;
     }
 
@@ -208,13 +221,13 @@ bool FileManager::UpdateBookmarkFiles(long long BID, const QString& groupHint,
         //Insert new files into our FileArchive.
         if (bf.FID)
         {
-            if (!AddFile(bf, fileArchiveNameForNewFiles, groupHint))
+            if (!AddFile(bf, fileArchiveNameForNewFiles, groupHint, errorWhileContext))
                 return false;
         }
 
         //Associate the bookmark-file relationship.
         long long addedBFID;
-        if (!AddBookmarkFile(BID, bf.FID, addedBFID))
+        if (!AddBookmarkFile(BID, bf.FID, addedBFID, errorWhileContext))
             return false;
 
         editedBFIDs.append(addedBFID);
@@ -223,9 +236,10 @@ bool FileManager::UpdateBookmarkFiles(long long BID, const QString& groupHint,
     return true;
 }
 
-bool FileManager::TrashAllBookmarkFiles(long long BID)
+bool FileManager::TrashAllBookmarkFiles(long long BID, const QString& errorWhileContext)
 {
     QString retrieveBookmarkFilesError =
+            "Error while %1:\n"
             "Unable to get attached files information for bookmark in order to delete them.";
 
     QSqlQuery query(db);
@@ -233,7 +247,7 @@ bool FileManager::TrashAllBookmarkFiles(long long BID)
     query.addBindValue(BID);
 
     if (!query.exec())
-        return Error(retrieveBookmarkFilesError, query.lastError());
+        return Error(retrieveBookmarkFilesError.arg(errorWhileContext), query.lastError());
 
     while (query.next())
     {
@@ -243,7 +257,7 @@ bool FileManager::TrashAllBookmarkFiles(long long BID)
 
         //The following call will remove the attachment information and trash the files ONLY IF
         //  they are not shared.
-        if (!RemoveBookmarkFile(BFID, FID))
+        if (!RemoveBookmarkFile(BFID, FID, errorWhileContext))
             return false;
     }
 
@@ -258,47 +272,53 @@ bool FileManager::ClearSandBox()
     return fsbm->ClearSandBox();
 }
 
-QString FileManager::CopyFileToSandBoxAndGetAddress(const QString& filePathName)
+bool FileManager::CopyFileToSandBoxAndGetAddress(const QString& filePathName, QString& fsFilePath)
 {
     //FileSandBoxManager archive doesn't need transactions for its `AddFileToArchive`.
     QString fileArchiveURL;
     bool success = fileArchives[conf->sandboxArchiveName]
-            ->AddFileToArchive(filePathName, false, fileArchiveURL);
+            ->AddFileToArchive(filePathName, false, QString(), "copying file to sandbox", fileArchiveURL);
     if (!success)
-        return QString();
+        return false;
 
-    return GetFullArchiveFilePath(fileArchiveURL);
+    return GetFullArchiveFilePath(fileArchiveURL, "copying file to sandbox", fsFilePath);
 }
 
-QString FileManager::CopyFileToSandBoxAndGetAddress(long long FID)
+bool FileManager::CopyFileToSandBoxAndGetAddress(long long FID, QString& fsFilePath)
 {
     QString fileArchiveURL;
-    bool success = CopyFile(FID, conf->sandboxArchiveName, fileArchiveURL);
+    bool success = CopyFile(FID, conf->sandboxArchiveName, "copying file to sandbox", fileArchiveURL);
     if (!success)
-        return QString();
+        return false;
 
-    return GetFullArchiveFilePath(fileArchiveURL);
+    return GetFullArchiveFilePath(fileArchiveURL, "copying file to sandbox", fsFilePath);
 }
 
-bool FileManager::AddBookmarkFile(long long BID, long long FID, long long& addedBFID)
+bool FileManager::AddBookmarkFile(long long BID, long long FID, long long& addedBFID,
+                                  const QString& errorWhileContext)
 {
-    QString attachError = "Could not set attached files information for the bookmark in the database.";
+    QString attachError =
+            "Error while %1:\n"
+            "Could not set attached files information for the bookmark in the database.";
     QSqlQuery query(db);
 
     query.prepare("INSERT INTO BookmarkFile(BID, FID) VALUES( ? , ? )");
     query.addBindValue(BID);
     query.addBindValue(FID);
     if (!query.exec())
-        return Error(attachError, query.lastError());
+        return Error(attachError.arg(errorWhileContext), query.lastError());
 
     addedBFID = query.lastInsertId().toLongLong();
 
     return true;
 }
 
-bool FileManager::UpdateFile(long long FID, const FileManager::BookmarkFile& bf)
+bool FileManager::UpdateFile(long long FID, const FileManager::BookmarkFile& bf,
+                             const QString& errorWhileContext)
 {
-    QString updateFileError = "Unable to alter the information of attached files in the database.";
+    QString updateFileError =
+            "Error while %1:\n"
+            "Unable to alter the information of attached files in the database.";
     QSqlQuery query(db);
 
     query.prepare("UPDATE File "
@@ -312,17 +332,19 @@ bool FileManager::UpdateFile(long long FID, const FileManager::BookmarkFile& bf)
     query.addBindValue(FID);
 
     if (!query.exec())
-        return Error(updateFileError, query.lastError());
+        return Error(updateFileError.arg(errorWhileContext), query.lastError());
 
     return true;
 }
 
-bool FileManager::AddFile(FileManager::BookmarkFile& bf, const QString& fileArchiveName, const QString& groupHint)
+bool FileManager::AddFile(FileManager::BookmarkFile& bf, const QString& fileArchiveName,
+                          const QString& groupHint, const QString& errorWhileContext)
 {
     //Add file to our FileArchive directory and also set the `bf.ArchiveURL` field.
     bool addFileToArchiveSuccess =
             fileArchives[fileArchiveName]->
-            AddFileToArchive(bf.OriginalName, bf.Ex_RemoveAfterAttach, bf.ArchiveURL, groupHint);
+            AddFileToArchive(bf.OriginalName, bf.Ex_RemoveAfterAttach, groupHint, errorWhileContext,
+                             bf.ArchiveURL);
 
     if (!addFileToArchiveSuccess)
         return false;
@@ -334,7 +356,7 @@ bool FileManager::AddFile(FileManager::BookmarkFile& bf, const QString& fileArch
     //  functions must be careful to give writable COPIES of const references to this.
     bf.OriginalName = QFileInfo(bf.OriginalName).fileName();
 
-    QString addFileDBError = "Unable to add file information to the database.";
+    QString addFileDBError = "Error while %1:\nUnable to add file information to the database.";
     QSqlQuery query(db);
 
     //Get the required file names from the DB.
@@ -346,7 +368,7 @@ bool FileManager::AddFile(FileManager::BookmarkFile& bf, const QString& fileArch
     query.addBindValue(bf.Size);
     query.addBindValue(bf.MD5);
     if (!query.exec())
-        return Error(addFileDBError, query.lastError());
+        return Error(addFileDBError.arg(errorWhileContext), query.lastError());
 
     long long addedFID = query.lastInsertId().toLongLong();
     bf.FID = addedFID;
@@ -354,9 +376,11 @@ bool FileManager::AddFile(FileManager::BookmarkFile& bf, const QString& fileArch
     return true;
 }
 
-bool FileManager::RemoveBookmarkFile(long long BFID, long long FID)
+bool FileManager::RemoveBookmarkFile(long long BFID, long long FID, const QString& errorWhileContext)
 {
-    QString attachedRemoveError = "Unable to remove an old attached file from database.";
+    QString attachedRemoveError =
+            "Error while %1:\n"
+            "Unable to remove an old attached file from database.";
     QSqlQuery query(db);
 
     //Trash the bookmark-attached file relation.
@@ -365,42 +389,43 @@ bool FileManager::RemoveBookmarkFile(long long BFID, long long FID)
     ///               "SELECT BFID, BID, FID FROM BookmarkFile WHERE BFID = ?");
     /// query.addBindValue(BFID);
     /// if (!query.exec())
-    ///     return Error(attachedRemoveError, query.lastError());
+    ///     return Error(attachedRemoveError.arg(errorWhileContext), query.lastError());
 
     query.prepare("DELETE FROM BookmarkFile WHERE BFID = ?");
     query.addBindValue(BFID);
     if (!query.exec())
-        return Error(attachedRemoveError, query.lastError());
+        return Error(attachedRemoveError.arg(errorWhileContext), query.lastError());
 
     //If file FID is not used by other bookmarks (shared), remove the file altogether.
     QString attachedRemoveCheckForUseError =
+            "Error while %1:\n"
             "Unable to clean-up after removing an old attached file from database.";
     query.prepare("SELECT * FROM BookmarkFile WHERE FID = ?");
     query.addBindValue(FID);
     if (!query.exec())
-        return Error(attachedRemoveCheckForUseError, query.lastError());
+        return Error(attachedRemoveCheckForUseError.arg(errorWhileContext), query.lastError());
 
     if (!query.first())
     {
         //This shows no other bookmarks rely on this file!
         //Remove the file completely from db and the archive.
-        return TrashFile(FID);
+        return TrashFile(FID, errorWhileContext);
     }
 
     return true;
 }
 
-bool FileManager::TrashFile(long long FID)
+bool FileManager::TrashFile(long long FID, const QString& errorWhileContext)
 {
     //Note: Since we are in a files transaction, we think DB transaction is started, too;
     //  although even without DB transaction this function would be okay.
-    QString trashFileError = "Unable to record file trashing information in the database.";
+    QString trashFileError = "Error while %1:\n"
+                             "Unable to record file trashing information in the database.";
     QSqlQuery query(db);
 
     //First move the physical file
-    //TODO: Set an error prefix or re-design some aspects?
     QString newFileArchiveURL;
-    bool success = MoveFile(FID, conf->trashArchiveName, newFileArchiveURL);
+    bool success = MoveFile(FID, conf->trashArchiveName, errorWhileContext, newFileArchiveURL);
     if (!success)
         return false;
 
@@ -409,35 +434,39 @@ bool FileManager::TrashFile(long long FID)
     query.addBindValue(newFileArchiveURL);
     query.addBindValue(FID);
     if (!query.exec())
-        return Error(trashFileError, query.lastError());
+        return Error(trashFileError.arg(errorWhileContext), query.lastError());
 
     return true;
 }
 
-bool FileManager::RemoveFileFromArchive(const QString& fileArchiveURL, bool trash)
+bool FileManager::RemoveFileFromArchive(const QString& fileArchiveURL, bool trash,
+                                        const QString& errorWhileContext)
 {
     QString originalFileArchiveName = GetArchiveNameOfFile(fileArchiveURL);
     if (!fileArchives.keys().contains(originalFileArchiveName))
-        return Error(QString("The source file archive '%1' does not exist!")
-                     .arg(originalFileArchiveName));
+        return Error(QString("Error while %1:\nThe source file archive '%2' does not exist!")
+                     .arg(errorWhileContext, originalFileArchiveName));
 
     QString relativeFileURLToArchive = fileArchiveURL.mid(originalFileArchiveName.length() + 1);
     return fileArchives[originalFileArchiveName]->
-            RemoveFileFromArchive(relativeFileURLToArchive, trash);
+            RemoveFileFromArchive(relativeFileURLToArchive, trash, errorWhileContext);
 }
 
-bool FileManager::MoveFile(long long FID, const QString& destArchiveName, QString& newFileArchiveURL)
+bool FileManager::MoveFile(long long FID, const QString& destArchiveName,
+                           const QString& errorWhileContext, QString& newFileArchiveURL)
 {
-    return MoveOrCopyAux(FID, destArchiveName, true, newFileArchiveURL);
+    return MoveOrCopyAux(FID, destArchiveName, true, errorWhileContext, newFileArchiveURL);
 }
 
-bool FileManager::CopyFile(long long FID, const QString& destArchiveName, QString& newFileArchiveURL)
+bool FileManager::CopyFile(long long FID, const QString& destArchiveName,
+                           const QString& errorWhileContext, QString& newFileArchiveURL)
 {
-    return MoveOrCopyAux(FID, destArchiveName, false, newFileArchiveURL);
+    return MoveOrCopyAux(FID, destArchiveName, false, errorWhileContext, newFileArchiveURL);
 }
 
 bool FileManager::MoveOrCopyAux(long long FID, const QString& destArchiveName,
-                                bool removeOriginal, QString& newFileArchiveURL)
+                                bool removeOriginal, const QString& errorWhileContext,
+                                QString& newFileArchiveURL)
 {
     QString retrieveFileError = "Unable to retrieve file information from the database.";
     QSqlQuery query(db);
@@ -451,10 +480,9 @@ bool FileManager::MoveOrCopyAux(long long FID, const QString& destArchiveName,
     query.first();
     QString fileArchiveURL = query.record().value("ArchiveURL").toString();
 
-    QString fullArchiveFilePath = GetFullArchiveFilePath(fileArchiveURL);
-    if (fullArchiveFilePath.isEmpty())
-        return Error(QString("Archive file \"%1\" is invalid and does not match a real file.")
-                     .arg(fileArchiveURL));
+    QString fullArchiveFilePath;
+    if (!GetFullArchiveFilePath(fileArchiveURL, errorWhileContext, fullArchiveFilePath))
+        return false;
 
     //Add the file to destArchiveName (e.g ':trash:').
     //NOTE: We could just set the second parameter of `AddFileToArchive` to true to remove the
@@ -463,18 +491,15 @@ bool FileManager::MoveOrCopyAux(long long FID, const QString& destArchiveName,
     //  adding to new archive then removing from the old archive for more integrity, although
     //  that way we didn't even needed to get `originalFileArchiveName`.
 
-    //NOTE: The errors of the following (and many other calls here, incl. Remove) might not be evident to user,
-    //  maybe set a prefix or title like 'Error while trashing file/adding new bookmark file, etc'
-    //  string on the errors?
     bool success = fileArchives[destArchiveName]->AddFileToArchive(
-                fullArchiveFilePath, false, newFileArchiveURL);
+                fullArchiveFilePath, false, QString(), errorWhileContext, newFileArchiveURL);
     if (!success)
         return false;
 
     if (removeOriginal)
     {
         //Remove the file from the old file archive.
-        success = RemoveFileFromArchive(fileArchiveURL, false);
+        success = RemoveFileFromArchive(fileArchiveURL, false, errorWhileContext);
         if (!success)
             return false;
     }

@@ -88,7 +88,8 @@ bool BookmarksBusinessLogic::AddOrEditBookmark(long long& editBId, BookmarkManag
         QList<long long> updatedBFIDs;
         success = dbm->files.UpdateBookmarkFiles(editBId, bdata.Name,
                                                  editOriginalBData.Ex_FilesList, editedFilesList,
-                                                 updatedBFIDs, dbm->conf->currentFileArchiveForAddingFiles);
+                                                 updatedBFIDs, dbm->conf->currentFileArchiveForAddingFiles,
+                                                 "storing bookmark files information");
         if (!success)
             return DoRollBackAction(editBId, originalEditBId);
 
@@ -156,7 +157,7 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
         //  very last minutes of deleting the bookmark, BUT we think sql transactions won't fail so
         //  do this expensive tasks at the beginning.
         //Send files to trash (if they're not shared).
-        success = dbm->files.TrashAllBookmarkFiles(BID);
+        success = dbm->files.TrashAllBookmarkFiles(BID, "deleting bookmark files");
         if (!success)
             return DoRollBackAction();
 

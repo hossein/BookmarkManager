@@ -363,8 +363,10 @@ void BookmarkViewDialog::af_properties()
 QString BookmarkViewDialog::GetAttachedFileFullPathName(int filesListIdx)
 {
     //Unlike BookmarkEditDialog, we know all files are attached and are in FileArchive.
-    QString fullFilePathName = dbm->files.GetFullArchiveFilePath(
-                               viewBData.Ex_FilesList[filesListIdx].ArchiveURL);
+    QString fullFilePathName;
+    bool success = dbm->files.GetFullArchiveFilePath(viewBData.Ex_FilesList[filesListIdx].ArchiveURL,
+                                                     "getting file path", fullFilePathName);
+    Q_UNUSED(success); //Will be empty in case of errors.
     return fullFilePathName;
 }
 
@@ -446,9 +448,11 @@ void BookmarkViewDialog::PreviewFile(int index)
         //  keeps a stack of cursors.
         QApplication::setOverrideCursor(Qt::BusyCursor);
         {
+            QString realFilePathName;
             QString fileArchiveURL = viewBData.Ex_FilesList[index].ArchiveURL;
-            QString realFilePathName = dbm->files.GetFullArchiveFilePath(fileArchiveURL);
-            dbm->fview.Preview(realFilePathName, ui->widPreviewer);
+            dbm->files.GetFullArchiveFilePath(fileArchiveURL, "getting preview file path", realFilePathName);
+            if (!realFilePathName.isEmpty()) //In case of errors
+                dbm->fview.Preview(realFilePathName, ui->widPreviewer);
         }
         QApplication::restoreOverrideCursor();
     }
