@@ -33,10 +33,16 @@ void MHTSaver::GetMHTData(const QString& url)
     m_status.mainResourceTitle = QByteArray();
     m_status.resourceCount = 0;
     m_status.resourceSuccess = 0;
+    m_cancel = false;
 
     //Load each resource with `LoadResource`; after response comes they will be added to resources
     //  with `AddResource`.
     LoadResource(QUrl(url));
+}
+
+void MHTSaver::Cancel()
+{
+    m_cancel = true;
 }
 
 void MHTSaver::LoadResource(const QUrl& url)
@@ -73,6 +79,13 @@ void MHTSaver::LoadResource(const QUrl& url)
 void MHTSaver::ResourceLoadingFinished()
 {
     QNetworkReply* reply = dynamic_cast<QNetworkReply*>(sender());
+
+    if (m_cancel)
+    {
+        //Stop early
+        DeleteReplyAndCheckForFinish(reply);
+        return;
+    }
 
     //The first resource's error is important.
     if (m_resources.isEmpty())
@@ -163,12 +176,26 @@ void MHTSaver::DeleteReplyAndCheckForFinish(QNetworkReply* reply)
     reply->deleteLater();
     m_ongoingReplies.remove(reply); //Remove from list of ongoing.
 
-    //If this is an error on loading the first, i.e the main resource
-    if (m_resources.isEmpty() && reply->error() != QNetworkReply::NoError)
+    if (m_cancel)
+    {
+        //If user cancelled, emit the special status when resources finish.
+        if (m_ongoingReplies.size() == 0)
+        {
+            m_status.mainSuccess = false;
+            m_status.mainHttpErrorCode = 0;
+            emit MHTDataReady(QByteArray(), m_status);
+        }
+    }
+    else if (m_resources.isEmpty() && reply->error() != QNetworkReply::NoError)
+    {
+        //If this is an error on loading the first, i.e the main resource
         emit MHTDataReady(QByteArray(), m_status);
-    //Otherwise check if things finished.
+    }
     else if (m_ongoingReplies.size() == 0)
+    {
+        //Otherwise if things finished, generate the MHT.
         GenerateMHT();
+    }
 }
 
 void MHTSaver::AddResource(QNetworkReply* reply)

@@ -34,11 +34,12 @@ class MHTSaver : public QObject
     Q_OBJECT
 
 public:
+    //If mainSuccess = true and mainHttpErrorCode = 0 this shows user cancelling the operation.
     struct Status
     {
         bool mainSuccess;
         int mainHttpErrorCode;
-        QByteArray mainResourceTitle;
+        int mainNetworkReplyError;
 
         int resourceCount;
         int resourceSuccess;
@@ -47,6 +48,7 @@ public:
 private:
     QNetworkAccessManager* qnam;
     Status m_status;
+    bool m_cancel;
 
     struct Resource
     {
@@ -76,6 +78,7 @@ public:
     //// Class Public Interface ///////////////////////////////////////////////
 public slots:
     void GetMHTData(const QString& url);
+    void Cancel();
 signals:
     void MHTDataReady(const QByteArray& data, const MHTSaver::Status& status);
 
