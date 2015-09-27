@@ -1,6 +1,7 @@
 #include "MHTSaver.h"
 
 #include "Util.h"
+#include <QFileInfo>
 #include <QRegularExpression>
 
 #include <QNetworkAccessManager>
@@ -30,9 +31,9 @@ void MHTSaver::GetMHTData(const QString& url)
     m_ongoingReplies.clear();
     m_status.mainSuccess = false;
     m_status.mainHttpErrorCode = -1;
-    m_status.mainResourceTitle = QByteArray();
     m_status.mainNetworkReplyError = QNetworkReply::NoError;
     m_status.mainNetworkReplyErrorString = QString();
+    m_status.mainResourceTitle = QString();
     m_status.resourceCount = 0;
     m_status.resourceSuccess = 0;
     m_cancel = false;
@@ -90,7 +91,8 @@ void MHTSaver::ResourceLoadingFinished()
     }
 
     //The first resource's error is important.
-    if (m_resources.isEmpty())
+    bool isMainResource = m_resources.isEmpty();
+    if (isMainResource)
     {
         m_status.mainSuccess = (reply->error() == QNetworkReply::NoError);
         //Since we don't add the resource, in case of redirects, this will be overwritten.
@@ -115,11 +117,13 @@ void MHTSaver::ResourceLoadingFinished()
         //HOWEVER, if this is not the main page save all interim things in the archive too;
         //  although e.g for pictures they won't be displayed as we are NOT modifying the image
         //  addresses or save them under the old address.
-        //Only for the main page we fully replace the redirect target with the original thing user passed in.
+        //Only for the main page we fully replace the redirect target with the original thing user
+        //  passed in; this also changes main http status code and main error, for other resources
+        //  the function continues and the `AddResource` call adds the resource to our list.
         QString newLocation = reply->header(QNetworkRequest::LocationHeader).toString();
         qDebug() << "LOAD: Redirect to: " << newLocation;
         LoadResource(QUrl(newLocation));
-        if (m_resources.isEmpty())
+        if (isMainResource)
             return DeleteReplyAndCheckForFinish(reply);
     }
 
@@ -170,6 +174,13 @@ void MHTSaver::ResourceLoadingFinished()
         if (reply->url().path().right(4).toLower() == ".css")
             ParseAndAddCSSResources(reply);
     }
+
+    //For the main page, the `ParseAndAddHTMLResources` should set its title if it's an html page.
+    //However if it doesn't have a title tag, or if it's not html (i.e maybe it's an image), we set
+    //  some title to not let it be empty. We use QFileInfo and it may be able to extract some name
+    //  for the file.
+    if (isMainResource && m_status.mainResourceTitle.isEmpty())
+        m_status.mainResourceTitle = "File_" + QFileInfo(reply->url().path()).fileName();
 
     DeleteReplyAndCheckForFinish(reply);
 }
@@ -337,7 +348,8 @@ void MHTSaver::GenerateMHT()
     qenc.QEncoding = true;
     qenc.firstLineAdditionalLen = 9;
     qenc.originalEncoding = "utf-8";
-    QByteArray subjectQEncoded = Util::EncodeQuotedPrintable(m_status.mainResourceTitle, false, qenc);
+    //Now this is one place where we don't support any encoding other than UTF-8.
+    QByteArray subjectQEncoded = Util::EncodeQuotedPrintable(m_status.mainResourceTitle.toUtf8(), false, qenc);
     mhtdata += "Subject: " + subjectQEncoded + "\r\n";
 
     QLocale usLocale(QLocale::English, QLocale::UnitedStates);

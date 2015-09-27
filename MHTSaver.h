@@ -12,6 +12,7 @@ class QNetworkAccessManager;
 /// Save URLs as MHT files!
 ///     This class is designed to suffice NOT-SO-IMPORTANT usages. It may not be suitable for
 ///     exact-accuracy saving needs.
+///     It always produces an mhtml file data; i.e it even wraps images in this format.
 /// Shortcomings:
 ///     1. Doesn't support any encoding other than UTF8
 ///     2. Doesn't smartly guess file types; just looks at their content type and file extension.
@@ -20,8 +21,8 @@ class QNetworkAccessManager;
 ///     3. Doesn't have a timer or something to abort slow or stalled network operations.
 ///     4. The HTML and CSS parsers are very simple, don't skip comments and use simple regexps.
 ///     5. Doesn't strip scripts.
-///     6. Doesn't load resources that are additionally loaded in scripts; only a browser can
-///        do that.
+///     6. Doesn't load resources that are additionally loaded in scripts, or change DOM after
+///        loading a page; only a browser can do that.
 ///     7. Redirections support is limited and is only done correctly for the main page. Although
 ///        the redirect targets are being fetched and saved, they are NOT displayed e.g in case of
 ///        pictures, because we neither modify the urls in the html/css files nor do we save the
