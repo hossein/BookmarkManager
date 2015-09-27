@@ -21,13 +21,15 @@ bool BookmarkImporter::Initialize()
         existentBookmarksForUrl.insertMulti(GetURLForFastComparison(it.value()), it.key());
 
     //Query bookmark unique ids.
+    //[No-Firefox-Uniqure-Ids]
     //Note: Until e7d886fd2227165c67cd61e75137622ada874e4c @ 20141116 we queried `firefox-guid` and
     //      wanted to query other browsers' unique ids too; but it appears that guid's of firefox
     //      are not what their name suggests. There may be multiple bookmarks with the same url but
     //      different guids that are in different folders representing firefox bookmarks' tags, and
     //      not only guid but every property, including the adding and modify dates differs on them.
     //Also if unique ids match but urls dont then don't assume bookmarks are equal. So what was its
-    //      usage after all? So it was removed.
+    //      usage after all? So it was removed. (btw it might not be called 'firefox-guid' in newer
+    //      revisions.)
 
     return true;
 }
@@ -130,8 +132,9 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
 
                 //Note: To generalize the code below, at least one of the guids must match.
                 //  Probably can't check with single-line if's.
-                QString ffGuidField = extraInfoField("firefox-guid", extraInfos);
-                detailsMatch = detailsMatch && (!ffGuidField.isNull() && ib.guid == bdata.Name);
+                //This was removed due to [No-Firefox-Uniqure-Ids], and also because this is unneeded.
+                //QString ffGuidField = extraInfoField("firefox-guid", extraInfos);
+                //detailsMatch = detailsMatch && (!ffGuidField.isNull() && ib.guid == bdata.Name);
 
                 detailsMatch = detailsMatch && (ib.description == bdata.Desc);
                 detailsMatch = detailsMatch && (ib.uri == bdata.URL);
