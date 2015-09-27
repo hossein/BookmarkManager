@@ -588,6 +588,7 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     bool success;
     ImportedEntityList elist;
     elist.importSource = ImportedEntityList::Source_Firefox;
+    elist.importSourceFileName = QFileInfo(jsonFilePath).fileName();
 
     FirefoxBookmarkJSONFileParser ffParser(this, &conf);
     success = ffParser.ParseFile(jsonFilePath, elist);

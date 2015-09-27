@@ -47,7 +47,7 @@
 ///     (much like how Word 2010 allows changing font and formatting as well as context-menu via
 ///     right-click)
 ///   x Filter by tags
-///   - "Delete" moves the bookmarks or archivefiles to a "Trash", never deletes them!
+///   x "Delete" moves the bookmarks or archivefiles to a "Trash", never deletes them!
 ///   - Search
 ///   x Bookmark extra info table.
 ///   - Import Firefox bookmarks (by both browsing the json file and selecting profile!)
