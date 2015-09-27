@@ -31,6 +31,8 @@ void MHTSaver::GetMHTData(const QString& url)
     m_status.mainSuccess = false;
     m_status.mainHttpErrorCode = -1;
     m_status.mainResourceTitle = QByteArray();
+    m_status.mainNetworkReplyError = QNetworkReply::NoError;
+    m_status.mainNetworkReplyErrorString = QString();
     m_status.resourceCount = 0;
     m_status.resourceSuccess = 0;
     m_cancel = false;
@@ -93,6 +95,8 @@ void MHTSaver::ResourceLoadingFinished()
         m_status.mainSuccess = (reply->error() == QNetworkReply::NoError);
         //Since we don't add the resource, in case of redirects, this will be overwritten.
         m_status.mainHttpErrorCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        m_status.mainNetworkReplyError = reply->error();
+        m_status.mainNetworkReplyErrorString = reply->errorString();
 
         if (reply->error() != QNetworkReply::NoError)
         {

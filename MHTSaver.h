@@ -40,6 +40,8 @@ public:
         bool mainSuccess;
         int mainHttpErrorCode;
         int mainNetworkReplyError;
+        QString mainNetworkReplyErrorString;
+        QString mainResourceTitle;
 
         int resourceCount;
         int resourceSuccess;
