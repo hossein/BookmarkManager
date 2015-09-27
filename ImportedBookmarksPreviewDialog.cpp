@@ -81,7 +81,8 @@ void ImportedBookmarksPreviewDialog::accept()
                                                                 "bookmark. You must decide what to do with the new bookmark first.");
             return;
         }
-        else if (ib.Ex_status == ImportedBookmark::S_AnalyzedSimilarExistent)
+        else if (ib.Ex_status == ImportedBookmark::S_ReplaceExisting ||
+                 ib.Ex_status == ImportedBookmark::S_AppendToExisting)
             similarDuplicateBookmarksToBeImported += 1;
         else if (ib.Ex_status == ImportedBookmark::S_AnalyzedExactExistent)
             exactDuplicateBookmarksToBeIgnored += 1;
