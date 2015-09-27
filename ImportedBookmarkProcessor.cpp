@@ -7,10 +7,15 @@
 #include <QMetaMethod>
 
 ImportedBookmarkProcessor::ImportedBookmarkProcessor(QObject *parent) :
-    QObject(parent), m_isProcessing(false), m_mhtSaver()
+    QObject(parent), m_isProcessing(false), m_elist(NULL), m_mhtSaver()
 {
     connect(&m_mhtSaver, SIGNAL(MHTDataReady(QByteArray,MHTSaver::Status)),
             this, SLOT(PageRetrieved(QByteArray,MHTSaver::Status)));
+}
+
+void ImportedBookmarkProcessor::setImportedEntityList(ImportedEntityList* elist)
+{
+    m_elist = elist;
 }
 
 bool ImportedBookmarkProcessor::ProcessImportedBookmark(int id, ImportedBookmark* ib)
@@ -47,8 +52,60 @@ void ImportedBookmarkProcessor::BeginProcess()
 
 void ImportedBookmarkProcessor::AddMetaData()
 {
-    //TODO: add extra attributes, e.g firefox's date added and the real import date and 'imported from: firefox', and 'fxprofilename: 2nvgyxqez'
-    //          for easy filtering in the future.
+    typedef BookmarkManager::BookmarkExtraInfoData ExInfoData;
+    ExInfoData exInfo;
+
+    exInfo.Name = "bm: imported";
+    exInfo.Type = ExInfoData::Type_Boolean;
+    exInfo.Value = "true";
+    m_ib->ExPr_ExtraInfosList.append(exInfo);
+
+    if (m_elist == NULL)
+        return; //Caller should have set it.
+
+    if (m_elist->importSource == ImportedEntityList::Source_Firefox)
+    {
+        exInfo.Name = "bm: imported from";
+        exInfo.Type = ExInfoData::Type_Text;
+        exInfo.Value = "firefox";
+        m_ib->ExPr_ExtraInfosList.append(exInfo);
+
+        if (!m_elist->importSourceProfile.isEmpty())
+        {
+            exInfo.Name = "firefox: profile name";
+            exInfo.Type = ExInfoData::Type_Text;
+            exInfo.Value = m_elist->importSourceProfile;
+            m_ib->ExPr_ExtraInfosList.append(exInfo);
+        }
+
+        if (!m_elist->importSourceFileName.isEmpty())
+        {
+            exInfo.Name = "firefox: json file";
+            exInfo.Type = ExInfoData::Type_Text;
+            exInfo.Value = m_elist->importSourceFileName;
+            m_ib->ExPr_ExtraInfosList.append(exInfo);
+        }
+
+        exInfo.Name = "firefox: guid";
+        exInfo.Type = ExInfoData::Type_Text;
+        exInfo.Value = m_ib->guid;
+        m_ib->ExPr_ExtraInfosList.append(exInfo);
+
+        exInfo.Name = "firefox: charset";
+        exInfo.Type = ExInfoData::Type_Text;
+        exInfo.Value = m_ib->charset;
+        m_ib->ExPr_ExtraInfosList.append(exInfo);
+
+        exInfo.Name = "firefox: date added";
+        exInfo.Type = ExInfoData::Type_Number;
+        exInfo.Value = QString::number(m_ib->dtAdded.toMSecsSinceEpoch());
+        m_ib->ExPr_ExtraInfosList.append(exInfo);
+
+        exInfo.Name = "firefox: date modified";
+        exInfo.Type = ExInfoData::Type_Number;
+        exInfo.Value = QString::number(m_ib->dtModified.toMSecsSinceEpoch());
+        m_ib->ExPr_ExtraInfosList.append(exInfo);
+    }
 }
 
 void ImportedBookmarkProcessor::RetrievePage()

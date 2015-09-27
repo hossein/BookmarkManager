@@ -32,6 +32,7 @@ bool ImportedBookmarksProcessor::BeginProcessing(ImportedEntityList* elist)
     for (int i = 0; i < m_processorCount; i++)
     {
         m_bookmarkProcessors[i].setParent(this);
+        m_bookmarkProcessors[i].setImportedEntityList(elist);
         connect(m_bookmarkProcessors, SIGNAL(ImportedBookmarkProcessed(int)), this, SLOT(BookmarkProcessed(int)));
     }
 

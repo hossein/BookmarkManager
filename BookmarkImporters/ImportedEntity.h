@@ -4,6 +4,8 @@
 #include <QStringList>
 #include <QDateTime>
 
+#include "BookmarkManager.h"
+
 class QJsonObject;
 
 struct ImportedBookmark
@@ -56,6 +58,8 @@ struct ImportedBookmark
     QString ExPr_attachedFileError; //Shows error if not empty
     QString ExPr_attachedFileName;
     QByteArray ExPr_attachedFileData;
+
+    QList<BookmarkManager::BookmarkExtraInfoData> ExPr_ExtraInfosList;
 };
 
 struct ImportedBookmarkFolder
