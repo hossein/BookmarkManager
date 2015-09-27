@@ -14,6 +14,9 @@ struct ImportedBookmark
         this->Ex_status = S_NotAnalyzed;
     }
 
+    //== Data directly from import ============================================
+    //  Inserted by e.g FirefoxBookmarkJSONFileParser
+
     QString title;
     QString guid;
     QString description;
@@ -26,7 +29,9 @@ struct ImportedBookmark
     QDateTime dtAdded;
     QDateTime dtModified;
 
-    //Managed by BookmarkImporter
+    //== Managed by initial analyzing =========================================
+    //  From by BookmarkImporter::Analyze and ImportedBookmarksPreviewDialog
+
     enum ImportedBookmarkStatus
     {
         //Before analysis
@@ -44,6 +49,13 @@ struct ImportedBookmark
     QStringList Ex_additionalTags;
     bool Ex_finalImport;
     QStringList Ex_finalTags;
+
+    //== After processing =====================================================
+    //  By ImportedBookmarksProcessor
+
+    QString ExPr_attachedFileError; //Shows error if not empty
+    QString ExPr_attachedFileName;
+    QByteArray ExPr_attachedFileData;
 };
 
 struct ImportedBookmarkFolder
