@@ -16,19 +16,25 @@ public:
     bool RetrieveBookmarkEx(long long BID, BookmarkManager::BookmarkData& bdata,
                             bool extraInfosModel, bool filesModel);
 
-    bool AddOrEditBookmark(long long& editBId, BookmarkManager::BookmarkData& bdata,
-                           long long originalEditBId, BookmarkManager::BookmarkData& editOriginalBData,
-                           const QList<long long>& editedLinkedBookmarks,
-                           const QStringList& tagsList, QList<long long>& associatedTIDs,
-                           const QList<FileManager::BookmarkFile>& editedFilesList,  int defaultFileIndex);
+    void BeginActionTransaction();
+    void CommitActionTransaction();
+    bool RollBackActionTransaction();
 
-    bool DeleteBookmark(long long BID);
+    //Shortcut function that wraps AddOrEditBookmark in a transaction.
+    bool AddOrEditBookmarkTrans(
+            long long& editBId, BookmarkManager::BookmarkData& bdata,
+            long long originalEditBId, BookmarkManager::BookmarkData& editOriginalBData,
+            const QList<long long>& editedLinkedBookmarks,
+            const QStringList& tagsList, QList<long long>& associatedTIDs,
+            const QList<FileManager::BookmarkFile>& editedFilesList, int defaultFileIndex);
 
-private:
-    /// Rolls back transactions and shows error if they failed, also sets editBId to originalEditBId.
-    /// Note: We could use a class in such a way that when we return it goes out of scope and does
-    ///   these actions. It just has the advantage of typing `return false` instead of
-    ///   return `DoRollBackAction(...)` though; and we prefer not to mess around in destructors.
-    bool DoRollBackAction();
-    bool DoRollBackAction(long long& editBId, const long long originalEditBId);
+    //Needs transaction to have been started before calling.
+    bool AddOrEditBookmark(
+            long long& editBId, BookmarkManager::BookmarkData& bdata,
+            long long originalEditBId, BookmarkManager::BookmarkData& editOriginalBData,
+            const QList<long long>& editedLinkedBookmarks,
+            const QStringList& tagsList, QList<long long>& associatedTIDs,
+            const QList<FileManager::BookmarkFile>& editedFilesList, int defaultFileIndex);
+
+    bool DeleteBookmarkTrans(long long BID);
 };

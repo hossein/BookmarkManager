@@ -52,6 +52,7 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId,
     {
         setWindowTitle("Add Bookmark");
 
+        //ExtraInfos management using models stay in editOriginalBData's model, not bdata's.
         canShowTheDialog = dbm->bms.GetEmptyExtraInfosModel(editOriginalBData.Ex_ExtraInfosModel);
         if (!canShowTheDialog)
             return;
@@ -72,6 +73,7 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId,
         //Additional variable settings and set-up.
         editedLinkedBookmarks = editOriginalBData.Ex_LinkedBookmarksList;
         //editedExtraInfos = editOriginalBData.Ex_ExtraInfosList; We're using models instead
+        //  ExtraInfos management using models stay in editOriginalBData's model, not bdata's.
 
         editedFilesList = editOriginalBData.Ex_FilesList;
         SetDefaultBFID(editOriginalBData.DefBFID); //Needed; retrieving functions don't set this.
@@ -143,7 +145,7 @@ void BookmarkEditDialog::accept()
     QStringList tagsList = ui->leTags->text().split(' ', QString::SkipEmptyParts);
 
     BookmarksBusinessLogic bbLogic(dbm, this);
-    bool success = bbLogic.AddOrEditBookmark(
+    bool success = bbLogic.AddOrEditBookmarkTrans(
                 editBId, bdata, originalEditBId, editOriginalBData, editedLinkedBookmarks,
                 tagsList, associatedTIDs, editedFilesList, DefaultFileIndex());
 
