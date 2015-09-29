@@ -48,6 +48,8 @@ struct ImportedBookmark
     };
     bool Ex_import;
     ImportedBookmarkStatus Ex_status;
+    QList<long long> Ex_DuplicateExistentBIDs;
+    long long Ex_DuplicateExistentComparedBID;
     QStringList Ex_additionalTags;
     bool Ex_finalImport;
     QStringList Ex_finalTags;

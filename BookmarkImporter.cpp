@@ -144,6 +144,9 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
                 else
                     ib.Ex_status = ImportedBookmark::S_AnalyzedSimilarExistent;
 
+                ib.Ex_DuplicateExistentBIDs = existentBookmarksForUrl.values(fastDuplCheckURL);
+                ib.Ex_DuplicateExistentComparedBID = existentBID;
+
                 continue; //These `if`s don't have `else`s, don't reach the parts after them and set them to ImportOK.
             }
         }
