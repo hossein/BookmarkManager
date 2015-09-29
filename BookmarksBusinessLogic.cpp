@@ -174,6 +174,26 @@ bool BookmarksBusinessLogic::AddOrEditBookmark(
 
 bool BookmarksBusinessLogic::DeleteBookmarkTrans(long long BID)
 {
+    bool success;
+
+    //IMPORTANT: Begin transaction.
+    BeginActionTransaction();
+    {
+        success = DeleteBookmark(BID);
+        if (!success)
+        {
+            RollBackActionTransaction();
+            return false; //Always return false
+        }
+    }
+    CommitActionTransaction();
+
+    return success; //i.e `true`.
+
+}
+
+bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
+{
     //Steps in deleting a bookmark:
     //IN A TRANSACTION:
     //  1. Convert its attached file id's to CSV string (NOT BFID).
@@ -192,114 +212,93 @@ bool BookmarksBusinessLogic::DeleteBookmarkTrans(long long BID)
     if (!success)
         return false;
 
-    //IMPORTANT: Begin transaction.
-    dbm->db.transaction();
-    dbm->files.BeginFilesTransaction();
+    //Convert attached file FIDs to CSV string.
+    //Get the FID of the default file (we have BFID, need FID, [KeepDefaultFile-1] matters).
+    long long defaultFID = -1;
+    QList<long long> attachedFIDs;
+    foreach (const FileManager::BookmarkFile& bf, bdata.Ex_FilesList)
     {
-        //Convert attached file FIDs to CSV string.
-        //Get the FID of the default file (we have BFID, need FID, [KeepDefaultFile-1] matters).
-        long long defaultFID = -1;
-        QList<long long> attachedFIDs;
-        foreach (const FileManager::BookmarkFile& bf, bdata.Ex_FilesList)
-        {
-            attachedFIDs.append(bf.FID);
-            if (bf.BFID == bdata.DefBFID)
-                defaultFID = bf.FID;
-        }
-        QStringList attachedFIDsStrList;
-        foreach (long long FID, attachedFIDs)
-            attachedFIDsStrList.append(QString::number(FID));
-        QString attachedFIDsStr = attachedFIDsStrList.join(",");
+        attachedFIDs.append(bf.FID);
+        if (bf.BFID == bdata.DefBFID)
+            defaultFID = bf.FID;
+    }
+    QStringList attachedFIDsStrList;
+    foreach (long long FID, attachedFIDs)
+        attachedFIDsStrList.append(QString::number(FID));
+    QString attachedFIDsStr = attachedFIDsStrList.join(",");
 
-        //Remove BookmarkFile attachment information. This is necessary as foreign keys restrict
-        //  deleting a bookmark having associated files with it.
-        //Note that file transaction undo is expensive and we may want to postpone this until the
-        //  very last minutes of deleting the bookmark, BUT we think sql transactions won't fail so
-        //  do this expensive tasks at the beginning.
-        //Send files to trash (if they're not shared).
-        success = dbm->files.TrashAllBookmarkFiles(BID, "deleting bookmark files");
+    //Remove BookmarkFile attachment information. This is necessary as foreign keys restrict
+    //  deleting a bookmark having associated files with it.
+    //Note that file transaction undo is expensive and we may want to postpone this until the
+    //  very last minutes of deleting the bookmark, BUT we think sql transactions won't fail so
+    //  do this expensive tasks at the beginning.
+    //Send files to trash (if they're not shared).
+    success = dbm->files.TrashAllBookmarkFiles(BID, "deleting bookmark files");
+    if (!success)
+        return false;
+
+    //Convert tag names to csv.
+    //Foreign keys cascades will later delete the tags.
+    QString tagNames = bdata.Ex_TagsList.join(",");
+
+    //Stor linked bookmarks' title as extra info.
+    //No need to delete linked bookmarks. Foreign keys cascades will later delete the links.
+    if (!bdata.Ex_LinkedBookmarksList.empty())
+    {
+        QStringList linkedBookmarkNames;
+        success = dbm->bms.RetrieveBookmarkNames(bdata.Ex_LinkedBookmarksList, linkedBookmarkNames);
         if (!success)
+            return false;
+
+        //Don't prepend their count to them. Why make it complicated when we already don't want to
+        //  link them again and we can't manage '||' in bookmark names in this case? This will
+        //  complicate the following 'merge' too.
+        //  linkedBookmarkNames.insert(0, QString::number(linkedBookmarkNames.count()));
+        //Join them using '||'.
+        QString linkedBookmarkNamesStr = linkedBookmarkNames.join("||");
+        //Add or merge them into extra info.
+        bool hasLinkedBookmarkExInfo = false;
+        for (int i = 0; i < bdata.Ex_ExtraInfosList.size(); i++)
         {
-            RollBackActionTransaction();
-            return false; //Always return false
-        }
-
-        //Convert tag names to csv.
-        //Foreign keys cascades will later delete the tags.
-        QString tagNames = bdata.Ex_TagsList.join(",");
-
-        //Stor linked bookmarks' title as extra info.
-        //No need to delete linked bookmarks. Foreign keys cascades will later delete the links.
-        if (!bdata.Ex_LinkedBookmarksList.empty())
-        {
-            QStringList linkedBookmarkNames;
-            success = dbm->bms.RetrieveBookmarkNames(bdata.Ex_LinkedBookmarksList, linkedBookmarkNames);
-            if (!success)
+            if (bdata.Ex_ExtraInfosList[i].Name == "BM-LinkedBookmarks")
             {
-                RollBackActionTransaction();
-                return false; //Always return false
-            }
-
-            //Don't prepend their count to them. Why make it complicated when we already don't want to
-            //  link them again and we can't manage '||' in bookmark names in this case? This will
-            //  complicate the following 'merge' too.
-            //  linkedBookmarkNames.insert(0, QString::number(linkedBookmarkNames.count()));
-            //Join them using '||'.
-            QString linkedBookmarkNamesStr = linkedBookmarkNames.join("||");
-            //Add or merge them into extra info.
-            bool hasLinkedBookmarkExInfo = false;
-            for (int i = 0; i < bdata.Ex_ExtraInfosList.size(); i++)
-            {
-                if (bdata.Ex_ExtraInfosList[i].Name == "BM-LinkedBookmarks")
-                {
-                    //The `empty()` check of the parent `if` prevents appending useless '||'s.
-                    bdata.Ex_ExtraInfosList[i].Type = BookmarkManager::BookmarkExtraInfoData::Type_Text;
-                    bdata.Ex_ExtraInfosList[i].Value += "||" + linkedBookmarkNamesStr;
-                    hasLinkedBookmarkExInfo = true;
-                    break;
-                }
-            }
-            if (!hasLinkedBookmarkExInfo)
-            {
-                BookmarkManager::BookmarkExtraInfoData exInfo;
-                exInfo.Name = "BM-LinkedBookmarks";
-                exInfo.Type = BookmarkManager::BookmarkExtraInfoData::Type_Text;
-                exInfo.Value = linkedBookmarkNamesStr;
-                bdata.Ex_ExtraInfosList.append(exInfo);
+                //The `empty()` check of the parent `if` prevents appending useless '||'s.
+                bdata.Ex_ExtraInfosList[i].Type = BookmarkManager::BookmarkExtraInfoData::Type_Text;
+                bdata.Ex_ExtraInfosList[i].Value += "||" + linkedBookmarkNamesStr;
+                hasLinkedBookmarkExInfo = true;
+                break;
             }
         }
-
-        //Convert extra info to one big chunk of json text.
-        QJsonArray exInfoJsonArray;
-        foreach (const BookmarkManager::BookmarkExtraInfoData& exInfo, bdata.Ex_ExtraInfosList)
+        if (!hasLinkedBookmarkExInfo)
         {
-            QJsonObject exInfoJsonObject;
-            exInfoJsonObject.insert("Name", QJsonValue(exInfo.Name));
-            exInfoJsonObject.insert("Type", QJsonValue(BookmarkManager::BookmarkExtraInfoData::DataTypeName(exInfo.Type)));
-            exInfoJsonObject.insert("Value", QJsonValue(exInfo.Value));
-            exInfoJsonArray.append(QJsonValue(exInfoJsonObject));
-        }
-        QString extraInfoJSonText = QString::fromUtf8(QJsonDocument(exInfoJsonArray).toJson(QJsonDocument::Compact));
-
-        //Move the information to BookmarkTrash table
-        success = dbm->bms.InsertBookmarkIntoTrash(bdata.Name, bdata.URL, bdata.Desc, tagNames,
-                                                   attachedFIDsStr, defaultFID, bdata.Rating,
-                                                   bdata.AddDate, extraInfoJSonText);
-        if (!success)
-        {
-            RollBackActionTransaction();
-            return false; //Always return false
-        }
-
-        success = dbm->bms.RemoveBookmark(BID);
-        if (!success)
-        {
-            RollBackActionTransaction();
-            return false; //Always return false
+            BookmarkManager::BookmarkExtraInfoData exInfo;
+            exInfo.Name = "BM-LinkedBookmarks";
+            exInfo.Type = BookmarkManager::BookmarkExtraInfoData::Type_Text;
+            exInfo.Value = linkedBookmarkNamesStr;
+            bdata.Ex_ExtraInfosList.append(exInfo);
         }
     }
-    dbm->files.CommitFilesTransaction(); //Committing files transaction doesn't fail!
-    dbm->db.commit(); //Assume doesn't fail
 
-    return success; //i.e `true`.
+    //Convert extra info to one big chunk of json text.
+    QJsonArray exInfoJsonArray;
+    foreach (const BookmarkManager::BookmarkExtraInfoData& exInfo, bdata.Ex_ExtraInfosList)
+    {
+        QJsonObject exInfoJsonObject;
+        exInfoJsonObject.insert("Name", QJsonValue(exInfo.Name));
+        exInfoJsonObject.insert("Type", QJsonValue(BookmarkManager::BookmarkExtraInfoData::DataTypeName(exInfo.Type)));
+        exInfoJsonObject.insert("Value", QJsonValue(exInfo.Value));
+        exInfoJsonArray.append(QJsonValue(exInfoJsonObject));
+    }
+    QString extraInfoJSonText = QString::fromUtf8(QJsonDocument(exInfoJsonArray).toJson(QJsonDocument::Compact));
+
+    //Move the information to BookmarkTrash table
+    success = dbm->bms.InsertBookmarkIntoTrash(bdata.Name, bdata.URL, bdata.Desc, tagNames,
+                                               attachedFIDsStr, defaultFID, bdata.Rating,
+                                               bdata.AddDate, extraInfoJSonText);
+    if (!success)
+        return false;
+
+    success = dbm->bms.RemoveBookmark(BID);
+    if (!success)
+        return false;
 }

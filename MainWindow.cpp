@@ -441,7 +441,7 @@ void MainWindow::DeleteSelectedBookmark()
         return;
 
     BookmarksBusinessLogic bbLogic(&dbm, this);
-    bool success = bbLogic.DeleteBookmark(ui->bv->GetSelectedBookmarkID());
+    bool success = bbLogic.DeleteBookmarkTrans(ui->bv->GetSelectedBookmarkID());
     if (!success)
         return;
 
