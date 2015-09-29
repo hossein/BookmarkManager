@@ -67,19 +67,25 @@ void ImportedBookmarksProcessor::BookmarkProcessed(int id)
     m_processedCount += 1;
     m_progressDialog->setValue(m_processedCount);
 
-    if (m_nextProcessIndex < m_elist->iblist.size())
+    if (m_processedCount == m_toBeImportedCount) //Last processor
     {
-        while (!m_elist->iblist[m_nextProcessIndex].Ex_finalImport)
-            m_nextProcessIndex += 1;
-        m_bookmarkProcessors[id].ProcessImportedBookmark(id, &(m_elist->iblist[m_nextProcessIndex]));
-        m_nextProcessIndex += 1;
+        AllBookmarksProcessed();
     }
     else
     {
-        if (m_processedCount == m_toBeImportedCount) //Last processor
-            AllBookmarksProcessed();
-        //else
-        //    just wait for other processors to finish.
+        //Add new bookmarks to process, or just wait for other processors to finish.
+        int ibsize = m_elist->iblist.size();
+
+        //This bound check should not be needed as we know we still have bookmarks to process.
+        //But this way we are 'more sure'.
+        while (m_nextProcessIndex < ibsize && !m_elist->iblist[m_nextProcessIndex].Ex_finalImport)
+            m_nextProcessIndex += 1;
+
+        if (m_nextProcessIndex < ibsize)
+        {
+            m_bookmarkProcessors[id].ProcessImportedBookmark(id, &(m_elist->iblist[m_nextProcessIndex]));
+            m_nextProcessIndex += 1;
+        }
     }
 }
 
