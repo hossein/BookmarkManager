@@ -204,7 +204,7 @@ QString FileArchiveManager::SafeAndShortFSName(const QString& fsName, bool isFil
     else //Arbitrary name
         safeFileName = Util::PercentEncodeUnicodeAndFSChars(fsName);
 
-    if (safeFileName.length() > 50) //For WINDOWS!
+    if (safeFileName.length() > 64) //For WINDOWS!
     {
         if (isFileName)
         {
@@ -213,14 +213,14 @@ QString FileArchiveManager::SafeAndShortFSName(const QString& fsName, bool isFil
             //  accidental dots in them.
             const QFileInfo safeFileNameInfo(safeFileName);
             const QString cbaseName = safeFileNameInfo.completeBaseName();
-            safeFileName = cbaseName.left(qMin(50, cbaseName.length()));
+            safeFileName = cbaseName.left(qMin(64, cbaseName.length()));
             if (!safeFileNameInfo.suffix().isEmpty())
                 safeFileName += "." + safeFileNameInfo.suffix();
         }
         else
         {
             //Is e.g an arbitrary name or a folder name
-            safeFileName = safeFileName.left(qMin(50, safeFileName.length()));
+            safeFileName = safeFileName.left(qMin(64, safeFileName.length()));
         }
     }
     return safeFileName;
