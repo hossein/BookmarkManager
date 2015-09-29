@@ -158,9 +158,11 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
         if (sbaseName.length() > 1)
             secondCharInit = FolderNameInitialsForASCIIChar(sbaseName.at(1).unicode(), SecondWasPercent);
 
-        //Put files like 'f/fi/[OptionalGroupHint/]filename.ext'.
+        //Put files like 'f/fi/{GroupHint|@BM_Files}/filename.ext'. Read commit msg for '@BM_Files' reason.
         QString fileArchivePath = firstCharInit + "/" + firstCharInit + secondCharInit + "/";
-        if (!groupHint.isEmpty())
+        if (groupHint.isEmpty())
+            fileArchivePath += "@BM_Files/";
+        else
             fileArchivePath += sHierName + "/";
         QString safeFileName = SafeAndShortFSName(fi.fileName(), true);
         QString fileArchiveURL = fileArchivePath + safeFileName;
