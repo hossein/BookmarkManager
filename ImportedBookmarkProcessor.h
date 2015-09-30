@@ -17,11 +17,12 @@ private:
     int m_currId;
     ImportedEntityList* m_elist;
     ImportedBookmark* m_ib;
-    MHTSaver m_mhtSaver;
+    MHTSaver* m_mhtSaver;
 
 public:
     explicit ImportedBookmarkProcessor(QObject *parent = 0);
     void setImportedEntityList(ImportedEntityList* ielist);
+    ~ImportedBookmarkProcessor();
 
 public slots:
     bool ProcessImportedBookmark(int id, ImportedBookmark* ib);

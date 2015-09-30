@@ -7,15 +7,21 @@
 #include <QMetaMethod>
 
 ImportedBookmarkProcessor::ImportedBookmarkProcessor(QObject *parent) :
-    QObject(parent), m_isProcessing(false), m_elist(NULL), m_mhtSaver()
+    QObject(parent), m_isProcessing(false), m_elist(NULL)
 {
-    connect(&m_mhtSaver, SIGNAL(MHTDataReady(QByteArray,MHTSaver::Status)),
+    m_mhtSaver = new MHTSaver(this);
+    connect(m_mhtSaver, SIGNAL(MHTDataReady(QByteArray,MHTSaver::Status)),
             this, SLOT(PageRetrieved(QByteArray,MHTSaver::Status)));
 }
 
 void ImportedBookmarkProcessor::setImportedEntityList(ImportedEntityList* elist)
 {
     m_elist = elist;
+}
+
+ImportedBookmarkProcessor::~ImportedBookmarkProcessor()
+{
+
 }
 
 bool ImportedBookmarkProcessor::ProcessImportedBookmark(int id, ImportedBookmark* ib)
@@ -38,7 +44,7 @@ bool ImportedBookmarkProcessor::Cancel()
     if (!m_isProcessing)
         return false;
 
-    m_mhtSaver.Cancel();
+    m_mhtSaver->Cancel();
 
     m_isProcessing = false;
     return true;
@@ -110,7 +116,7 @@ void ImportedBookmarkProcessor::AddMetaData()
 
 void ImportedBookmarkProcessor::RetrievePage()
 {
-    m_mhtSaver.GetMHTData(m_ib->uri);
+    m_mhtSaver->GetMHTData(m_ib->uri);
     int methodIndex = this->metaObject()->indexOfMethod("PageRetrieved()");
     this->metaObject()->method(methodIndex).invoke(this, Qt::QueuedConnection);
 }

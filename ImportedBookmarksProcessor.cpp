@@ -28,12 +28,12 @@ bool ImportedBookmarksProcessor::BeginProcessing(ImportedEntityList* elist)
     m_progressDialog->show();
     connect(m_progressDialog, SIGNAL(canceled()), this, SLOT(Cancel()));
 
-    m_bookmarkProcessors = new ImportedBookmarkProcessor[m_processorCount];
     for (int i = 0; i < m_processorCount; i++)
     {
-        m_bookmarkProcessors[i].setParent(this);
-        m_bookmarkProcessors[i].setImportedEntityList(elist);
-        connect(m_bookmarkProcessors, SIGNAL(ImportedBookmarkProcessed(int)), this, SLOT(BookmarkProcessed(int)));
+        ImportedBookmarkProcessor* bookmarkProcessor = new ImportedBookmarkProcessor(this);
+        bookmarkProcessor->setImportedEntityList(elist);
+        connect(bookmarkProcessor, SIGNAL(ImportedBookmarkProcessed(int)), this, SLOT(BookmarkProcessed(int)));
+        m_bookmarkProcessors.append(bookmarkProcessor);
     }
 
     if (m_toBeImportedCount == 0)
@@ -46,14 +46,15 @@ bool ImportedBookmarksProcessor::BeginProcessing(ImportedEntityList* elist)
     m_processedCount = 0;
     m_nextProcessIndex = 0;
 
+    //Because we check `m_toBeImportedCount == 0` this doesn't get out of bounds.
     int initialProcesses = 0;
     while (initialProcesses < m_processorCount && m_nextProcessIndex < m_elist->iblist.size())
     {
         while (!m_elist->iblist[m_nextProcessIndex].Ex_finalImport)
             m_nextProcessIndex += 1;
 
-        m_bookmarkProcessors[initialProcesses].ProcessImportedBookmark(initialProcesses,
-                                                                       &(m_elist->iblist[m_nextProcessIndex]));
+        m_bookmarkProcessors[initialProcesses]->ProcessImportedBookmark(initialProcesses,
+                                                                        &(m_elist->iblist[m_nextProcessIndex]));
         initialProcesses += 1;
         m_nextProcessIndex += 1;
     }
@@ -83,7 +84,7 @@ void ImportedBookmarksProcessor::BookmarkProcessed(int id)
 
         if (m_nextProcessIndex < ibsize)
         {
-            m_bookmarkProcessors[id].ProcessImportedBookmark(id, &(m_elist->iblist[m_nextProcessIndex]));
+            m_bookmarkProcessors[id]->ProcessImportedBookmark(id, &(m_elist->iblist[m_nextProcessIndex]));
             m_nextProcessIndex += 1;
         }
     }
@@ -98,7 +99,7 @@ void ImportedBookmarksProcessor::AllBookmarksProcessed()
 void ImportedBookmarksProcessor::Cancel()
 {
     for (int i = 0; i < m_processorCount; i++)
-        m_bookmarkProcessors[i].Cancel();
+        m_bookmarkProcessors[i]->Cancel();
 
     CleanUp();
     emit ProcessingCanceled();
@@ -107,8 +108,12 @@ void ImportedBookmarksProcessor::Cancel()
 void ImportedBookmarksProcessor::CleanUp()
 {
     m_isProcessing = false;
+
     //Either `hide()` then `delete`, or use `close()` alone.
     m_progressDialog->hide();
-    delete m_progressDialog;
-    delete[] m_bookmarkProcessors;
+    m_progressDialog->deleteLater();
+
+    for (int i = 0; i < m_processorCount; i++)
+        m_bookmarkProcessors[i]->deleteLater();
+    m_bookmarkProcessors.clear();
 }

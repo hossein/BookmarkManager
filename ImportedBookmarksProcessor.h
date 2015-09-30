@@ -19,7 +19,7 @@ private:
     int m_processedCount;
     int m_nextProcessIndex;
 
-    ImportedBookmarkProcessor* m_bookmarkProcessors;
+    QList<ImportedBookmarkProcessor*> m_bookmarkProcessors;
     QProgressDialog* m_progressDialog;
 
 public:
