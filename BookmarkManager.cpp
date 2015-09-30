@@ -403,7 +403,7 @@ bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, const QList<Bookma
     //  which makes situation complicated.
     foreach (const BookmarkExtraInfoData& addExtraInfo, addExtraInfos)
     {
-        query.prepare("INSERT INTO BookmarkExtraInfo(BID, Name, Type, Value) VALUE (?, ?, ?, ?)");
+        query.prepare("INSERT INTO BookmarkExtraInfo(BID, Name, Type, Value) VALUES (?, ?, ?, ?)");
         query.addBindValue(BID); //Don't use addExtraInfo's one. More error-proof.
         query.addBindValue(addExtraInfo.Name);
         query.addBindValue(static_cast<int>(addExtraInfo.Type));
