@@ -301,4 +301,6 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
     success = dbm->bms.RemoveBookmark(BID);
     if (!success)
         return false;
+
+    return true;
 }
