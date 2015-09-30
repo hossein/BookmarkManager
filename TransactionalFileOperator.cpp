@@ -36,8 +36,13 @@ bool TransactionalFileOperator::RollBackTransaction()
         return false;
 
     bool overallResult = true;
-    foreach (const FileOp& fileOp, fileOps)
+
+    //Iterate in reverse order to because e.g if a folder was created then a file was copied inside
+    //  it, first delete the file then the folder.
+    //foreach (const FileOp& fileOp, fileOps)
+    for (int i = fileOps.size() - 1; i >= 0; i--)
     {
+        const FileOp& fileOp = fileOps[i];
         switch (fileOp.action)
         {
         case FileOp::FAT_MakePath:
