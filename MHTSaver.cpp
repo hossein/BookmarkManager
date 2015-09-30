@@ -46,6 +46,8 @@ void MHTSaver::GetMHTData(const QString& url)
 void MHTSaver::Cancel()
 {
     m_cancel = true;
+    foreach (QNetworkReply* reply, m_ongoingReplies.keys())
+        reply->abort(); //`finished()` will also be emitted.
 }
 
 void MHTSaver::LoadResource(const QUrl& url)
@@ -83,7 +85,7 @@ void MHTSaver::ResourceLoadingFinished()
 {
     QNetworkReply* reply = dynamic_cast<QNetworkReply*>(sender());
 
-    if (m_cancel)
+    if (m_cancel) //No need to check if reply is valid for this.
     {
         //Stop early
         DeleteReplyAndCheckForFinish(reply);
