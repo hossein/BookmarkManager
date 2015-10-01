@@ -204,9 +204,24 @@ void ImportedBookmarksPreviewDialog::on_twBookmarks_itemSelectionChanged()
 
             if (elist->iblist[index].Ex_import)
             {
-                ui->optKeep->setChecked(false);
-                ui->optOverwrite->setChecked(status == ImportedBookmark::S_ReplaceExisting);
-                ui->optAppend->setChecked(status == ImportedBookmark::S_AppendToExisting);
+                if (status == ImportedBookmark::S_AnalyzedSimilarExistent)
+                {
+                    //Just calling `setChecked(false)` on all of them does not work!
+                    //http://stackoverflow.com/questions/9372992/qradiobutton-check-uncheck-issue-in-qt
+                    QList<QRadioButton*> rbs = ui->grpDuplBookmarkProps->findChildren<QRadioButton*>();
+                    for (int i = 0; i < rbs.size(); i++)
+                    {
+                        rbs[i]->setAutoExclusive(false);
+                        rbs[i]->setChecked(false);
+                        rbs[i]->setAutoExclusive(true);
+                    }
+                }
+                else
+                {
+                    ui->optKeep->setChecked(false);
+                    ui->optOverwrite->setChecked(status == ImportedBookmark::S_ReplaceExisting);
+                    ui->optAppend->setChecked(status == ImportedBookmark::S_AppendToExisting);
+                }
             }
             else
             {
