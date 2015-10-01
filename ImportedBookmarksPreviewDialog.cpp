@@ -5,6 +5,8 @@
 #include "ImportedBookmarksProcessor.h"
 
 #include <QDebug>
+#include <QApplication>
+#include <QScreen>
 
 ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* dbm,
                                                                ImportedEntityList* elist, QWidget *parent)
@@ -12,6 +14,11 @@ ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* 
     , canShowTheDialog(false), elist(elist)
 {
     ui->setupUi(this);
+
+    //With only stretches applied to the layout, the left widget changed size on each bookmark select
+    //  with different types (e.g exactly similar, already similar etc). We need to fix the size.
+    int sizeForDPI = 300 * (qApp->screens()[0]->logicalDotsPerInch() / 96.0);
+    ui->widLeftPane->setFixedWidth(sizeForDPI);
 
     ui->leTagsForAll->setModel(&dbm->tags.model);
     ui->leTagsForAll->setModelColumn(dbm->tags.tidx.TagName);
