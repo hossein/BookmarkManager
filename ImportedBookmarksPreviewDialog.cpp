@@ -69,32 +69,6 @@ bool ImportedBookmarksPreviewDialog::canShow()
 
 void ImportedBookmarksPreviewDialog::accept()
 {
-    //Check if there are any undecided similar bookmarks to be imported.
-    //Also collect some stats.
-    int similarDuplicateBookmarksToBeImported = 0;
-    int exactDuplicateBookmarksToBeIgnored = 0;
-    foreach (const ImportedBookmark& ib, elist->iblist)
-    {
-        if (!ib.Ex_import)
-            continue;
-
-        if (ib.Ex_status == ImportedBookmark::S_AnalyzedSimilarExistent)
-        {
-            QTreeWidgetItem* twi = bookmarkItems[ib.intId];
-            ui->twBookmarks->setCurrentItem(twi);
-            ui->twBookmarks->scrollToItem(twi);
-
-            QMessageBox::information(this, "Items Need Review", "One or more of the bookmarks for import are similar to an existing "
-                                                                "bookmark. You must decide what to do with the new bookmark first.");
-            return;
-        }
-        else if (ib.Ex_status == ImportedBookmark::S_ReplaceExisting ||
-                 ib.Ex_status == ImportedBookmark::S_AppendToExisting)
-            similarDuplicateBookmarksToBeImported += 1;
-        else if (ib.Ex_status == ImportedBookmark::S_AnalyzedExactExistent)
-            exactDuplicateBookmarksToBeIgnored += 1;
-    }
-
     //1. Add tags that user has specified for folders and also all of the bookmarks to each bookmark.
     //   Note: The functions that set bookmark tags handle duplicate tags so we don't check for
     //   duplicate tags here at all.
@@ -132,6 +106,33 @@ void ImportedBookmarksPreviewDialog::accept()
                          : false);
         elist->iblist[i].Ex_finalImport = doImport;
         importedCount += (doImport ? 1 : 0);
+    }
+
+    //AFTER all bookmarks have derived the import status of their parent folders:
+    //Check if there are any undecided similar bookmarks to be imported.
+    //Also collect some stats.
+    int similarDuplicateBookmarksToBeImported = 0;
+    int exactDuplicateBookmarksToBeIgnored = 0;
+    foreach (const ImportedBookmark& ib, elist->iblist)
+    {
+        if (!ib.Ex_finalImport) //Not Ex_import
+            continue;
+
+        if (ib.Ex_status == ImportedBookmark::S_AnalyzedSimilarExistent)
+        {
+            QTreeWidgetItem* twi = bookmarkItems[ib.intId];
+            ui->twBookmarks->setCurrentItem(twi);
+            ui->twBookmarks->scrollToItem(twi);
+
+            QMessageBox::information(this, "Items Need Review", "One or more of the bookmarks for import are similar to an existing "
+                                                                "bookmark. You must decide what to do with the new bookmark first.");
+            return;
+        }
+        else if (ib.Ex_status == ImportedBookmark::S_ReplaceExisting ||
+                 ib.Ex_status == ImportedBookmark::S_AppendToExisting)
+            similarDuplicateBookmarksToBeImported += 1;
+        else if (ib.Ex_status == ImportedBookmark::S_AnalyzedExactExistent)
+            exactDuplicateBookmarksToBeIgnored += 1;
     }
 
     //Show import statistics to user and confirm.
