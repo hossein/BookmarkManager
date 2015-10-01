@@ -6,6 +6,12 @@
 #include <QDateTime>
 #include <QStringList>
 
+//TODO:
+//- MHTSaver can't save single files
+//- MHTSaver should kill idle >20s connections every 10 seconds or sth.
+//- MHTSaver handle `;` in content-type
+//- MHTSaver handle initial '../' in url decide.
+
 class QNetworkReply;
 class QNetworkAccessManager;
 

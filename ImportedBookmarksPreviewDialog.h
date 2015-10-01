@@ -7,6 +7,12 @@
 #include <QIcon>
 #include <QMap>
 
+//TODO:
+//- On selection change radio buttons are not cleared
+//- On clicking ok everything should be disabled.
+//- Duplicate bookmarks must be searched thoroughly, not be checked with just the same bm found.
+//- Finally enable guid for similar detection or not? (No, to let them search multiple bms)
+
 class QTreeWidgetItem;
 class ImportedBookmarksProcessor;
 namespace Ui { class ImportedBookmarksPreviewDialog; }
