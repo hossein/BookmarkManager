@@ -6,6 +6,10 @@
 
 class QJsonObject;
 
+/// IMPORTANT: The ARRAY INDEX of the child folders that this class generates is always BIGGER THAN
+///   the array index of their parent folders. This is CRUCIAL for working of the other parts, which
+///   ALWAYS simply use NESTED `for` loops for parent-child folder operations instead of recursive
+///   functions.
 class FirefoxBookmarkJSONFileParser : public IManager
 {
 public:

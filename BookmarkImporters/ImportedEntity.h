@@ -85,6 +85,7 @@ struct ImportedBookmarkFolder
     //Managed by BookmarkImporter
     bool Ex_importBookmarks;
     QStringList Ex_additionalTags;
+    QStringList Ex_semiFinalTags;
     QStringList Ex_finalTags;
 };
 

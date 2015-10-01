@@ -74,13 +74,17 @@ void ImportedBookmarksPreviewDialog::accept()
     //   duplicate tags here at all.
 
     //1a. Begin with applying the tags of parent folders to their child folders recursively.
+    //  (Use `Ex_semiFinalTags` instead of `Ex_additionalTags` to avoid changing folders'
+    //   user-settable properties in case user cancels the confirm message or processing dialog).
+    for (int folderidx = 0; folderidx < elist->ibflist.size(); folderidx++)
+        elist->ibflist[folderidx].Ex_semiFinalTags = elist->ibflist[folderidx].Ex_additionalTags;
     for (int parentidx = 0; parentidx < elist->ibflist.size(); parentidx++)
     {
-        elist->ibflist[parentidx].Ex_finalTags = elist->ibflist[parentidx].Ex_additionalTags;
+        elist->ibflist[parentidx].Ex_finalTags = elist->ibflist[parentidx].Ex_semiFinalTags;
 
         for (int childidx = 0; childidx < elist->ibflist.size(); childidx++)
             if (elist->ibflist[childidx].parentId == elist->ibflist[parentidx].intId)
-                elist->ibflist[childidx].Ex_additionalTags.append(elist->ibflist[parentidx].Ex_finalTags);
+                elist->ibflist[childidx].Ex_semiFinalTags.append(elist->ibflist[parentidx].Ex_finalTags);
     }
 
     //1b. Add the tagsForAll tags; we didn't add these in the previous `for` to prevent them being
