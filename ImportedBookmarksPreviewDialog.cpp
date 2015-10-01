@@ -161,6 +161,11 @@ void ImportedBookmarksPreviewDialog::accept()
             return;
     }
 
+    //Disable UI
+    ui->widLeftPane->setVisible(false);
+    ui->buttonBox->setEnabled(false);
+
+    //Begin processing
     m_bookmarksProcessor->BeginProcessing(elist);
     //Now `ProcessingDone` or `ProcessingCancelled` signal/slot connections will finish the job,
     //accepting the dialog if necessary.
@@ -173,6 +178,10 @@ void ImportedBookmarksPreviewDialog::ProcessingDone()
 
 void ImportedBookmarksPreviewDialog::ProcessingCanceled()
 {
+    //Let the UI work again
+    ui->widLeftPane->setVisible(true);
+    ui->buttonBox->setEnabled(true);
+
     //QDialog::accept();
 }
 

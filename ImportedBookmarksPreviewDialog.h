@@ -8,7 +8,6 @@
 #include <QMap>
 
 //TODO:
-//- On clicking ok everything should be disabled.
 //- Duplicate bookmarks must be searched thoroughly, not be checked with just the same bm found.
 //- Finally enable guid for similar detection or not? (No, to let them search multiple bms)
 
