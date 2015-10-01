@@ -7,10 +7,6 @@
 #include <QIcon>
 #include <QMap>
 
-//TODO:
-//- Duplicate bookmarks must be searched thoroughly, not be checked with just the same bm found.
-//- Finally enable guid for similar detection or not? (No, to let them search multiple bms)
-
 class QTreeWidgetItem;
 class ImportedBookmarksProcessor;
 namespace Ui { class ImportedBookmarksPreviewDialog; }

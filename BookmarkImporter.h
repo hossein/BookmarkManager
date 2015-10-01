@@ -37,6 +37,9 @@ public:
     bool Import(ImportedEntityList& elist);
 
 private:
+    /// Terminology: A 'duplicate' bookmark can be 'similar' or 'exact' duplicate of the imported bm.
+    bool FindDuplicate(const ImportedBookmark& ib, const QList<long long>& almostDuplicateBIDs,
+                       bool& foundSimilar, bool& foundExact, long long& duplicateBID);
     QString GetURLForFastComparison(const QString& originalUrl);
     QString GetURLForAlmostExactComparison(const QString& originalUrl);
     /// Returns a null QString if extra infos don't contain the field.

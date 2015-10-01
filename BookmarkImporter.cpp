@@ -117,45 +117,27 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
         if (existentBookmarksForUrl.contains(fastDuplCheckURL))
         {
             //Whoops, we found a similar match until now. Check if it's fully similar or just partially.
-            long long existentBID = existentBookmarksForUrl.value(fastDuplCheckURL);
+            QList<long long> existentAlmostDuplicateBIDs = existentBookmarksForUrl.values(fastDuplCheckURL);
 
-            BookmarkManager::BookmarkData bdata;
-            bool retrieveSuccess = dbm->bms.RetrieveBookmark(existentBID, bdata);
-            if (!retrieveSuccess)
+            bool foundSimilar;
+            bool foundExact;
+            long long duplicateBID;
+            bool duplicateFindSuccess = FindDuplicate(ib, existentAlmostDuplicateBIDs,
+                                                      foundSimilar, foundExact, duplicateBID);
+            if (!duplicateFindSuccess)
                 return false;
 
-            QString newAlmostExactDuplCheckURL = GetURLForAlmostExactComparison(ib.uri);
-            QString existentAlmostExactDuplCheckURL = GetURLForAlmostExactComparison(bdata.URL);
-
-            if (newAlmostExactDuplCheckURL == existentAlmostExactDuplCheckURL)
+            if (foundSimilar || foundExact)
             {
-                //Exact URL match. Check all the properties for exact match also.
-                QList<BookmarkManager::BookmarkExtraInfoData> extraInfos;
-                retrieveSuccess = dbm->bms.RetrieveBookmarkExtraInfos(existentBID, extraInfos);
-                if (!retrieveSuccess)
-                    return false;
-
-                bool detailsMatch = true;
-                detailsMatch = detailsMatch && (ib.title == bdata.Name);
-
-                //Note: To generalize the code below, at least one of the guids must match.
-                //  Probably can't check with single-line if's.
-                //This was removed due to [No-Firefox-Uniqure-Ids], and also because this is unneeded.
-                //QString ffGuidField = extraInfoField("firefox-guid", extraInfos);
-                //detailsMatch = detailsMatch && (!ffGuidField.isNull() && ib.guid == bdata.Name);
-
-                detailsMatch = detailsMatch && (ib.description == bdata.Desc);
-                detailsMatch = detailsMatch && (ib.uri == bdata.URL);
-
-                if (detailsMatch)
+                if (foundExact)
                     ib.Ex_status = ImportedBookmark::S_AnalyzedExactExistent;
-                else
+                else //if (foundSimilar
                     ib.Ex_status = ImportedBookmark::S_AnalyzedSimilarExistent;
 
-                ib.Ex_DuplicateExistentBIDs = existentBookmarksForUrl.values(fastDuplCheckURL);
-                ib.Ex_DuplicateExistentComparedBID = existentBID;
+                ib.Ex_AlmostDuplicateExistentBIDs = existentBookmarksForUrl.values(fastDuplCheckURL);
+                ib.Ex_DuplicateExistentComparedBID = duplicateBID;
 
-                continue; //These `if`s don't have `else`s, don't reach the parts after them and set them to ImportOK.
+                continue; //These `if`s don't have `else`s, don't reach the parts after them that set them to ImportOK.
             }
         }
 
@@ -279,7 +261,7 @@ bool BookmarkImporter::Import(ImportedEntityList& elist)
 
             BookmarkManager::BookmarkData bdata;
             bdata.BID = -1; //Not important.
-            bdata.Name = ib.title; //TODO: Title-less bookmarks possible? Don't let them happen. Set to url or sth.
+            bdata.Name = ib.title; //TODO: Title-less bookmarks possible? Don't let them happen. Set to url or sth. also add Tags as a note.
             bdata.URL = ib.uri;
             bdata.Desc = ib.description;
             bdata.DefBFID = -1; //[KeepDefaultFile-1] We always set this to -1.
@@ -329,6 +311,62 @@ bool BookmarkImporter::Import(ImportedEntityList& elist)
         }
 
         //Don't put a thing here. There are `continue`s in the code.
+    }
+
+    return true;
+}
+
+bool BookmarkImporter::FindDuplicate(const ImportedBookmark& ib, const QList<long long>& almostDuplicateBIDs,
+                                     bool& foundSimilar, bool& foundExact, long long& duplicateBID)
+{
+    foundSimilar = false;
+    foundExact = false;
+    duplicateBID = -1;
+
+    BookmarkManager::BookmarkData bdata;
+
+    foreach (long long existentBID, almostDuplicateBIDs)
+    {
+        bool retrieveSuccess = dbm->bms.RetrieveBookmark(existentBID, bdata);
+        if (!retrieveSuccess)
+            return false;
+
+        QString newAlmostExactDuplCheckURL = GetURLForAlmostExactComparison(ib.uri);
+        QString existentAlmostExactDuplCheckURL = GetURLForAlmostExactComparison(bdata.URL);
+
+        if (newAlmostExactDuplCheckURL == existentAlmostExactDuplCheckURL)
+        {
+            //Til now we have found a similar duplicate. Set the BID to the FIRST FOUND similar BID.
+            foundSimilar = true;
+            if (duplicateBID == -1)
+                duplicateBID = existentBID;
+
+            //Exact URL match. Check all the properties for exact match also.
+            bool detailsMatch = true;
+            detailsMatch = detailsMatch && (ib.title == bdata.Name);
+
+            //Note: To generalize the code below, at least one of the guids of e.g Tagged bookmarks
+            //  must match. Probably can't check with single-line if's.
+            //So this was removed due to [No-Firefox-Uniqure-Ids], and also because it's unneeded.
+            //  QList<BookmarkManager::BookmarkExtraInfoData> extraInfos;
+            //  retrieveSuccess = dbm->bms.RetrieveBookmarkExtraInfos(existentBID, extraInfos);
+            //  if (!retrieveSuccess)
+            //      return false;
+            //  QString ffGuidField = extraInfoField("firefox-guid", extraInfos);
+            //  detailsMatch = detailsMatch && (!ffGuidField.isNull() && ib.guid == bdata.Name);
+
+            detailsMatch = detailsMatch && (ib.description == bdata.Desc);
+            detailsMatch = detailsMatch && (ib.uri == bdata.URL);
+
+            if (detailsMatch)
+            {
+                //Found an exact match. Don't check the rest of the list.
+                foundSimilar = false; //If any
+                foundExact = true;
+                duplicateBID = existentBID;
+                break;
+            }
+        }
     }
 
     return true;
