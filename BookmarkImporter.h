@@ -25,11 +25,12 @@ class BookmarkImporter
 {
 private:
     DatabaseManager* dbm;
+    QWidget* m_dialogParent;
     QMultiHash<QString, long long> existentBookmarksForUrl;
     QMap<int, int> folderItemsIndexInArray;
 
 public:
-    BookmarkImporter(DatabaseManager* dbm);
+    BookmarkImporter(DatabaseManager* dbm, QWidget* dialogParent);
 
     bool Initialize();
     bool Analyze(ImportedEntityList& elist);

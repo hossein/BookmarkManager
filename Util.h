@@ -40,6 +40,7 @@ public:
     static void CaseInsensitiveStringListDifference(QStringList& list1, QStringList& list2);
 
     // Files, Directories, FileSystem /////////////////////////////////////////////////////////////
+    ///Can be used to generate a directory name, too.
     static QString NonExistentRandomFileNameInDirectory(const QString& dirPath, int length,
                                                         const QString& prefix = QString(""),
                                                         const QString& extension = QString(""));

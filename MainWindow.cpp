@@ -171,7 +171,8 @@ void MainWindow::on_action_importFirefoxBookmarks_triggered()
 void MainWindow::on_actionImportFirefoxBookmarksJSONfile_triggered()
 {
     //TODO [IMPORT]: Real url
-    ImportFirefoxJSONFile("C:\\Users\\Hossein\\Desktop\\bookmarks-2014-11-09_1730 - Pretty.json");
+    //ImportFirefoxJSONFile("C:\\Users\\Hossein\\Desktop\\bookmarks-2014-11-09_1730 - Pretty.json");
+    ImportFirefoxJSONFile("C:\\Users\\Hossein\\Desktop\\bookmarks2Pretty.json");
 }
 
 bool MainWindow::LoadDatabaseAndUI()
@@ -595,7 +596,7 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     if (!success)
         return;
 
-    BookmarkImporter bmim(&dbm);
+    BookmarkImporter bmim(&dbm, this);
     success = bmim.Initialize();
     if (!success)
         return;
@@ -604,12 +605,12 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     if (!success)
         return;
 
-    ImportedBookmarksPreviewDialog importPreviewDialog(&dbm, &elist, this);
-    success = importPreviewDialog.canShow();
+    ImportedBookmarksPreviewDialog* importPreviewDialog = new ImportedBookmarksPreviewDialog(&dbm, &elist, this);
+    success = importPreviewDialog->canShow();
     if (!success)
         return;
 
-    int result = importPreviewDialog.exec();
+    int result = importPreviewDialog->exec();
     if (result != QDialog::Accepted)
         return;
 
@@ -620,6 +621,7 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     else
     {}//Show success message box.
 
+    importPreviewDialog->deleteLater();
 }
 
 #include "MHTSaver.h"

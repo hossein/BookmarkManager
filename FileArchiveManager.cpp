@@ -198,6 +198,7 @@ int FileArchiveManager::FileNameHash(const QString& fileNameOnly)
 QString FileArchiveManager::SafeAndShortFSName(const QString& fsName, bool isFileName)
 {
     //IMPORTANT: Must return only ASCII characters for the file name.
+    //Same logic is used in BookmarkImporter::Import.
     QString safeFileName;
     if (isFileName) //We know it is a valid file name then
         safeFileName = Util::PercentEncodeUnicodeChars(fsName);

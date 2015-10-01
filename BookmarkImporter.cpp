@@ -1,9 +1,17 @@
 #include "BookmarkImporter.h"
 
+#include "BookmarksBusinessLogic.h"
+#include "Util.h"
+
 #include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QStandardPaths>
 #include <QUrl>
 
-BookmarkImporter::BookmarkImporter(DatabaseManager* dbm) : dbm(dbm)
+BookmarkImporter::BookmarkImporter(DatabaseManager* dbm, QWidget* dialogParent)
+    : dbm(dbm), m_dialogParent(dialogParent)
 {
 
 }
@@ -183,7 +191,146 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
 
 bool BookmarkImporter::Import(ImportedEntityList& elist)
 {
-    //TODO [IMPORT]
+    QList<long long> addedBIDs;
+    QSet<long long> allAssociatedTIDs;
+
+    QString tempPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/BMTemp";
+    if (!QDir().mkpath(tempPath))
+    {
+        QMessageBox::critical(
+                    m_dialogParent, "Error",
+                    QString("Could not create the temp directory \"%1\". No bookmark was imported.")
+                    .arg(tempPath));
+        return false;
+    }
+
+    foreach (const ImportedBookmark& ib, elist.iblist)
+    {
+        if (!ib.Ex_finalImport)
+            //Marked by user to not import.
+            continue;
+
+        QList<FileManager::BookmarkFile> bookmarkFiles;
+        if (ib.ExPr_attachedFileError.isEmpty())
+        {
+            //Same logic is used in FAM.
+            QString safeFileName = Util::PercentEncodeUnicodeAndFSChars(ib.ExPr_attachedFileName);
+            if (safeFileName.length() > 64) //For WINDOWS!
+            {
+                const QFileInfo safeFileNameInfo(safeFileName);
+                const QString cbaseName = safeFileNameInfo.completeBaseName();
+                safeFileName = cbaseName.left(qMin(64, cbaseName.length()));
+                if (!safeFileNameInfo.suffix().isEmpty())
+                    safeFileName += "." + safeFileNameInfo.suffix();
+            }
+
+            QString mhtFilePathName = tempPath + "/" + safeFileName;
+            QFile mhtfile(mhtFilePathName);
+            if (!mhtfile.open(QIODevice::WriteOnly))
+            {
+                QMessageBox::warning(
+                            m_dialogParent, "Error",
+                            QString("Could not create the temp file \"%1\" for bookmark \"%2\" (\"%3\").\nError: %4 %5")
+                            .arg(mhtFilePathName, ib.title, ib.uri, QString::number(mhtfile.error()), mhtfile.errorString()));
+                continue;
+            }
+            if (-1 == mhtfile.write(ib.ExPr_attachedFileData))
+            {
+                QMessageBox::warning(
+                            m_dialogParent, "Error",
+                            QString("Could not write data to the temp file \"%1\" for bookmark \"%2\" (\"%3\").\nError: %4 %5")
+                            .arg(mhtFilePathName, ib.title, ib.uri, QString::number(mhtfile.error()), mhtfile.errorString()));
+                mhtfile.close();
+                continue;
+            }
+            if (!mhtfile.flush())
+            {
+                QMessageBox::warning(
+                            m_dialogParent, "Error",
+                            QString("Could not flush data to the temp file \"%1\" for bookmark \"%2\" (\"%3\").\nError: %4 %5")
+                            .arg(mhtFilePathName, ib.title, ib.uri, QString::number(mhtfile.error()), mhtfile.errorString()));
+                mhtfile.close();
+                continue;
+            }
+            mhtfile.close();
+
+            //Same logic exists in BookmarkEditDialog::accept and its file attaching functions.
+            QFileInfo fileInfo(mhtFilePathName);
+            FileManager::BookmarkFile bf;
+            bf.BFID         = -1; //Leave to FileManager.
+            bf.BID          = -1; //Not added yet
+            bf.FID          = -1; //Leave to FileManager.
+            bf.OriginalName = mhtFilePathName;
+            bf.ArchiveURL   = ""; //Leave to FileManager.
+            bf.ModifyDate   = fileInfo.lastModified();
+            bf.Size         = fileInfo.size();
+            bf.MD5          = Util::GetMD5HashForFile(mhtFilePathName);
+            bf.Ex_IsDefaultFileForEditedBookmark = true; //[KeepDefaultFile-1].Generalization: Must be set
+            bf.Ex_RemoveAfterAttach = true; //Will be immediately removed.
+
+            bookmarkFiles.append(bf);
+        }
+
+        if (ib.Ex_status == ImportedBookmark::S_AnalyzedImportOK)
+        {
+            //[KeepDefaultFile-1].Generalization: Any bookmark MUST have a default file if it has files.
+            //  (If it doesn't have files just pass -1, otherwise you may crash AddOrEditBookmark.)
+            int defaultFileIndex = (bookmarkFiles.empty() ? -1 : 0);
+
+            BookmarkManager::BookmarkData bdata;
+            bdata.BID = -1; //Not important.
+            bdata.Name = ib.title; //TODO: Title-less bookmarks possible? Don't let them happen. Set to url or sth.
+            bdata.URL = ib.uri;
+            bdata.Desc = ib.description;
+            bdata.DefBFID = -1; //[KeepDefaultFile-1] We always set this to -1.
+                                //bbLogic will set the correct defbfid later.
+            bdata.Rating = 50; //For all.
+
+            long long addedBID = -1; //Must set to -1 to show adding.
+            QList<long long> associatedTIDs;
+            //We just need an empty thing for 'updating' functions. No need to initialize.
+            BookmarkManager::BookmarkData editOriginalBData;
+
+            BookmarksBusinessLogic bbLogic(dbm, m_dialogParent);
+            bbLogic.BeginActionTransaction();
+
+            bool success = bbLogic.AddOrEditBookmark(
+                        addedBID, bdata, -1, editOriginalBData, QList<long long>(),
+                        ib.Ex_finalTags, associatedTIDs, bookmarkFiles, defaultFileIndex);
+            if (!success)
+            {
+                //A messagebox must have already been displayed.
+                bbLogic.RollBackActionTransaction();
+                continue;
+            }
+
+            success = dbm->bms.UpdateBookmarkExtraInfos(
+                        addedBID, QList<BookmarkManager::BookmarkExtraInfoData>(), ib.ExPr_ExtraInfosList);
+            if (!success)
+            {
+                //A messagebox must have already been displayed.
+                bbLogic.RollBackActionTransaction();
+                continue;
+            }
+
+            bbLogic.CommitActionTransaction();
+
+            //Success!
+            addedBIDs.append(addedBID);
+            allAssociatedTIDs.unite(QSet<long long>::fromList(associatedTIDs));
+        }
+        else
+        {
+            //TODO: Implement
+            QMessageBox::warning(m_dialogParent, "Error",
+                                 QString("Unknown bookmark import status %1 for imported bookmark \"%2\" (\"%3\").")
+                                 .arg(QString::number((int)ib.Ex_status), ib.title, ib.uri));
+            continue;
+        }
+
+        //Don't put a thing here. There are `continue`s in the code.
+    }
+
     return true;
 }
 
