@@ -10,6 +10,7 @@ ImportedBookmarkProcessor::ImportedBookmarkProcessor(QObject *parent) :
     QObject(parent), m_isProcessing(false), m_elist(NULL)
 {
     m_mhtSaver = new MHTSaver(this);
+    m_mhtSaver->setOverallTimeoutTime(300); //5 minutes
     connect(m_mhtSaver, SIGNAL(MHTDataReady(QByteArray,MHTSaver::Status)),
             this, SLOT(PageRetrieved(QByteArray,MHTSaver::Status)));
 }

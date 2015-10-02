@@ -8,10 +8,16 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 
+#include <QTimer>
+
 MHTSaver::MHTSaver(QObject *parent) :
     QObject(parent)
 {
     qnam = new QNetworkAccessManager(this);
+
+    m_useOverallTimer = false;
+    m_overallTimer = new QTimer(this);
+    connect(m_overallTimer, SIGNAL(timeout()), this, SLOT(OverallTimerTimeout()));
 
     //Content types
     m_htmlContentTypes       = QStringList() << "text/html";
@@ -23,6 +29,23 @@ MHTSaver::MHTSaver(QObject *parent) :
 MHTSaver::~MHTSaver()
 {
 
+}
+
+int MHTSaver::overallTimeoutTime() const
+{
+    return m_useOverallTimer ? m_overallTimer->interval() / 1000 : -1;
+}
+
+void MHTSaver::setOverallTimeoutTime(int seconds)
+{
+    m_useOverallTimer = (seconds > 0);
+    if (seconds > 0)
+        m_overallTimer->setInterval(seconds * 1000);
+}
+
+void MHTSaver::OverallTimerTimeout()
+{
+    Cancel();
 }
 
 void MHTSaver::GetMHTData(const QString& url)
@@ -38,6 +61,10 @@ void MHTSaver::GetMHTData(const QString& url)
     m_status.resourceSuccess = 0;
     m_cancel = false;
 
+    //Start our timer
+    if (m_useOverallTimer)
+        m_overallTimer->start();
+
     //Load each resource with `LoadResource`; after response comes they will be added to resources
     //  with `AddResource`.
     LoadResource(QUrl(url));
@@ -47,7 +74,7 @@ void MHTSaver::Cancel()
 {
     m_cancel = true;
     foreach (QNetworkReply* reply, m_ongoingReplies.keys())
-        reply->abort(); //`finished()` will also be emitted.
+        reply->abort(); //`finished()` will also be emitted, so don't remove them.
 }
 
 void MHTSaver::LoadResource(const QUrl& url)
@@ -200,17 +227,20 @@ void MHTSaver::DeleteReplyAndCheckForFinish(QNetworkReply* reply)
         {
             m_status.mainSuccess = false;
             m_status.mainHttpErrorCode = 0;
+            m_overallTimer->stop();
             emit MHTDataReady(QByteArray(), m_status);
         }
     }
     else if (m_resources.isEmpty() && reply->error() != QNetworkReply::NoError)
     {
         //If this is an error on loading the first, i.e the main resource
+        m_overallTimer->stop();
         emit MHTDataReady(QByteArray(), m_status);
     }
     else if (m_ongoingReplies.size() == 0)
     {
         //Otherwise if things finished, generate the MHT.
+        m_overallTimer->stop();
         GenerateMHT();
     }
 }

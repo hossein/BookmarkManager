@@ -8,10 +8,11 @@
 
 //TODO:
 //- MHTSaver can't save single files
-//- MHTSaver should kill idle >20s connections every 10 seconds or sth.
 //- MHTSaver handle `;` in content-type
 //- MHTSaver handle initial '../' in url decide.
+//- Strip JS.
 
+class QTimer;
 class QNetworkReply;
 class QNetworkAccessManager;
 
@@ -25,6 +26,14 @@ class QNetworkAccessManager;
 ///        (partially does this actually, e.g if js/css files have text/html content type it
 ///        will fix it, but doesn't do the same thing for e.g images having text/html mime type.)
 ///     3. Doesn't have a timer or something to abort slow or stalled network operations.
+///        We can use an e.g 20sec timer to abort operations with slow/stalled progresses during
+///        the last 10 seconds. Update: But we DON'T. Maybe if we aren't receiving a qreply's
+///        finished signal, we are just receiving a big file. And if it gets stalled for a long
+///        time, we let the system time it out itself. Anyway if there is any such timer, it has to
+///        record progress or number of received bytes and judge according to that, not time alone.
+///        However that is for single replies alone. We do have a timer that controls overall
+///        receiving time of the whole page. It should be set to a big value to allow for large file
+///        downloads.
 ///     4. The HTML and CSS parsers are very simple, don't skip comments and use simple regexps.
 ///     5. Doesn't strip scripts.
 ///     6. Doesn't load resources that are additionally loaded in scripts, or change DOM after
@@ -59,6 +68,10 @@ private:
     Status m_status;
     bool m_cancel;
 
+    Q_PROPERTY(int overallTimeoutTime READ overallTimeoutTime WRITE setOverallTimeoutTime)
+    bool m_useOverallTimer;
+    QTimer* m_overallTimer;
+
     struct Resource
     {
         QUrl fullUrl;
@@ -83,6 +96,11 @@ private:
 public:
     explicit MHTSaver(QObject *parent = 0);
     ~MHTSaver();
+
+    //// Properties ///////////////////////////////////////////////////////////
+public:        int overallTimeoutTime() const; ///Returns -1 if disabled
+public slots:  void setOverallTimeoutTime(int seconds); ///Pass -1 to disable
+private slots: void OverallTimerTimeout();
 
     //// Class Public Interface ///////////////////////////////////////////////
 public slots:
