@@ -80,9 +80,10 @@ void MHTSaver::Cancel()
 void MHTSaver::LoadResource(const QUrl& url)
 {
     //Note: We do differentiate the same url with different fragments (i.e the `#blahblah` part of the url)
-    //      as it is unlikely they happen in links to external resources.
-    if (!url.fragment().isEmpty())
-        qDebug() << "LOAD: QUrl has fragment: " << url;
+    //      as it is unlikely they happen in links to external resources, and if they happen they may be
+    //      used by different libraries for content differentiation, or e.g hashtags.
+    ///if (!url.fragment().isEmpty())
+    ///    qDebug() << "LOAD: QUrl has fragment: " << url;
 
     //Check if resource is already loaded or is scheduled for loading.
     foreach (const Resource& res, m_resources)
@@ -150,10 +151,16 @@ void MHTSaver::ResourceLoadingFinished()
         //  passed in; this also changes main http status code and main error, for other resources
         //  the function continues and the `AddResource` call adds the resource to our list.
         QString newLocation = reply->header(QNetworkRequest::LocationHeader).toString();
-        qDebug() << "LOAD: Redirect to: " << newLocation;
+        ///qDebug() << "LOAD: Redirect to: " << newLocation;
         LoadResource(QUrl(newLocation));
         if (isMainResource)
             return DeleteReplyAndCheckForFinish(reply);
+    }
+
+    if (httpStatus < 200 || httpStatus >= 400)
+    {
+        //For debugging purposes only. An invalid URL can be a sign of bad parsing from our side.
+        qDebug() << "LOAD: HTTP ERROR " << httpStatus << " for resource: " << reply->url();
     }
 
     //Add the resource.
@@ -167,7 +174,7 @@ void MHTSaver::ResourceLoadingFinished()
     int indexOfSemicolon = contentType.indexOf(';');
     if (indexOfSemicolon != -1)
         contentType = contentType.left(indexOfSemicolon);
-    qDebug() << "LOAD: ContentType is " << contentType;
+    ///qDebug() << "LOAD: ContentType is " << contentType;
 
     if (m_htmlContentTypes.contains(contentType))
     {
@@ -276,7 +283,7 @@ void MHTSaver::AddResource(QNetworkReply* reply)
 void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
 {
     QUrl url = reply->url();
-    QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
+    //QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
     QByteArray data = reply->readAll();
     QString str = QString::fromUtf8(data);
 
@@ -289,7 +296,7 @@ void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
     QRegularExpression regexp(pattern, QRegularExpression::CaseInsensitiveOption);
     QRegularExpressionMatchIterator matches = regexp.globalMatch(str);
 
-    qDebug() << "PARSE HTML: Base: " << url;
+    ///qDebug() << "PARSE HTML: Base: " << url;
     while (matches.hasNext())
     {
         QRegularExpressionMatch match = matches.next();
@@ -311,7 +318,7 @@ void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
 void MHTSaver::ParseAndAddCSSResources(QNetworkReply* reply)
 {
     QUrl url = reply->url();
-    QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
+    //QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
     QByteArray data = reply->readAll();
     QString str = QString::fromUtf8(data);
 
@@ -329,7 +336,7 @@ void MHTSaver::ParseAndAddCSSResources(QNetworkReply* reply)
     //Paths for CSS will be fine:
     //http://stackoverflow.com/questions/940451/using-relative-url-in-css-file-what-location-is-it-relative-to
 
-    qDebug() << "PARSE CSS: Base: " << url;
+    ///qDebug() << "PARSE CSS: Base: " << url;
     while (matches.hasNext())
     {
         QRegularExpressionMatch match = matches.next();
@@ -392,7 +399,7 @@ void MHTSaver::DecideAndLoadURL(const QUrl& baseURL, const QString& linkedURL)
                  + basePath + "/" + finalLinkedURL;
     }
 
-    qDebug() << "DECIDE: " << linkedURL << " => " << finalURL;
+    ///qDebug() << "DECIDE: " << linkedURL << " => " << finalURL;
     LoadResource(QUrl(finalURL));
 }
 
