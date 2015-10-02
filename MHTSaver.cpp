@@ -162,6 +162,11 @@ void MHTSaver::ResourceLoadingFinished()
     //Determine the file type and add any more contents.
     QUrl url = reply->url();
     QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
+    //ContentType is usually 'text/html; charset=UTF-8' for web pages (gzipped and chunked contents
+    //  are already handled and removed)
+    int indexOfSemicolon = contentType.indexOf(';');
+    if (indexOfSemicolon != -1)
+        contentType = contentType.left(indexOfSemicolon);
     qDebug() << "LOAD: ContentType is " << contentType;
 
     if (m_htmlContentTypes.contains(contentType))

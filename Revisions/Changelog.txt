@@ -67,3 +67,4 @@
 2015-09-27  15  Import Improvements
 2015-09-29  15  Import bugfix
 2015-09-30  16  Import bug finally fixed!
+2015-10-01  17  Fixing import preview dialog

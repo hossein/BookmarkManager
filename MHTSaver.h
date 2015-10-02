@@ -8,7 +8,6 @@
 
 //TODO:
 //- MHTSaver can't save single files
-//- MHTSaver handle `;` in content-type
 //- MHTSaver handle initial '../' in url decide.
 //- Strip JS.
 
