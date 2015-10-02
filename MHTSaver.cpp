@@ -362,12 +362,34 @@ void MHTSaver::DecideAndLoadURL(const QUrl& baseURL, const QString& linkedURL)
     {
         //Relative URL
         QString basePath = baseURL.path();
+
         //Do NOT ignore trailing slashes. It doesn't differ for 'cp.ir/index.php' and 'cp.ir/',
         //  BUT IT DOES DIFFER FOR 'cp.ir/fanegar/' and 'cp.ir/fanegar/index.php'.
+        //  Use basePath as  it is.
+        //First remove the last slashed part (even if it's a last character):
         int indexOfLastSlash = basePath.lastIndexOf('/');
-        QString basePathParent = (indexOfLastSlash == -1 ? QString() : basePath.left(indexOfLastSlash));
+        basePath = (indexOfLastSlash == -1 ? QString() : basePath.left(indexOfLastSlash));
+
+        //Then while we have "../" in the linkedURL remove more parts:
+        QString finalLinkedURL = linkedURL;
+        while (finalLinkedURL.length() >= 3 && finalLinkedURL.left(3) == "../")
+        {
+            indexOfLastSlash = basePath.lastIndexOf('/');
+            if (indexOfLastSlash != -1)
+            {
+                //Again remove a part from basePath, and the '../' from the finalLinkedURL
+                basePath = basePath.left(indexOfLastSlash);
+                finalLinkedURL = finalLinkedURL.mid(3);
+            }
+            else
+            {
+                //Wrong URL here, don't touch anything now.
+                break;
+            }
+        }
+
         finalURL = baseURL.scheme() + "://" + baseURL.authority()
-                 + basePathParent + "/" + linkedURL;
+                 + basePath + "/" + finalLinkedURL;
     }
 
     qDebug() << "DECIDE: " << linkedURL << " => " << finalURL;

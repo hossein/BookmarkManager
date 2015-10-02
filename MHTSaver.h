@@ -8,7 +8,6 @@
 
 //TODO:
 //- MHTSaver can't save single files
-//- MHTSaver handle initial '../' in url decide.
 //- Strip JS.
 
 class QTimer;
