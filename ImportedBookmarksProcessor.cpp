@@ -46,9 +46,13 @@ bool ImportedBookmarksProcessor::BeginProcessing(ImportedEntityList* elist)
     m_processedCount = 0;
     m_nextProcessIndex = 0;
 
-    //Because we check `m_toBeImportedCount == 0` this doesn't get out of bounds.
+    //Wrong: Because we check `m_toBeImportedCount == 0` this doesn't get out of bounds.
+    //Right: We have to be careful in the following `while` not to get out of bounds. This is
+    //  possible if m_toBeImportedCount is less than m_processorCount. So checking `< size` in the
+    //  `while` condition is not enough and we add `initialProcesses < m_toBeImportedCount` too.
     int initialProcesses = 0;
-    while (initialProcesses < m_processorCount && m_nextProcessIndex < m_elist->iblist.size())
+    while (initialProcesses < m_processorCount && initialProcesses < m_toBeImportedCount &&
+           m_nextProcessIndex < m_elist->iblist.size())
     {
         while (!m_elist->iblist[m_nextProcessIndex].Ex_finalImport)
             m_nextProcessIndex += 1;
@@ -98,9 +102,16 @@ void ImportedBookmarksProcessor::AllBookmarksProcessed()
 
 void ImportedBookmarksProcessor::Cancel()
 {
+    //Cancelling will emit `ImportedBookmarkProcessed` signals which will in turn cause
+    //  'AllBookmarksProcessed` to be emitted, which is both wrong and does a 'CleanUp` before we do
+    //  here! We don't want that So disconnect first.
     for (int i = 0; i < m_processorCount; i++)
+    {
+        disconnect(m_bookmarkProcessors[i], SIGNAL(ImportedBookmarkProcessed(int)), 0, 0);
         m_bookmarkProcessors[i]->Cancel();
+    }
 
+    //Since we disabled the signals, we need to clean-up ourselves.
     CleanUp();
     emit ProcessingCanceled();
 }

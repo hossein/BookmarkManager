@@ -26,7 +26,7 @@ public:
 
 public slots:
     bool ProcessImportedBookmark(int id, ImportedBookmark* ib);
-    bool Cancel();
+    bool Cancel(); ///After Cancel, `ImportedBookmarkProcessed` will be emitted
 
 signals:
     void ImportedBookmarkProcessed(int id);
