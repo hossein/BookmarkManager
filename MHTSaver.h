@@ -6,9 +6,6 @@
 #include <QDateTime>
 #include <QStringList>
 
-//TODO:
-//- Redirect depth check
-
 class QTimer;
 class QNetworkReply;
 class QNetworkAccessManager;
@@ -93,6 +90,7 @@ private:
 
     struct OngoingReply
     {
+        int redirectDepth;
         //Note: Can use a timer to abort operations with slow/stalled progresses.
         int progress;
         QDateTime progressTimeStamp;
@@ -127,7 +125,7 @@ signals:
 
 private:
     //// Loading Resources From Web ///////////////////////////////////////////
-    void LoadResource(const QUrl& url);
+    void LoadResource(const QUrl& url, int redirectDepth);
     Q_SLOT void ResourceLoadingFinished();
     void DeleteReplyAndCheckForFinish(QNetworkReply* reply);
     QString AddResource(QNetworkReply* reply, const QString& redirectLocation);

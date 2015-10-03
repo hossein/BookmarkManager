@@ -86,7 +86,7 @@ void MHTSaver::GetMHTData(const QString& url)
 
     //Load each resource with `LoadResource`; after response comes they will be added to resources
     //  with `AddResource`.
-    LoadResource(QUrl(url));
+    LoadResource(QUrl(url), 0);
 }
 
 void MHTSaver::Cancel()
@@ -96,7 +96,7 @@ void MHTSaver::Cancel()
         reply->abort(); //`finished()` will also be emitted, so don't remove them.
 }
 
-void MHTSaver::LoadResource(const QUrl& url)
+void MHTSaver::LoadResource(const QUrl& url, int redirectDepth)
 {
     //Note: We do differentiate the same url with different fragments (i.e the `#blahblah` part of the url)
     //      as it is unlikely they happen in links to external resources, and if they happen they may be
@@ -123,6 +123,7 @@ void MHTSaver::LoadResource(const QUrl& url)
     //Always set progress THEN the timestamp, to make sure if progress changes in between,
     //  next call will update the timestamp. Actually I don't think it differs so much.
     OngoingReply ongoingReply;
+    ongoingReply.redirectDepth = redirectDepth;
     ongoingReply.progress = -1;
     ongoingReply.progressTimeStamp = QDateTime::currentDateTime();
     m_ongoingReplies.insert(reply, ongoingReply);
@@ -166,15 +167,22 @@ void MHTSaver::ResourceLoadingFinished()
         //Redirect!
         //HOWEVER, if this is not the main page save all interim things in the archive too;
         //  although e.g for pictures they won't be displayed as we are NOT modifying the image
-        //  addresses or save them under the old address.
+        //  addresses or save them under the old address. Update: We do save them under the old
+        //  address now.
         //Only for the main page we fully replace the redirect target with the original thing user
         //  passed in; this also changes main http status code and main error, for other resources
         //  the function continues and the `AddResource` call adds the resource to our list.
-        redirectLocation = reply->header(QNetworkRequest::LocationHeader).toString();
-        ///qDebug() << "LOAD: Redirect to: " << redirectLocation;
-        LoadResource(QUrl(redirectLocation));
-        if (isMainResource)
-            return DeleteReplyAndCheckForFinish(reply);
+        //Btw prevent redirect loops: if we detect one, we just use the current resource and won't
+        //  redirect anymore.
+        int redirectDepth = m_ongoingReplies[reply].redirectDepth + 1;
+        if (redirectDepth <= 20)
+        {
+            redirectLocation = reply->header(QNetworkRequest::LocationHeader).toString();
+            ///qDebug() << "LOAD: Redirect to: " << redirectLocation;
+            LoadResource(QUrl(redirectLocation), redirectDepth + 1);
+            if (isMainResource)
+                return DeleteReplyAndCheckForFinish(reply);
+        }
     }
 
     if (httpStatus < 200 || httpStatus >= 400)
@@ -442,7 +450,7 @@ void MHTSaver::DecideAndLoadURL(const QUrl& baseURL, const QString& linkedURL)
     }
 
     ///qDebug() << "DECIDE: " << linkedURL << " => " << finalURL;
-    LoadResource(QUrl(finalURL));
+    LoadResource(QUrl(finalURL), 0);
 }
 
 void MHTSaver::GenerateMHT()
