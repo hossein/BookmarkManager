@@ -198,6 +198,9 @@ bool BookmarkImporter::Import(ImportedEntityList& elist)
             //Marked by user to not import.
             continue;
 
+        //Important: We don't want to put the attached file in recycle bin. So we will manually
+        //  delete it instead of using BookmarkFile::Ex_RemoveAfterAttach.
+        QString mhtFilePathName;
         QList<FileManager::BookmarkFile> bookmarkFiles;
         if (ib.ExPr_attachedFileError.isEmpty())
         {
@@ -212,7 +215,7 @@ bool BookmarkImporter::Import(ImportedEntityList& elist)
                     safeFileName += "." + safeFileNameInfo.suffix();
             }
 
-            QString mhtFilePathName = tempPath + "/" + safeFileName;
+            mhtFilePathName = tempPath + "/" + safeFileName;
             QFile mhtfile(mhtFilePathName);
             if (!mhtfile.open(QIODevice::WriteOnly))
             {
@@ -229,6 +232,8 @@ bool BookmarkImporter::Import(ImportedEntityList& elist)
                             QString("Could not write data to the temp file \"%1\" for bookmark \"%2\" (\"%3\").\nError: %4 %5")
                             .arg(mhtFilePathName, ib.title, ib.uri, QString::number(mhtfile.error()), mhtfile.errorString()));
                 mhtfile.close();
+
+                RemoveTempFileIfExists(mhtFilePathName);
                 continue;
             }
             if (!mhtfile.flush())
@@ -238,6 +243,8 @@ bool BookmarkImporter::Import(ImportedEntityList& elist)
                             QString("Could not flush data to the temp file \"%1\" for bookmark \"%2\" (\"%3\").\nError: %4 %5")
                             .arg(mhtFilePathName, ib.title, ib.uri, QString::number(mhtfile.error()), mhtfile.errorString()));
                 mhtfile.close();
+
+                RemoveTempFileIfExists(mhtFilePathName);
                 continue;
             }
             mhtfile.close();
@@ -254,7 +261,7 @@ bool BookmarkImporter::Import(ImportedEntityList& elist)
             bf.Size         = fileInfo.size();
             bf.MD5          = Util::GetMD5HashForFile(mhtFilePathName);
             bf.Ex_IsDefaultFileForEditedBookmark = true; //[KeepDefaultFile-1].Generalization: Must be set
-            bf.Ex_RemoveAfterAttach = true; //Will be immediately removed.
+            bf.Ex_RemoveAfterAttach = false; //We don't want to put it in recycle bin. Will manually delete.
 
             bookmarkFiles.append(bf);
         }
@@ -289,6 +296,8 @@ bool BookmarkImporter::Import(ImportedEntityList& elist)
             {
                 //A messagebox must have already been displayed.
                 bbLogic.RollBackActionTransaction();
+
+                RemoveTempFileIfExists(mhtFilePathName);
                 continue;
             }
 
@@ -298,6 +307,8 @@ bool BookmarkImporter::Import(ImportedEntityList& elist)
             {
                 //A messagebox must have already been displayed.
                 bbLogic.RollBackActionTransaction();
+
+                RemoveTempFileIfExists(mhtFilePathName);
                 continue;
             }
 
@@ -307,19 +318,57 @@ bool BookmarkImporter::Import(ImportedEntityList& elist)
             addedBIDs.append(addedBID);
             allAssociatedTIDs.unite(QSet<long long>::fromList(associatedTIDs));
         }
-        else
+        else if (ib.Ex_status == ImportedBookmark::S_AnalyzedExactExistent)
+        {
+            //We don't need to do anything! Bookmark already in DB.
+            //We don't even update its mht file.
+        }
+        else if (ib.Ex_status == ImportedBookmark::S_ReplaceExisting)
         {
             //TODO: Implement
-            QMessageBox::warning(m_dialogParent, "Error",
-                                 QString("Unknown bookmark import status %1 for imported bookmark \"%2\" (\"%3\").")
-                                 .arg(QString::number((int)ib.Ex_status), ib.title, ib.uri));
-            continue;
+            QMessageBox::warning(
+                        m_dialogParent, "Error",
+                        QString("ReplaceExisting NOT implemented! for imported bookmark \"%1\" (\"%2\").")
+                        .arg(ib.title, ib.uri));
+        }
+        else if (ib.Ex_status == ImportedBookmark::S_AppendToExisting)
+        {
+            //TODO: Implement
+            QMessageBox::warning(
+                        m_dialogParent, "Error",
+                        QString("AppendToExisting NOT implemented! for imported bookmark \"%1\" (\"%2\").")
+                        .arg(ib.title, ib.uri));
+        }
+        else
+        {
+            QMessageBox::warning(
+                        m_dialogParent, "Error",
+                        QString("Unknown bookmark import status %1 for imported bookmark \"%2\" (\"%3\").")
+                        .arg(QString::number((int)ib.Ex_status), ib.title, ib.uri));
         }
 
-        //Don't put a thing here. There are `continue`s in the code.
+        //There are `continue`s in the code. Everything here must be repeated before them.
+        //We always need to remove this file, because we create it regardless of import type.
+        RemoveTempFileIfExists(mhtFilePathName);
     }
 
     return true;
+}
+
+QString BookmarkImporter::bookmarkTagAccordingToParentFolders(ImportedEntityList& elist, int bookmarkIndex)
+{
+    const ImportedBookmark& ib = elist.iblist[bookmarkIndex];
+    int parentId = ib.parentId;
+
+    QString tag = QString();
+    while (elist.ibflist[folderItemsIndexInArray[parentId]].root.isEmpty())
+    {
+        tag = elist.ibflist[folderItemsIndexInArray[parentId]].title + (tag.isEmpty() ? "" : "/") + tag;
+        parentId = elist.ibflist[folderItemsIndexInArray[parentId]].parentId;
+    }
+    tag = tag.replace(' ', '-');
+
+    return tag;
 }
 
 bool BookmarkImporter::FindDuplicate(const ImportedBookmark& ib, const QList<long long>& almostDuplicateBIDs,
@@ -400,18 +449,22 @@ QString BookmarkImporter::extraInfoField(const QString& fieldName, const QList<B
     return QString();
 }
 
-QString BookmarkImporter::bookmarkTagAccordingToParentFolders(ImportedEntityList& elist, int bookmarkIndex)
+void BookmarkImporter::RemoveTempFileIfExists(const QString& filePathName)
 {
-    const ImportedBookmark& ib = elist.iblist[bookmarkIndex];
-    int parentId = ib.parentId;
+    if (filePathName.isEmpty())
+        return;
 
-    QString tag = QString();
-    while (elist.ibflist[folderItemsIndexInArray[parentId]].root.isEmpty())
+    QFile f(filePathName);
+    //`exists` return false if file is an existing symlink to a nonexisting file
+    if (!f.exists() && f.symLinkTarget().isEmpty())
+        return;
+
+    if (!f.remove())
     {
-        tag = elist.ibflist[folderItemsIndexInArray[parentId]].title + (tag.isEmpty() ? "" : "/") + tag;
-        parentId = elist.ibflist[folderItemsIndexInArray[parentId]].parentId;
+        QMessageBox::warning(
+                    m_dialogParent, "Error",
+                    QString("Could not remove the temporary saved page file \"%1\". "
+                            "Future errors might happen because of this.\nError: %2 %3")
+                    .arg(filePathName, QString::number(f.error()), f.errorString()));
     }
-    tag = tag.replace(' ', '-');
-
-    return tag;
 }

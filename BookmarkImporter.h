@@ -7,8 +7,7 @@
 #include <QMultiHash>
 #include <QList>
 
-//- TODOs
-//- Files removing problem (and, can be fully removed, not trashed?)
+//- TODO
 //- Bookmark titles brackets fix
 //- Return type of Import function. and add note about how it uses transactions.
 
@@ -42,6 +41,8 @@ public:
     bool Import(ImportedEntityList& elist);
 
 private:
+    QString bookmarkTagAccordingToParentFolders(ImportedEntityList& elist, int bookmarkIndex);
+
     /// Terminology: A 'duplicate' bookmark can be 'similar' or 'exact' duplicate of the imported bm.
     bool FindDuplicate(const ImportedBookmark& ib, const QList<long long>& almostDuplicateBIDs,
                        bool& foundSimilar, bool& foundExact, long long& duplicateBID);
@@ -50,6 +51,5 @@ private:
     /// Returns a null QString if extra infos don't contain the field.
     QString extraInfoField(const QString& fieldName, const QList<BookmarkManager::BookmarkExtraInfoData>& extraInfos);
 
-    QString bookmarkTagAccordingToParentFolders(ImportedEntityList& elist, int bookmarkIndex);
-
+    void RemoveTempFileIfExists(const QString& filePathName);
 };
