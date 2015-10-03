@@ -3,10 +3,12 @@
 
 #include "Config.h"
 #include "ImportedBookmarksProcessor.h"
+#include "Util.h"
 
 #include <QDebug>
 #include <QApplication>
 #include <QScreen>
+#include <QUrl>
 
 ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* dbm,
                                                                ImportedEntityList* elist, QWidget *parent)
@@ -364,6 +366,16 @@ void ImportedBookmarksPreviewDialog::AddItems()
         twi->setData(0, TWID_Index, index);
         bookmarkItems[ib.intId] = twi;
         index++;
+
+        if (ib.title.trimmed().isEmpty())
+        {
+            //For [title-less bookmarks] show their url in a different formatting.
+            twi->setText(0, Util::FullyPercentDecodedUrl(ib.uri));
+            twi->setTextColor(0, QColor(192, 128, 0));
+            QFont italicFont = twi->font(0);
+            italicFont.setItalic(true);
+            twi->setFont(0, italicFont);
+        }
 
         if (ib.parentId <= 0)
             ui->twBookmarks->addTopLevelItem(twi);

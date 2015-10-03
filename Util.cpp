@@ -9,6 +9,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QSet>
+#include <QUrl>
 
 QString Util::RandomHash(int length)
 {
@@ -259,6 +260,13 @@ QString Util::PercentEncodeUnicodeAndFSChars(const QString& input)
         output = "@Name_" + output;
 
     return output;
+}
+
+QString Util::FullyPercentDecodedUrl(const QString& url)
+{
+    //QUrl's to[Display]String functions doesn't decode UTF-8 chars, so we have to decode them
+    //  with its own static function separately.
+    return QUrl::fromPercentEncoding(QUrl(url).toDisplayString(QUrl::FullyDecoded).toUtf8());
 }
 
 void Util::CaseInsensitiveStringListEliminateDuplicates(QStringList& list)

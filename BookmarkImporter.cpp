@@ -170,6 +170,9 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
     }
 
     //Bookmarks imported; delete folders without bookmarks or folders in them until nothing remains to be deleted.
+    //Note: There is a 'Tags' folder which should automatically be deleted because it just contains bookmarks
+    //  without titles or anything but just tags. However in case of corrupt files or user manipulation, its
+    //  bookmarks will end up as a bunch of [title-less bookmarks] which we will handle without a problem.
     QSet<int> usedFolderIds;
     while (true)
     {
@@ -302,7 +305,7 @@ bool BookmarkImporter::Import(ImportedEntityList& elist, QList<long long>& added
 
             BookmarkManager::BookmarkData bdata;
             bdata.BID = -1; //Not important.
-            bdata.Name = ib.title; //TODO: Title-less bookmarks possible? Don't let them happen. Set to url or sth. also add Tags as a note.
+            bdata.Name = ib.title.trimmed(); //[title-less bookmarks] are not possible after processing.
             bdata.URL = ib.uri;
             bdata.Desc = ib.description;
             bdata.DefBFID = -1; //[KeepDefaultFile-1] We always set this to -1.

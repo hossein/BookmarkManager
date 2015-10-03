@@ -159,6 +159,22 @@ void ImportedBookmarkProcessor::PageRetrieved(const QByteArray& data, const MHTS
                                              .arg(status.mainNetworkReplyErrorString);
     }
 
+    //It is also important that we set a title for [title-less bookmarks].
+    if (m_ib->title.trimmed().isEmpty())
+    {
+        if (status.mainSuccess)
+        {
+            //`.simplified` is needed since e.g an i3e explore title contained newlines and tabs in it!
+            //For e.g pdfs, it won't contain the file extension, but firefox already saved a title for
+            //them so we don't come here for title selection.
+            m_ib->title = status.mainResourceTitle.simplified();
+        }
+        else
+        {
+            m_ib->title = Util::FullyPercentDecodedUrl(m_ib->uri);
+        }
+    }
+
     m_isProcessing = false;
 
     //Set the file attach error status.

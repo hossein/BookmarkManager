@@ -31,6 +31,8 @@ public:
     static QString PercentEncodeUnicodeChars(const QString& input);
     static QString PercentEncodeUnicodeAndFSChars(const QString& input);
 
+    static QString FullyPercentDecodedUrl(const QString& url);
+
     // StringList Handling ////////////////////////////////////////////////////////////////////////
     static void CaseInsensitiveStringListEliminateDuplicates(QStringList& list);
     static QStringList CaseInsensitiveStringListEliminateDuplicatesCopy(const QStringList& list);
