@@ -102,11 +102,14 @@ bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool syst
     //Remove the original file.
     if (systemTrashOriginalFile)
     {
-        WinFunctions::MoveFileToRecycleBin(filePathName);
+        bool Trashsuccess = WinFunctions::MoveFileToRecycleBin(filePathName);
         //We do NOT return FALSE in case of failure.
-        Error(QString("Error while %1:\nCould not delete the original file from your filesystem. "
-                      "You should manually delete it yourself.\n\nFile: %2")
-              .arg(errorWhileContext, filePathName));
+        if (!Trashsuccess)
+        {
+            Error(QString("Error while %1:\nCould not delete the original file from your filesystem. "
+                          "You should manually delete it yourself.\n\nFile: %2")
+                  .arg(errorWhileContext, filePathName));
+        }
     };
 
     return true;
