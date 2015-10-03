@@ -38,9 +38,10 @@ signals:
 
 private slots:
     void BeginProcess();
+    void EndProcess();
 
     void AddMetaData();
     void RetrievePage();
     void PageRetrieved(const QByteArray& data, const MHTSaver::Status& status);
-
+    void SetBookmarkTitle(const QString& suggestedTitle);
 };
