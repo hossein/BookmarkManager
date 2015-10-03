@@ -49,8 +49,14 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
         folderItemsIndexInArray[elist.ibflist[i].intId] = i;
 
     //Tag all the bookmarks
+    QString tagByParentFolder;
     for (int index = 0; index < elist.iblist.size(); index++)
-        elist.iblist[index].Ex_additionalTags = QStringList(bookmarkTagAccordingToParentFolders(elist, index));
+    {
+        elist.iblist[index].Ex_additionalTags = QStringList();
+        tagByParentFolder = bookmarkTagAccordingToParentFolders(elist, index);
+        if (!tagByParentFolder.isEmpty())
+            elist.iblist[index].Ex_additionalTags.append(tagByParentFolder);
+    }
 
     //Find URLs of the TO-BE-IMPORTED bookmarks that EXACTLY match.
     //  This is done to merge firefox bookmarks with different tags into one bookmark.

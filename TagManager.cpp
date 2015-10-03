@@ -37,6 +37,10 @@ bool TagManager::SetBookmarkTags(long long BID, const QStringList& tagsList,
     QStringList tagsToAdd = Util::CaseInsensitiveStringListEliminateDuplicatesCopy(tagsList);
     QList<long long> tagsToRemove;
 
+    //Empty values might come from anywhere (although we fixed Import bug that generated empty tags)
+    tagsToAdd.removeAll(QString());
+    tagsToAdd.removeAll(QString(""));
+
     // Remove those that already exist in the database from the tagsToAdd.
     query.prepare("SELECT * FROM BookmarkTag NATURAL JOIN Tag WHERE BID = ?");
     query.addBindValue(BID);

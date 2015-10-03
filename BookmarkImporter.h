@@ -8,7 +8,6 @@
 #include <QList>
 
 //- TODOs
-//- Tags problem
 //- Files removing problem (and, can be fully removed, not trashed?)
 //- Bookmark titles brackets fix
 //- Return type of Import function. and add note about how it uses transactions.
