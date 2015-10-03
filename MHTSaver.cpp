@@ -21,9 +21,14 @@ MHTSaver::MHTSaver(QObject *parent) :
 
     //Content types
     m_htmlContentTypes       = QStringList() << "text/html";
-    m_scriptContentTypes     = QStringList() << "application/ecmascript" << "application/javascript" << "text/javascript";
+    m_scriptContentTypes     = QStringList() << "application/ecmascript" << "application/javascript" << "application/x-javascript" << "text/javascript";
     m_cssContentTypes        = QStringList() << "text/css";
-    m_otherKnownContentTypes = QStringList() << "image/gif" << "image/jpeg" << "image/png";
+    m_otherKnownContentTypes = QStringList();
+            /// /* Images    */ << "image/gif" << "image/jpeg" << "image/pjpeg" << "image/png" << "image/x-icon" << "image/vnd.microsoft.icon" << "image/svg+xml"
+            /// /* Text      */ << "text/plain"
+            /// /* XML, etc  */ << "text/xml" << "application/atom+xml" << "application/rss+xml" << "application/rdf+xml" << "application/opensearchdescription+xml"
+            /// /* Documents */ << "application/pdf"
+            /// /* Fonts     */ << "font/woff" << "application/x-font-woff" << "application/x-font-ttf" << "application/vnd.ms-fontobject";
 }
 
 MHTSaver::~MHTSaver()
@@ -204,8 +209,8 @@ void MHTSaver::ResourceLoadingFinished()
 
         if (contentType.isNull())
             qDebug() << "LOAD: " << url << " doesn't have content type specified.";
-        else
-            qDebug() << "LOAD: Unknown content type '" << contentType << "' for resource: "<< url;
+        ///else
+        ///    qDebug() << "LOAD: Unknown content type '" << contentType << "' for resource: "<< url;
 
         //A common error is to have css files produced e.g with php but not sending the correct
         //  content-type header.
@@ -261,6 +266,9 @@ void MHTSaver::AddResource(QNetworkReply* reply)
 {
     QUrl url = reply->url();
     QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
+
+    if (contentType.isEmpty())
+        qDebug() << "ADDRESOURCE: NO CONTENT TYPE: " << url;
 
     foreach (const Resource& res, m_resources)
     {
