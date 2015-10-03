@@ -43,6 +43,10 @@ class QNetworkAccessManager;
 ///        pictures, because we neither modify the urls in the html/css files nor do we save the
 ///        redirect locations under the old addresses. Ideally we had to do both, i.e convert the
 ///        redirect targets to some `urn:` form and use them.
+///        UPDATE: We now replace the contents of the file with the old url with the contents and
+///        content-type of the redirect target url. This doesn't require us to modify urls in the
+///        source file. This works for all resources except the main resource, which uses its
+///        original redirect handling.
 ///     8. I DID NOT GUARANTEE CORRECTNESS OF %-encoded URLS and other similar issues. I didn't
 ///        study QUrl<->QString conversions thoroughly about how to treat the encoding issues.
 class MHTSaver : public QObject
@@ -125,6 +129,9 @@ private:
     //// MHT Format Handling //////////////////////////////////////////////////
     // Have all resources, now generate the MHT file
     void GenerateMHT();
+
+    //// Utility Functions ////////////////////////////////////////////////////
+    int findResourceWithURL(const QUrl& url);
     bool isMimeTypeTextFile(const QString& mimeType);
     QString getOrGuessMimeType(QNetworkReply* reply, const QByteArray& data);
 };

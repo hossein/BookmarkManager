@@ -451,12 +451,38 @@ void MHTSaver::GenerateMHT()
 
     foreach (const Resource& res, m_resources)
     {
-        bool isText = isMimeTypeTextFile(res.contentType);
+        QUrl currentRedirectUrl;
+        QString contentType;
+        QByteArray data;
+
+        contentType = res.contentType;
+        data = res.data;
+
+        //First off, if the file was a redirect replace original data and content type with the
+        //  redirect target. We don't replace the url as that requires changing files' source.
+        //  We don't remove the target resource or something. It will mess up m_resources list.
+        QUrl redirectTo = res.redirectTo;
+        while (!redirectTo.isEmpty())
+        {
+            int i = findResourceWithURL(redirectTo);
+            if (i == -1)
+                break;
+
+            currentRedirectUrl = m_resources[i].fullUrl;
+            contentType = m_resources[i].contentType;
+            data = m_resources[i].data;
+
+            //Check for more redirect depths.
+            redirectTo = m_resources[i].redirectTo;
+        }
+
+        //Write the headers
+        bool isText = isMimeTypeTextFile(contentType);
 
         mhtdata += "--" + boundary + "\r\n";
 
-        if (!res.contentType.isEmpty())
-            mhtdata += "Content-Type: " + res.contentType.toLatin1() + "\r\n";
+        if (!contentType.isEmpty())
+            mhtdata += "Content-Type: " + contentType.toLatin1() + "\r\n";
 
         mhtdata += "Content-Transfer-Encoding: ";
         mhtdata += (isText ? "quoted-printable" : "base64");
@@ -464,15 +490,23 @@ void MHTSaver::GenerateMHT()
 
         mhtdata += "Content-Location: " + res.fullUrl.toString(QUrl::FullyEncoded) + "\r\n";
 
+        if (!currentRedirectUrl.isEmpty())
+        {
+            mhtdata += "X-BM-IsRedirect: Yes\r\n";
+            mhtdata += "X-BM-RedirectTarget: " + currentRedirectUrl.toString(QUrl::FullyEncoded)  + "\r\n";
+            mhtdata += "X-BM-OriginalContentType: " + res.contentType.toLatin1()  + "\r\n";
+        }
+
         mhtdata += "\r\n";
 
+        //Write content
         if (isText)
         {
-            mhtdata += Util::EncodeQuotedPrintable(res.data);
+            mhtdata += Util::EncodeQuotedPrintable(data);
         }
         else
         {
-            QByteArray base64 = res.data.toBase64();
+            QByteArray base64 = data.toBase64();
             QByteArray base64lines;
             for (int i = 0; i <= base64.length() / 76; i++)
                 base64lines += base64.mid(i * 76, ((i+1)*76 > base64.length() ? -1 : 76)) + "\r\n";
@@ -485,6 +519,14 @@ void MHTSaver::GenerateMHT()
     mhtdata += "--" + boundary + "--\r\n";
 
     emit MHTDataReady(mhtdata, m_status);
+}
+
+int MHTSaver::findResourceWithURL(const QUrl& url)
+{
+    for (int i = 0; i < m_resources.size(); i++)
+        if (m_resources[i].fullUrl == url)
+            return i;
+    return -1;
 }
 
 bool MHTSaver::isMimeTypeTextFile(const QString& mimeType)
