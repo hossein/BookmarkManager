@@ -606,7 +606,11 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     if (!success)
         return;
 
-    ImportedBookmarksPreviewDialog* importPreviewDialog = new ImportedBookmarksPreviewDialog(&dbm, &elist, this);
+    success = bmim.InitializeImport();
+    if (!success)
+        return;
+
+    ImportedBookmarksPreviewDialog* importPreviewDialog = new ImportedBookmarksPreviewDialog(&dbm, &bmim, &elist, this);
     success = importPreviewDialog->canShow();
     if (!success)
         return;
@@ -617,16 +621,19 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
 
     importPreviewDialog->deleteLater();
 
+    QList<long long> addedBIDs;
+    QSet<long long> allAssociatedTIDs;
+    bmim.FinalizeImport(addedBIDs, allAssociatedTIDs);
+
+
     //Note about TRANSACTIONS:
     //Import function imports each bookmark in its own transaction. This way is both just what we
     //  did (i.e importing all of them under the same transaction was not more difficult and could
     //  be done), and also the good point about it is that if it interrupts, we'll have some of our
     //  bookmarks. So we don't need to start and wrap this in a transaction.
-    QList<long long> addedBIDs;
-    QSet<long long> allAssociatedTIDs;
-    success = bmim.Import(elist, addedBIDs, allAssociatedTIDs);
-    if (!success)
-        return;
+    ///success = bmim.Import(elist, addedBIDs, allAssociatedTIDs);
+    ///if (!success)
+    ///    return;
 
     //Refresh UI
     if (!addedBIDs.isEmpty())

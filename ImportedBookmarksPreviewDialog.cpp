@@ -10,7 +10,7 @@
 #include <QScreen>
 #include <QUrl>
 
-ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* dbm,
+ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* dbm, BookmarkImporter* bmim,
                                                                ImportedEntityList* elist, QWidget *parent)
     : QDialog(parent), ui(new Ui::ImportedBookmarksPreviewDialog), dbm(dbm)
     , canShowTheDialog(false), elist(elist)
@@ -37,7 +37,7 @@ ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* 
     connect(ui->chkImportBookmark, SIGNAL(toggled(bool)), ui->leTagsForBookmark, SLOT(setEnabled(bool)));
     connect(ui->chkImportFolder  , SIGNAL(toggled(bool)), ui->leTagsForFolder  , SLOT(setEnabled(bool)));
 
-    m_bookmarksProcessor = new ImportedBookmarksProcessor(dbm->conf->concurrentBookmarkProcessings, this, this);
+    m_bookmarksProcessor = new ImportedBookmarksProcessor(dbm->conf->concurrentBookmarkProcessings, bmim, this, this);
     connect(m_bookmarksProcessor, SIGNAL(ProcessingDone()), this, SLOT(ProcessingDone()));
     connect(m_bookmarksProcessor, SIGNAL(ProcessingCanceled()), this, SLOT(ProcessingCanceled()));
 

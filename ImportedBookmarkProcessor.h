@@ -5,6 +5,7 @@
 
 #include <QElapsedTimer>
 
+class BookmarkImporter;
 struct ImportedBookmark;
 struct ImportedEntityList;
 
@@ -17,14 +18,15 @@ class ImportedBookmarkProcessor : public QObject
 private:
     bool m_isProcessing;
     int m_currId;
+    BookmarkImporter* m_bmim;
     ImportedEntityList* m_elist;
     ImportedBookmark* m_ib;
     MHTSaver* m_mhtSaver;
     QElapsedTimer m_elapsedTimer;
 
 public:
-    explicit ImportedBookmarkProcessor(QObject *parent = 0);
-    void setImportedEntityList(ImportedEntityList* ielist);
+    explicit ImportedBookmarkProcessor(BookmarkImporter* bmim, ImportedEntityList* elist,
+                                       QObject *parent = 0);
     ~ImportedBookmarkProcessor();
 
     ImportedBookmark* lastProcessedImportedBookmark();
@@ -34,14 +36,16 @@ public slots:
     bool Cancel(); ///After Cancel, `ImportedBookmarkProcessed` will be emitted
 
 signals:
-    void ImportedBookmarkProcessed(int id);
+    void ImportedBookmarkProcessed(int id, bool successful);
 
 private slots:
     void BeginProcess();
-    void EndProcess();
+    void EndProcess(bool successful);
 
     void AddMetaData();
     void RetrievePage();
     void PageRetrieved(const QByteArray& data, const MHTSaver::Status& status);
     void SetBookmarkTitle(const QString& suggestedTitle);
+
+    void Import();
 };

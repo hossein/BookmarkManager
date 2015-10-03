@@ -1,23 +1,20 @@
 #include "ImportedBookmarkProcessor.h"
 
+#include "BookmarkImporter.h"
 #include "BookmarkImporters/ImportedEntity.h"
 #include "MHTSaver.h"
 #include "Util.h"
 
 #include <QMetaMethod>
 
-ImportedBookmarkProcessor::ImportedBookmarkProcessor(QObject *parent) :
-    QObject(parent), m_isProcessing(false), m_elist(NULL), m_ib(NULL)
+ImportedBookmarkProcessor::ImportedBookmarkProcessor(BookmarkImporter* bmim, ImportedEntityList* elist,
+                                                     QObject *parent)
+    : QObject(parent), m_isProcessing(false), m_bmim(bmim), m_elist(elist), m_ib(NULL)
 {
     m_mhtSaver = new MHTSaver(this);
     m_mhtSaver->setOverallTimeoutTime(300); //5 minutes
     connect(m_mhtSaver, SIGNAL(MHTDataReady(QByteArray,MHTSaver::Status)),
             this, SLOT(PageRetrieved(QByteArray,MHTSaver::Status)));
-}
-
-void ImportedBookmarkProcessor::setImportedEntityList(ImportedEntityList* elist)
-{
-    m_elist = elist;
 }
 
 ImportedBookmarkProcessor::~ImportedBookmarkProcessor()
@@ -65,13 +62,13 @@ void ImportedBookmarkProcessor::BeginProcess()
     RetrievePage();
 }
 
-void ImportedBookmarkProcessor::EndProcess()
+void ImportedBookmarkProcessor::EndProcess(bool successful)
 {
     m_isProcessing = false;
 
     qDebug() << m_currId << " Done in " << m_elapsedTimer.elapsed() / 1000.0 << " seconds.";
 
-    emit ImportedBookmarkProcessed(m_currId);
+    emit ImportedBookmarkProcessed(m_currId, successful);
 }
 
 void ImportedBookmarkProcessor::AddMetaData()
@@ -190,5 +187,17 @@ void ImportedBookmarkProcessor::SetBookmarkTitle(const QString& suggestedTitle)
             m_ib->title = Util::FullyPercentDecodedUrl(m_ib->uri);
     }
 
-    EndProcess();
+    Import();
+}
+
+void ImportedBookmarkProcessor::Import()
+{
+    //No need to check return value.
+    bool successful = m_bmim->ImportOne(*m_ib);
+
+    //After import, free some memory
+    m_ib->ExPr_attachedFileData.clear();
+
+    //Next step... done.
+    EndProcess(successful);
 }

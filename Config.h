@@ -113,6 +113,7 @@
 ///     Now maybe add a mini-browser too. Useful for occasional link clicking inside the app.
 ///   - MHTSave can't save e.g https://www.mozilla.org/en-US/firefox/new/. It simply doesn't show up
 ///     correctly!
+///   - Prevent sleep while importing.
 
 class Config
 {

@@ -7,7 +7,18 @@
 #include <QIcon>
 #include <QMap>
 
+//TODOs:
+//- Close the dialog if user cancels the progress dialog.
+//  Otherwise we have to recalculate all statuses and show a 'Close' button.
+//- On cancel, the last bookmarks that are processing are imported without attached files.
+//- On cancel, refresh main window's data. it should finalize, etc correctly.
+//- On progressing, update this dialog's bookmark icons?
+//- I removed Yevpatoria wikipedia bm but on import it nagged about similar things!
+//  I removed its google search and thing got alright!
+//- Don't get files for exact or whatever bookmarks!
+
 class QTreeWidgetItem;
+class BookmarkImporter;
 class ImportedBookmarksProcessor;
 namespace Ui { class ImportedBookmarksPreviewDialog; }
 
@@ -44,7 +55,7 @@ private:
     };
 
 public:
-    explicit ImportedBookmarksPreviewDialog(DatabaseManager* dbm,
+    explicit ImportedBookmarksPreviewDialog(DatabaseManager* dbm, BookmarkImporter* bmim,
                                             ImportedEntityList* elist, QWidget *parent = 0);
     ~ImportedBookmarksPreviewDialog();
 

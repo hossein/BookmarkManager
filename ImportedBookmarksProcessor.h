@@ -2,6 +2,7 @@
 #include <QObject>
 
 class QProgressDialog;
+class BookmarkImporter;
 struct ImportedEntityList;
 class ImportedBookmarkProcessor;
 
@@ -14,6 +15,7 @@ private:
     const int m_processorCount;
     QWidget* m_dialogParent;
 
+    BookmarkImporter* m_bmim;
     ImportedEntityList* m_elist;
     int m_toBeImportedCount;
     int m_processedCount;
@@ -23,13 +25,14 @@ private:
     QProgressDialog* m_progressDialog;
 
 public:
-    explicit ImportedBookmarksProcessor(int processorCount, QWidget* dialogParent, QObject *parent = 0);
+    explicit ImportedBookmarksProcessor(int processorCount, BookmarkImporter* bmim,
+                                        QWidget* dialogParent, QObject *parent = 0);
 
 public slots:
     bool BeginProcessing(ImportedEntityList* elist);
 
 private slots:
-    void BookmarkProcessed(int id);
+    void BookmarkProcessed(int id, bool successful);
     void AllBookmarksProcessed();
     void Cancel();
 

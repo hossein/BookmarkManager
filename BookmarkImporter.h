@@ -29,6 +29,10 @@ private:
     QMultiHash<QString, long long> existentBookmarksForUrl;
     QMap<int, int> folderItemsIndexInArray;
 
+    QList<long long> m_addedBIDs;
+    QSet<long long> m_allAssociatedTIDs;
+    QString m_tempPath;
+
 public:
     BookmarkImporter(DatabaseManager* dbm, QWidget* dialogParent);
 
@@ -36,6 +40,10 @@ public:
     bool Analyze(ImportedEntityList& elist);
     bool Import(ImportedEntityList& elist, QList<long long>& addedBIDs,
                 QSet<long long>& allAssociatedTIDs);
+
+    bool InitializeImport();
+    bool ImportOne(const ImportedBookmark& ib);
+    void FinalizeImport(QList<long long>& addedBIDs, QSet<long long>& allAssociatedTIDs);
 
 private:
     QString bookmarkTagAccordingToParentFolders(ImportedEntityList& elist, int bookmarkIndex);
