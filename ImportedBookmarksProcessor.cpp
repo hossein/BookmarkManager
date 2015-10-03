@@ -24,6 +24,7 @@ bool ImportedBookmarksProcessor::BeginProcessing(ImportedEntityList* elist)
             m_toBeImportedCount += 1;
 
     m_progressDialog = new QProgressDialog("Processing bookmarks, please wait...", "Cancel", 0, m_toBeImportedCount, m_dialogParent);
+    m_progressDialog->setWindowTitle("Processing Bookmarks");
     m_progressDialog->setValue(0);
     m_progressDialog->show();
     connect(m_progressDialog, SIGNAL(canceled()), this, SLOT(Cancel()));
@@ -70,6 +71,9 @@ bool ImportedBookmarksProcessor::BeginProcessing(ImportedEntityList* elist)
 void ImportedBookmarksProcessor::BookmarkProcessed(int id)
 {
     m_processedCount += 1;
+    ImportedBookmark* lastProcessedIB = m_bookmarkProcessors[id]->lastProcessedImportedBookmark();
+    m_progressDialog->setLabelText(QString("Processed <strong>%1</strong> (%2)")
+                                   .arg(lastProcessedIB->title, lastProcessedIB->uri));
     m_progressDialog->setValue(m_processedCount);
 
     if (m_processedCount == m_toBeImportedCount) //Last processor

@@ -24,6 +24,8 @@ public:
     void setImportedEntityList(ImportedEntityList* ielist);
     ~ImportedBookmarkProcessor();
 
+    ImportedBookmark* lastProcessedImportedBookmark();
+
 public slots:
     bool ProcessImportedBookmark(int id, ImportedBookmark* ib);
     bool Cancel(); ///After Cancel, `ImportedBookmarkProcessed` will be emitted

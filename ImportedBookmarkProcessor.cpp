@@ -7,7 +7,7 @@
 #include <QMetaMethod>
 
 ImportedBookmarkProcessor::ImportedBookmarkProcessor(QObject *parent) :
-    QObject(parent), m_isProcessing(false), m_elist(NULL)
+    QObject(parent), m_isProcessing(false), m_elist(NULL), m_ib(NULL)
 {
     m_mhtSaver = new MHTSaver(this);
     m_mhtSaver->setOverallTimeoutTime(300); //5 minutes
@@ -23,6 +23,11 @@ void ImportedBookmarkProcessor::setImportedEntityList(ImportedEntityList* elist)
 ImportedBookmarkProcessor::~ImportedBookmarkProcessor()
 {
 
+}
+
+ImportedBookmark*ImportedBookmarkProcessor::lastProcessedImportedBookmark()
+{
+    return m_ib;
 }
 
 bool ImportedBookmarkProcessor::ProcessImportedBookmark(int id, ImportedBookmark* ib)
