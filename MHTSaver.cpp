@@ -403,11 +403,20 @@ void MHTSaver::ParseAndAddInlineCSSResources(const QUrl& baseUrl, const QByteArr
 
 void MHTSaver::DecideAndLoadURL(const QUrl& baseURL, const QString& linkedURL)
 {
+    //All correct forms of relative links are mentioned in the following nice SO answer:
+    //  http://stackoverflow.com/questions/4071117/uri-starting-with-two-slashes-how-do-they-behave
+    //But we are not implementing all of them.
+
     QString finalURL;
     if (linkedURL.contains("://"))
     {
         //External url
         finalURL = linkedURL;
+    }
+    else if (linkedURL.left(2) == "//")
+    {
+        finalURL = baseURL.scheme() + ":";
+        finalURL += linkedURL; //linkedURL already has '//' in its beginning.
     }
     else if (linkedURL[0] == '/')
     {
@@ -427,8 +436,12 @@ void MHTSaver::DecideAndLoadURL(const QUrl& baseURL, const QString& linkedURL)
         int indexOfLastSlash = basePath.lastIndexOf('/');
         basePath = (indexOfLastSlash == -1 ? QString() : basePath.left(indexOfLastSlash));
 
+        //Remove "./" in the linkedURL
+        QString finalLinkedURL = linkedURL.trimmed();
+        while (finalLinkedURL.length() >= 2 && finalLinkedURL.left(2) == "./")
+            finalLinkedURL = finalLinkedURL.mid(2);
+
         //Then while we have "../" in the linkedURL remove more parts:
-        QString finalLinkedURL = linkedURL;
         while (finalLinkedURL.length() >= 3 && finalLinkedURL.left(3) == "../")
         {
             indexOfLastSlash = basePath.lastIndexOf('/');
@@ -444,6 +457,17 @@ void MHTSaver::DecideAndLoadURL(const QUrl& baseURL, const QString& linkedURL)
                 break;
             }
         }
+
+        //We don't implement strange but valid link types. Some of them (e.g '#' when there is no
+        //  javascript) actually shouldn't load new resources and are correct here. It is wrong not
+        //  to implement the others. However even for '#' we need to check the whole url to see if
+        //  the url part of a url like url#fragment matches current base url and avoid loading
+        //  another resource.
+        if (finalLinkedURL.isEmpty())
+            return;
+        if (finalLinkedURL == "." || finalLinkedURL[0] == '?' ||
+            finalLinkedURL[0] == '#' || finalLinkedURL[0] == ';')
+            return;
 
         finalURL = baseURL.scheme() + "://" + baseURL.authority()
                  + basePath + "/" + finalLinkedURL;

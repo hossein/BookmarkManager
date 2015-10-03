@@ -46,7 +46,10 @@ class QNetworkAccessManager;
 ///        original redirect handling.
 ///     9. This is a feature, not a limitation: For single files, e.g image or pdf files, it will
 ///        create a raw file and will set the status.fileSuffix to the file extension.
-///     10. I DID NOT GUARANTEE CORRECTNESS OF %-encoded URLS and other similar issues. I didn't
+///     10. Reference resolution is not done correctly. I.e empty, '.', '#', '$', ';' and correct
+///        path forms for some '..' forms are not implemented correctly. These are in the function
+///        `DecideAndLoadURL`.
+///     11. I DID NOT GUARANTEE CORRECTNESS OF %-encoded URLS and other similar issues. I didn't
 ///        study QUrl<->QString conversions thoroughly about how to treat the encoding issues.
 class MHTSaver : public QObject
 {
