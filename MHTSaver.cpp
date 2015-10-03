@@ -75,6 +75,7 @@ void MHTSaver::GetMHTData(const QString& url)
     m_status.mainNetworkReplyError = QNetworkReply::NoError;
     m_status.mainNetworkReplyErrorString = QString();
     m_status.mainResourceTitle = QString();
+    m_status.fileSuffix = QString();
     m_status.resourceCount = 0;
     m_status.resourceSuccess = 0;
     m_cancel = false;
@@ -239,7 +240,11 @@ void MHTSaver::ResourceLoadingFinished()
     //  some title to not let it be empty. We use QFileInfo and it may be able to extract some name
     //  for the file.
     if (isMainResource && m_status.mainResourceTitle.isEmpty())
-        m_status.mainResourceTitle = "File_" + QFileInfo(url.path()).fileName();
+    {
+        m_status.mainResourceTitle = QFileInfo(url.path()).fileName();
+        if (m_status.mainResourceTitle.isEmpty()) //Still empty?
+            m_status.mainResourceTitle = "File";
+    }
 
     DeleteReplyAndCheckForFinish(reply);
 }
@@ -429,6 +434,13 @@ void MHTSaver::DecideAndLoadURL(const QUrl& baseURL, const QString& linkedURL)
 
 void MHTSaver::GenerateMHT()
 {
+    //Don't generate an mhtml file for single files.
+    if (m_resources.size() == 1 && !m_htmlContentTypes.contains(getRawContentType(m_resources[0].contentType)))
+    {
+        GenerateFile();
+        return;
+    }
+
     const QByteArray boundary = "----=_NextPart_000_00";
 
     QByteArray mhtdata;
@@ -448,7 +460,7 @@ void MHTSaver::GenerateMHT()
 
     mhtdata += "MIME-Version: 1.0\r\n";
 
-    QString firstResourceContentType = m_resources[0].contentType.split(';')[0].trimmed();
+    QString firstResourceContentType = getRawContentType(m_resources[0].contentType);
     mhtdata += "Content-Type: multipart/related;\r\n"
                "\ttype=\"" + firstResourceContentType.toLatin1() + "\";\r\n"
                "\tboundary=\"" + boundary + "\"\r\n";
@@ -537,7 +549,25 @@ void MHTSaver::GenerateMHT()
     //Last one has an additional '--' at end.
     mhtdata += "--" + boundary + "--\r\n";
 
+    m_status.fileSuffix = QString(); //As per class docs. Instead of "mhtml" or something.
     emit MHTDataReady(mhtdata, m_status);
+}
+
+void MHTSaver::GenerateFile()
+{
+    //Use `completeSuffix()` to preserve '.tar.gz'.
+    QString suffix = QFileInfo(m_resources[0].fullUrl.path()).completeSuffix();
+
+    //If doesn't have a suffix, try to find out its extension based on mime type.
+    if (suffix.isEmpty())
+    {
+        const QMimeType mimeType = QMimeDatabase().mimeTypeForFileNameAndData(
+                    QFileInfo(m_resources[0].fullUrl.path()).fileName(), m_resources[0].data);
+        suffix = mimeType.preferredSuffix();
+    }
+
+    m_status.fileSuffix = suffix; //May be empty
+    emit MHTDataReady(m_resources[0].data, m_status);
 }
 
 int MHTSaver::findResourceWithURL(const QUrl& url)

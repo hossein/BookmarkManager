@@ -7,7 +7,8 @@
 #include <QStringList>
 
 //TODO:
-//- MHTSaver can't save single files
+//- Redirect depth check
+//- google sprite problem
 
 class QTimer;
 class QNetworkReply;
@@ -48,6 +49,10 @@ class QNetworkAccessManager;
 ///        original redirect handling.
 ///     8. I DID NOT GUARANTEE CORRECTNESS OF %-encoded URLS and other similar issues. I didn't
 ///        study QUrl<->QString conversions thoroughly about how to treat the encoding issues.
+///     9. This is a feature, not a limitation: For single files, e.g image or pdf files, it will
+///        create a raw file and will set the status.fileSuffix to the file extension. It will
+///        however always encode html files in an mhtml file, in which case 'fileSuffix' will be
+///        an EMPTY QString.
 class MHTSaver : public QObject
 {
     Q_OBJECT
@@ -62,6 +67,7 @@ public:
         QString mainNetworkReplyErrorString;
         QString mainResourceTitle;
 
+        QString fileSuffix;
         int resourceCount;
         int resourceSuccess;
     };
@@ -136,6 +142,8 @@ private:
     //// MHT Format Handling //////////////////////////////////////////////////
     // Have all resources, now generate the MHT file
     void GenerateMHT();
+    // For single-file saves
+    void GenerateFile();
 
     //// Utility Functions ////////////////////////////////////////////////////
     int findResourceWithURL(const QUrl& url);

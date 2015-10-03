@@ -139,9 +139,12 @@ void ImportedBookmarkProcessor::PageRetrieved(const QByteArray& data, const MHTS
             errorString = QString("HTTP Error %1").arg(status.mainHttpErrorCode);
 
         //Save the page
-        //We know the file is ALWAYS an mhtml, because MHTSaver even wraps images in this format.
-        m_ib->ExPr_attachedFileName =
-                Util::PercentEncodeUnicodeAndFSChars(status.mainResourceTitle) + ".mhtml";
+        //The file is NOT always an mhtml; MHTSaver does not wrap e.g images and pdfs in this format.
+        //If the file is not mhtml, the status.fileSuffix will not be empty and the title ALREADY
+        //  contains the full file name.
+        m_ib->ExPr_attachedFileName = Util::PercentEncodeUnicodeAndFSChars(status.mainResourceTitle);
+        if (status.fileSuffix.isEmpty()) //The file is an mhtml
+            m_ib->ExPr_attachedFileName += ".mhtml";
         m_ib->ExPr_attachedFileData = data;
     }
     else
