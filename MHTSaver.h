@@ -23,6 +23,8 @@ class QNetworkAccessManager;
 ///     2. Doesn't smartly guess file types; just looks at their content type and file extension.
 ///        (partially does this actually, e.g if js/css files have text/html content type it
 ///        will fix it, but doesn't do the same thing for e.g images having text/html mime type.)
+///        UPDATE: Now we use QMimeDatabase to correctly guess the mime type of unknown files on
+///        based on extension and contents.
 ///     3. Doesn't have a timer or something to abort slow or stalled network operations.
 ///        We can use an e.g 20sec timer to abort operations with slow/stalled progresses during
 ///        the last 10 seconds. Update: But we DON'T. Maybe if we aren't receiving a qreply's

@@ -3,6 +3,7 @@
 #include "Util.h"
 #include <QFileInfo>
 #include <QRegularExpression>
+#include <QMimeDatabase>
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -207,8 +208,8 @@ void MHTSaver::ResourceLoadingFinished()
     {
         //Unknown resources. Has been added to resources list. We check for some additional extensions.
 
-        if (contentType.isNull())
-            qDebug() << "LOAD: " << url << " doesn't have content type specified.";
+        ///if (contentType.isNull())
+        ///    qDebug() << "LOAD: " << url << " doesn't have content type specified.";
         ///else
         ///    qDebug() << "LOAD: Unknown content type '" << contentType << "' for resource: "<< url;
 
@@ -265,10 +266,6 @@ void MHTSaver::DeleteReplyAndCheckForFinish(QNetworkReply* reply)
 void MHTSaver::AddResource(QNetworkReply* reply)
 {
     QUrl url = reply->url();
-    QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
-
-    if (contentType.isEmpty())
-        qDebug() << "ADDRESOURCE: NO CONTENT TYPE: " << url;
 
     foreach (const Resource& res, m_resources)
     {
@@ -279,10 +276,20 @@ void MHTSaver::AddResource(QNetworkReply* reply)
         }
     }
 
+    const QByteArray data = reply->peek(reply->bytesAvailable());
+    QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
+
+    if (contentType.isEmpty())
+    {
+        const QMimeType mimeType = QMimeDatabase().mimeTypeForFileNameAndData(QFileInfo(url.path()).fileName(), data);
+        contentType = mimeType.name();
+        //qDebug() << "ADDRESOURCE: ContentType decided for url: " << url << mimeType.name();
+    }
+
     Resource res;
     res.fullUrl = url;
     res.contentType = contentType;
-    res.data = reply->peek(reply->bytesAvailable());
+    res.data = data;
     m_resources.append(res);
     m_status.resourceCount += 1;
     m_status.resourceSuccess += (reply->error() == QNetworkReply::NoError ? 1 : 0);
