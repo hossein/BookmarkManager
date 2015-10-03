@@ -174,11 +174,7 @@ void MHTSaver::ResourceLoadingFinished()
     QString contentType = AddResource(reply, redirectLocation);
 
     //Determine the file type and add any more contents.
-    //ContentType is usually 'text/html; charset=UTF-8' for web pages (gzipped and chunked contents
-    //  are already handled and removed)
-    int indexOfSemicolon = contentType.indexOf(';');
-    if (indexOfSemicolon != -1)
-        contentType = contentType.left(indexOfSemicolon);
+    contentType = getRawContentType(contentType);
     ///qDebug() << "LOAD: ContentType is " << contentType;
 
     QUrl url = reply->url();
@@ -477,7 +473,8 @@ void MHTSaver::GenerateMHT()
         }
 
         //Write the headers
-        bool isText = isMimeTypeTextFile(contentType);
+        QString rawContentType = getRawContentType(contentType);
+        bool isText = isMimeTypeTextFile(rawContentType);
 
         mhtdata += "--" + boundary + "\r\n";
 
@@ -527,6 +524,17 @@ int MHTSaver::findResourceWithURL(const QUrl& url)
         if (m_resources[i].fullUrl == url)
             return i;
     return -1;
+}
+
+QString MHTSaver::getRawContentType(const QString& contentType)
+{
+    //ContentType is usually 'text/html; charset=UTF-8' for web pages (gzipped and chunked contents
+    //  are already handled and removed)
+    int indexOfSemicolon = contentType.indexOf(';');
+    if (indexOfSemicolon != -1)
+        return contentType.left(indexOfSemicolon);
+    else
+        return contentType;
 }
 
 bool MHTSaver::isMimeTypeTextFile(const QString& mimeType)
