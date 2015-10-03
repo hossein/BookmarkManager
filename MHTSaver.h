@@ -105,6 +105,8 @@ private:
     QStringList m_cssContentTypes;
     QStringList m_otherKnownContentTypes;
 
+    QStringList m_loadLinkRelTypes;
+
 public:
     explicit MHTSaver(QObject *parent = 0);
     ~MHTSaver();

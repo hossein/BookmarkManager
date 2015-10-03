@@ -32,6 +32,9 @@ MHTSaver::MHTSaver(QObject *parent) :
             /// /* XML, etc  */ << "text/xml" << "application/atom+xml" << "application/rss+xml" << "application/rdf+xml" << "application/opensearchdescription+xml"
             /// /* Documents */ << "application/pdf"
             /// /* Fonts     */ << "font/woff" << "application/x-font-woff" << "application/x-font-ttf" << "application/vnd.ms-fontobject";
+
+    m_loadLinkRelTypes = QStringList() << "icon" << "shortcut icon" << "apple-touch-icon" << "apple-touch-startup-image"
+                                       << "preload" << "stylesheet";
 }
 
 MHTSaver::~MHTSaver()
@@ -196,7 +199,7 @@ void MHTSaver::ResourceLoadingFinished()
 
     //Determine the file type and add any more contents.
     contentType = getRawContentType(contentType);
-    ///qDebug() << "LOAD: ContentType is " << contentType;
+    ///qDebug() << "LOAD: URL and ContentType is " << reply->url() << contentType;
 
     QUrl url = reply->url();
     if (!redirectLocation.isEmpty())
@@ -323,6 +326,8 @@ QString MHTSaver::AddResource(QNetworkReply* reply, const QString& redirectLocat
 
 void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
 {
+    ///qDebug() << "PARSE HTML: Base: " << url;
+
     QUrl url = reply->url();
     QByteArray data = reply->readAll();
     QString str = QString::fromUtf8(data);
@@ -331,17 +336,47 @@ void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
     //http://www.codeproject.com/Articles/8268/Convert-any-URL-to-a-MHTML-archive-using-native-NE
 
     //This will also catch the (i)frames recursively, as we automatically load all htmls' resources.
-    QString pattern = "(\\s(src|background)\\s*=\\s*|<link[^>]+?href\\s*=\\s*)"
-                      "(?|'(?<url>[^'\\n\\r]+)|\"(?<url>[^\"\\n\\r]+)|(?<url>[^ \\n\\r]+))";
-    QRegularExpression regexp(pattern, QRegularExpression::CaseInsensitiveOption);
-    QRegularExpressionMatchIterator matches = regexp.globalMatch(str);
 
-    ///qDebug() << "PARSE HTML: Base: " << url;
-    while (matches.hasNext())
+    //Previous thing without <link> rel type understanding:
+    ///QString pattern = "(\\s(src|background)\\s*=\\s*|<link[^>]+?href\\s*=\\s*)"
+    ///                  "(?|'(?<url>[^'\\n\\r]+)|\"(?<url>[^\"\\n\\r]+)|(?<url>[^ \\n\\r]+))";
+    ///QRegularExpression regexp(pattern, QRegularExpression::CaseInsensitiveOption);
+    ///QRegularExpressionMatchIterator matches = regexp.globalMatch(str);
+
+    //There are lots of link rel types. E.g open any mozilla page; it has linked all pages of all
+    //  languages to every page.
+    QString attributeValueMatch = "(?|'(?<%1>[^'\\n\\r]+)|\"(?<%1>[^\"\\n\\r]+)|(?<%1>[^ \\n\\r]+))";
+    QStringList patterns = QStringList()
+            << "\\s(src|background)\\s*=\\s*" + attributeValueMatch.arg("url")
+            << "<link[^>]+?rel\\s*=\\s*" + attributeValueMatch.arg("rel") + "[^>]+?href\\s*=\\s*" + attributeValueMatch.arg("url")
+            << "<link[^>]+?href\\s*=\\s*" + attributeValueMatch.arg("url") + "[^>]+?rel\\s*=\\s*" + attributeValueMatch.arg("ref");
+
+    for (int i = 0; i < patterns.length(); i++)
     {
-        QRegularExpressionMatch match = matches.next();
-        QString linkedUrl = match.captured("url");
-        DecideAndLoadURL(url, linkedUrl);
+        const QString pattern = patterns[i];
+        QRegularExpression regexp(pattern, QRegularExpression::CaseInsensitiveOption);
+        QRegularExpressionMatchIterator matches = regexp.globalMatch(str);
+
+        if (i <= 0)
+        {
+            while (matches.hasNext())
+            {
+                QRegularExpressionMatch match = matches.next();
+                QString linkedUrl = match.captured("url");
+                DecideAndLoadURL(url, linkedUrl);
+            }
+        }
+        else
+        {
+            while (matches.hasNext())
+            {
+                QRegularExpressionMatch match = matches.next();
+                QString rel = match.captured("rel");
+                QString linkedUrl = match.captured("url");
+                if (m_loadLinkRelTypes.contains(rel, Qt::CaseInsensitive))
+                    DecideAndLoadURL(url, linkedUrl);
+            }
+        }
     }
 
     //Add the resources referenced in <style> tags css too. The most notable use is for google
@@ -370,6 +405,8 @@ void MHTSaver::ParseAndAddCSSResources(QNetworkReply* reply)
 
 void MHTSaver::ParseAndAddInlineCSSResources(const QUrl& baseUrl, const QByteArray& style)
 {
+    ///qDebug() << "PARSE CSS: Base: " << baseUrl;
+
     QString str = QString::fromUtf8(style);
 
     //The following QUESTION MARK actually makes our pattern recognize additional 'url('s that are
@@ -386,7 +423,6 @@ void MHTSaver::ParseAndAddInlineCSSResources(const QUrl& baseUrl, const QByteArr
     //Paths for CSS will be fine:
     //http://stackoverflow.com/questions/940451/using-relative-url-in-css-file-what-location-is-it-relative-to
 
-    ///qDebug() << "PARSE CSS: Base: " << baseUrl;
     while (matches.hasNext())
     {
         QRegularExpressionMatch match = matches.next();
@@ -465,6 +501,8 @@ void MHTSaver::DecideAndLoadURL(const QUrl& baseURL, const QString& linkedURL)
         //  another resource.
         if (finalLinkedURL.isEmpty())
             return;
+        if (finalLinkedURL == "\"\"" || finalLinkedURL == "''")
+            return; //Probably happens in `attr=""` or `attr=''` in html
         if (finalLinkedURL == "." || finalLinkedURL[0] == '?' ||
             finalLinkedURL[0] == '#' || finalLinkedURL[0] == ';')
             return;
