@@ -7,9 +7,6 @@
 #include <QMultiHash>
 #include <QList>
 
-//- TODO
-//- Bookmark titles brackets fix
-
 /// This class first needs to initialized, then it should analyze the to-be-imported bookmarks
 ///     before really importing them. It should be re-initialized each time an import is going to
 ///     happen so that it can collect the bookmark url list again.
@@ -43,6 +40,10 @@ public:
 private:
     QString bookmarkTagAccordingToParentFolders(ImportedEntityList& elist, int bookmarkIndex);
 
+    /// Both `title` and `desc` will be empty if there is no bracketed description in the title.
+    /// Don't check for emptyness of just one of them, it might simply be an empty title with a
+    ///   non-empty description, or vice versa!
+    void BreakTitleBracketedDescription(const QString& titleDesc, QString& title, QString& desc);
     /// Terminology: A 'duplicate' bookmark can be 'similar' or 'exact' duplicate of the imported bm.
     bool FindDuplicate(const ImportedBookmark& ib, const QList<long long>& almostDuplicateBIDs,
                        bool& foundSimilar, bool& foundExact, long long& duplicateBID);

@@ -112,6 +112,24 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
     for (int i = indicesToDelete.size() - 1; i >= 0; i--)
         elist.iblist.removeAt(indicesToDelete[i]);
 
+    //Convert text in brackets in titles to descriptions, like I write them.
+    //  Do this before doing the similarity check below.
+    QString brTitle, brDesc;
+    for (int i = 0; i < elist.iblist.size(); i++)
+    {
+        //By reference.
+        ImportedBookmark& ib = elist.iblist[i];
+        BreakTitleBracketedDescription(ib.title, brTitle, brDesc);
+        if (!brTitle.isEmpty() || !brDesc.isEmpty())
+        {
+            ib.title = brTitle;
+            if (ib.description.isEmpty())
+                ib.description = brDesc;
+            else
+                ib.description += "\n" + brDesc;
+        }
+    }
+
     //Now check the urls for duplicates among EXISTING bookmarks.
     for (int i = 0; i < elist.iblist.size(); i++)
     //foreach (ImportedBookmark& ib, elist.iblist)
@@ -379,6 +397,51 @@ QString BookmarkImporter::bookmarkTagAccordingToParentFolders(ImportedEntityList
     tag = tag.replace(' ', '-');
 
     return tag;
+}
+
+void BookmarkImporter::BreakTitleBracketedDescription(const QString& titleDesc, QString& title, QString& desc)
+{
+    //Do it for caller
+    title = QString();
+    desc = QString();
+
+    QString td = titleDesc.trimmed();
+    if (td.isEmpty())
+        return;
+
+    if (td[td.length() - 1] != ']')
+        return;
+
+    //Try to find a starting '[' at the same level.
+    int i;
+    bool found = false;
+    int level = 0; //Don't make this -1 and start at `td.length() - 2`; we haven't checked length!
+    for (i = td.length() - 1; i >= 0; i--)
+    {
+        if (td[i] == '[')
+        {
+            level += 1;
+            if (level == 0)
+            {
+                //No need to make sure this isn't the last char; we are sure last char is ']'.
+                found = true;
+                break;
+            }
+        }
+        else if (td[i] == ']')
+        {
+            level -= 1;
+        }
+    }
+
+    if (found)
+    {
+        title = td.left(i).trimmed();
+
+        desc = td.mid(i + 1); //Skip '['
+        desc.chop(1); //Chop ']'
+        desc = desc.trimmed();
+    }
 }
 
 bool BookmarkImporter::FindDuplicate(const ImportedBookmark& ib, const QList<long long>& almostDuplicateBIDs,
