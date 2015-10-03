@@ -123,7 +123,7 @@ public:
         currentFileArchiveForAddingFiles = ":arch0:";
 
         //// CONSTANTS
-        concurrentBookmarkProcessings = 3;
+        concurrentBookmarkProcessings = 10;
 
         programDatabaseVersion = 1;
         programDatabasetFileName = "bmmgr.sqlite";
