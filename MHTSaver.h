@@ -8,7 +8,6 @@
 
 //TODO:
 //- MHTSaver can't save single files
-//- Strip JS.
 
 class QTimer;
 class QNetworkReply;
@@ -76,6 +75,9 @@ private:
     bool m_useOverallTimer;
     QTimer* m_overallTimer;
 
+    Q_PROPERTY(bool stripJS READ stripJS WRITE setStripJS)
+    bool m_stripJS;
+
     struct Resource
     {
         QUrl fullUrl;
@@ -103,9 +105,14 @@ public:
     ~MHTSaver();
 
     //// Properties ///////////////////////////////////////////////////////////
-public:        int overallTimeoutTime() const; ///Returns -1 if disabled
-public slots:  void setOverallTimeoutTime(int seconds); ///Pass -1 to disable
-private slots: void OverallTimerTimeout();
+public:
+    int overallTimeoutTime() const; ///Returns -1 if disabled
+    bool stripJS() const;
+public slots:
+    void setOverallTimeoutTime(int seconds); ///Pass -1 to disable
+    void setStripJS(bool strip);
+private slots:
+    void OverallTimerTimeout();
 
     //// Class Public Interface ///////////////////////////////////////////////
 public slots:
@@ -136,4 +143,6 @@ private:
     QString getRawContentType(const QString& contentType);
     bool isMimeTypeTextFile(const QString& mimeType);
     QString getOrGuessMimeType(QNetworkReply* reply, const QByteArray& data);
+
+    QByteArray stripHTMLScripts(const QByteArray& html);
 };

@@ -20,6 +20,8 @@ MHTSaver::MHTSaver(QObject *parent) :
     m_overallTimer = new QTimer(this);
     connect(m_overallTimer, SIGNAL(timeout()), this, SLOT(OverallTimerTimeout()));
 
+    m_stripJS = true;
+
     //Content types
     m_htmlContentTypes       = QStringList() << "text/html";
     m_scriptContentTypes     = QStringList() << "application/ecmascript" << "application/javascript" << "application/x-javascript" << "text/javascript";
@@ -42,11 +44,21 @@ int MHTSaver::overallTimeoutTime() const
     return m_useOverallTimer ? m_overallTimer->interval() / 1000 : -1;
 }
 
+bool MHTSaver::stripJS() const
+{
+    return m_stripJS;
+}
+
 void MHTSaver::setOverallTimeoutTime(int seconds)
 {
     m_useOverallTimer = (seconds > 0);
     if (seconds > 0)
         m_overallTimer->setInterval(seconds * 1000);
+}
+
+void MHTSaver::setStripJS(bool strip)
+{
+    m_stripJS = strip;
 }
 
 void MHTSaver::OverallTimerTimeout()
@@ -496,6 +508,16 @@ void MHTSaver::GenerateMHT()
 
         mhtdata += "\r\n";
 
+        //Strip JS
+        if (m_stripJS && m_htmlContentTypes.contains(rawContentType))
+        {
+            data = stripHTMLScripts(data);
+        }
+        else if (m_stripJS && m_scriptContentTypes.contains(rawContentType))
+        {
+            data = QByteArray("/* Script removed by snapshot save */\n");
+        }
+
         //Write content
         if (isText)
         {
@@ -571,4 +593,63 @@ QString MHTSaver::getOrGuessMimeType(QNetworkReply* reply, const QByteArray& dat
         contentType = mimeType.name();
     }
     return contentType;
+}
+
+QByteArray MHTSaver::stripHTMLScripts(const QByteArray& html)
+{
+    //Limitations:
+    //- Doesn't support encodings
+    //- Doesn't strip non-lowercase scripts
+    //- This is primitive, doesn't parse the html file. E.g may get caught by '<script> being
+    //  inside a string.
+
+    QByteArray output;
+    int startIndex = 0;
+
+    //In each round, copy data before script, the script tag, then the 'removed' message and the
+    //  closing script tag. If in a round a script tag was not found, copy til the end and return.
+    while (true)
+    {
+        //Find '<script'
+        int openScriptTagIndex = html.indexOf(QByteArray("<script"), startIndex);
+        if (openScriptTagIndex == -1)
+        {
+            output += html.mid(startIndex);
+            break;
+        }
+
+        //Find '>'
+        int openScriptTagUntil = html.indexOf('>', openScriptTagIndex);
+        if (openScriptTagUntil == -1)
+        {
+            output += html.mid(startIndex);
+            break;
+        }
+
+        int scriptContentBeginning = openScriptTagUntil + 1; // `+ 1` to consume the '>' itself
+
+        //Copy until the script content beginning
+        output += html.mid(startIndex, scriptContentBeginning - startIndex);
+        //Add the 'removed' message.
+        //Unlike MAFF, we do not add '\n's here. Maybe this is in a JS string!
+        output += QByteArray("<!-- /* Script removed by snapshot save */ -->");
+
+        //Find '</script>'
+        int closeScriptTagIndex = html.indexOf(QByteArray("</script>"), scriptContentBeginning);
+        if (closeScriptTagIndex == -1)
+        {
+            //Unclosed script. Maybe tempted to not copy anything, but we'd better copy everything
+            //  til the end to avoid data loss.
+            output += html.mid(scriptContentBeginning);
+            break;
+        }
+
+        //"Copy" the closing script tag
+        output += QByteArray("</script>");
+
+        //Skip it to get ready for next round
+        startIndex = closeScriptTagIndex + 9; //9 is len("</script>")
+    }
+
+    return output;
 }
