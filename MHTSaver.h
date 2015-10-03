@@ -150,6 +150,8 @@ private:
     //// Utility Functions ////////////////////////////////////////////////////
     int findResourceWithURL(const QUrl& url);
 
+    QString unEscapeAttributeValue(const QString& value);
+
     QString getRawContentType(const QString& contentType);
     bool isMimeTypeTextFile(const QString& mimeType);
     QString getOrGuessMimeType(QNetworkReply* reply, const QByteArray& data);

@@ -9,6 +9,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 
+#include <QTextDocument>
 #include <QTimer>
 
 MHTSaver::MHTSaver(QObject *parent) :
@@ -363,7 +364,7 @@ void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
             {
                 QRegularExpressionMatch match = matches.next();
                 QString linkedUrl = match.captured("url");
-                DecideAndLoadURL(url, linkedUrl);
+                DecideAndLoadURL(url, unEscapeAttributeValue(linkedUrl));
             }
         }
         else
@@ -374,7 +375,7 @@ void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
                 QString rel = match.captured("rel");
                 QString linkedUrl = match.captured("url");
                 if (m_loadLinkRelTypes.contains(rel, Qt::CaseInsensitive))
-                    DecideAndLoadURL(url, linkedUrl);
+                    DecideAndLoadURL(url, unEscapeAttributeValue(linkedUrl));
             }
         }
     }
@@ -659,6 +660,15 @@ int MHTSaver::findResourceWithURL(const QUrl& url)
         if (m_resources[i].fullUrl == url)
             return i;
     return -1;
+}
+
+QString MHTSaver::unEscapeAttributeValue(const QString& value)
+{
+    //http://stackoverflow.com/questions/7696159/how-can-i-convert-entity-characterescape-character-to-html-in-qt
+    QTextDocument text;
+    text.setHtml(value);
+    QString plain = text.toPlainText();
+    return plain;
 }
 
 QString MHTSaver::getRawContentType(const QString& contentType)
