@@ -9,7 +9,6 @@
 
 //- TODO
 //- Bookmark titles brackets fix
-//- Return type of Import function. and add note about how it uses transactions.
 
 /// This class first needs to initialized, then it should analyze the to-be-imported bookmarks
 ///     before really importing them. It should be re-initialized each time an import is going to
@@ -38,7 +37,8 @@ public:
 
     bool Initialize();
     bool Analyze(ImportedEntityList& elist);
-    bool Import(ImportedEntityList& elist);
+    bool Import(ImportedEntityList& elist, QList<long long>& addedBIDs,
+                QSet<long long>& allAssociatedTIDs);
 
 private:
     QString bookmarkTagAccordingToParentFolders(ImportedEntityList& elist, int bookmarkIndex);

@@ -177,10 +177,12 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
     return true;
 }
 
-bool BookmarkImporter::Import(ImportedEntityList& elist)
+bool BookmarkImporter::Import(ImportedEntityList& elist, QList<long long>& addedBIDs,
+                              QSet<long long>& allAssociatedTIDs)
 {
-    QList<long long> addedBIDs;
-    QSet<long long> allAssociatedTIDs;
+    //Do it for caller
+    addedBIDs.clear();
+    allAssociatedTIDs.clear();
 
     QString tempPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/BMTemp";
     if (!QDir().mkpath(tempPath))

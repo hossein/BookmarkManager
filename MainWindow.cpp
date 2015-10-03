@@ -264,6 +264,7 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
         }
         else if (previousTagsState == TCSR_SomeChecked)
         {
+            //Only check these new things if our list was already filtered by tags.
             //New TIDs are already added to `tagItems` as the tags are refreshed above.
             //  So it's safe that the following function references `tagItems[newCheckedTID]`.
             //  Also we are checking additional items ONLY IF RA_SaveCheckState is set.
@@ -614,14 +615,33 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     if (result != QDialog::Accepted)
         return;
 
-    //TODO [IMPORT]: Start transaction?
-    success = bmim.Import(elist);
+    importPreviewDialog->deleteLater();
+
+    //Note about TRANSACTIONS:
+    //Import function imports each bookmark in its own transaction. This way is both just what we
+    //  did (i.e importing all of them under the same transaction was not more difficult and could
+    //  be done), and also the good point about it is that if it interrupts, we'll have some of our
+    //  bookmarks. So we don't need to start and wrap this in a transaction.
+    QList<long long> addedBIDs;
+    QSet<long long> allAssociatedTIDs;
+    success = bmim.Import(elist, addedBIDs, allAssociatedTIDs);
     if (!success)
         return;
-    else
-    {}//Show success message box.
 
-    importPreviewDialog->deleteLater();
+    //Refresh UI
+    if (!addedBIDs.isEmpty())
+    {
+        RefreshUIDataDisplay(true, RA_CustomSelectAndFocus, addedBIDs[0],
+                RA_SaveSelAndScrollAndCheck, -1, allAssociatedTIDs.toList());
+    }
+
+    //Show success message
+    QString importCompleteMessage;
+    if (addedBIDs.isEmpty())
+        importCompleteMessage = "No bookmarks were imported";
+    else
+        importCompleteMessage = QString("%1 bookmark(s) were imported.").arg(addedBIDs.size());
+    QMessageBox::information(this, "Import complete", importCompleteMessage);
 }
 
 #include "MHTSaver.h"
