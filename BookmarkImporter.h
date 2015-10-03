@@ -7,6 +7,12 @@
 #include <QMultiHash>
 #include <QList>
 
+//- TODOs
+//- Tags problem
+//- Files removing problem (and, can be fully removed, not trashed?)
+//- Bookmark titles brackets fix
+//- Return type of Import function. and add note about how it uses transactions.
+
 /// This class first needs to initialized, then it should analyze the to-be-imported bookmarks
 ///     before really importing them. It should be re-initialized each time an import is going to
 ///     happen so that it can collect the bookmark url list again.

@@ -652,7 +652,7 @@ public slots:
 void MainWindow::on_actionGetMHT_triggered()
 {
     MHTSaver* saver = new MHTSaver(this);
-    saver->GetMHTData("http://www.classpad.ir/farsinegar/");
+    saver->GetMHTData("https://www.mozilla.org/en-US/firefox/new/");
     MHTDataReceiver* datarecv = new MHTDataReceiver(this);
     connect(saver, SIGNAL(MHTDataReady(QByteArray,MHTSaver::Status)), datarecv, SLOT(MHTDataReady(QByteArray,MHTSaver::Status)));
 }

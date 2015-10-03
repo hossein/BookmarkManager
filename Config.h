@@ -111,6 +111,8 @@
 ///     to open files.
 ///   - Option for persisting cookies and cache, because local html previewer is easily navigatable.
 ///     Now maybe add a mini-browser too. Useful for occasional link clicking inside the app.
+///   - MHTSave can't save e.g https://www.mozilla.org/en-US/firefox/central/ . It creates a 6MiB
+///     file with all languages in it that doesn't display correctly!
 
 class Config
 {
