@@ -183,6 +183,11 @@ bool FirefoxBookmarkJSONFileParser::processBookmark(const QJsonObject& obj, Impo
         }
     }
 
+    //Don't import firefox's special bookmarks
+    const QString uriLeft = ib.uri.left(6);
+    if (uriLeft == "place:" || uriLeft == "about:")
+        return true;
+
     elist.iblist.append(ib);
 
     //qDebug() << "Imported bookmark " << ib.title;
