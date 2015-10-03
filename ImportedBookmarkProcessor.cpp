@@ -39,6 +39,9 @@ bool ImportedBookmarkProcessor::ProcessImportedBookmark(int id, ImportedBookmark
     m_currId = id;
     m_ib = ib;
 
+    m_elapsedTimer.start();
+    qDebug() << m_currId << " will process " << ib->uri;
+
     int methodIndex = this->metaObject()->indexOfMethod("BeginProcess()");
     this->metaObject()->method(methodIndex).invoke(this, Qt::QueuedConnection);
 
@@ -145,11 +148,9 @@ void ImportedBookmarkProcessor::PageRetrieved(const QByteArray& data, const MHTS
 
         //Save the page
         //The file is NOT always an mhtml; MHTSaver does not wrap e.g images and pdfs in this format.
-        //If the file is not mhtml, the status.fileSuffix will not be empty and the title ALREADY
-        //  contains the full file name.
         m_ib->ExPr_attachedFileName = Util::PercentEncodeUnicodeAndFSChars(status.mainResourceTitle);
-        if (status.fileSuffix.isEmpty()) //The file is an mhtml
-            m_ib->ExPr_attachedFileName += ".mhtml";
+        if (!status.fileSuffix.isEmpty())
+            m_ib->ExPr_attachedFileName += "." + status.fileSuffix;
         m_ib->ExPr_attachedFileData = data;
     }
     else
@@ -164,6 +165,8 @@ void ImportedBookmarkProcessor::PageRetrieved(const QByteArray& data, const MHTS
     //In case of success, if HTTP status is not successful errorString will contain the status.
     //In case of both success and HTTP status = 2xx the errorString will be empty.
     m_ib->ExPr_attachedFileError = errorString;
+
+    qDebug() << m_currId << " Done in " << m_elapsedTimer.elapsed() / 1000.0 << " seconds.";
 
     emit ImportedBookmarkProcessed(m_currId);
 }

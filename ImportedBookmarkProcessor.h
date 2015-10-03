@@ -3,6 +3,8 @@
 
 #include "MHTSaver.h"
 
+#include <QElapsedTimer>
+
 struct ImportedBookmark;
 struct ImportedEntityList;
 
@@ -18,6 +20,7 @@ private:
     ImportedEntityList* m_elist;
     ImportedBookmark* m_ib;
     MHTSaver* m_mhtSaver;
+    QElapsedTimer m_elapsedTimer;
 
 public:
     explicit ImportedBookmarkProcessor(QObject *parent = 0);

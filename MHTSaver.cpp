@@ -241,7 +241,9 @@ void MHTSaver::ResourceLoadingFinished()
     //  for the file.
     if (isMainResource && m_status.mainResourceTitle.isEmpty())
     {
-        m_status.mainResourceTitle = QFileInfo(url.path()).fileName();
+        //We use `completeBaseName()` not `fileName`, this will create 'index.mhtml' instead
+        //  of index.html.mhtml, and also 'archive.tar.gz' instead of 'archive.tar.gz.gz'.
+        m_status.mainResourceTitle = QFileInfo(url.path()).completeBaseName();
         if (m_status.mainResourceTitle.isEmpty()) //Still empty?
             m_status.mainResourceTitle = "File";
     }
@@ -549,14 +551,14 @@ void MHTSaver::GenerateMHT()
     //Last one has an additional '--' at end.
     mhtdata += "--" + boundary + "--\r\n";
 
-    m_status.fileSuffix = QString(); //As per class docs. Instead of "mhtml" or something.
+    m_status.fileSuffix = "mhtml";
     emit MHTDataReady(mhtdata, m_status);
 }
 
 void MHTSaver::GenerateFile()
 {
-    //Use `completeSuffix()` to preserve '.tar.gz'.
-    QString suffix = QFileInfo(m_resources[0].fullUrl.path()).completeSuffix();
+    //We have used `completeBaseName()` before. Now we use only 'suffix()'.
+    QString suffix = QFileInfo(m_resources[0].fullUrl.path()).suffix();
 
     //If doesn't have a suffix, try to find out its extension based on mime type.
     if (suffix.isEmpty())
