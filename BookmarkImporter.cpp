@@ -193,6 +193,14 @@ bool BookmarkImporter::Import(ImportedEntityList& elist, QList<long long>& added
                     .arg(tempPath));
         return false;
     }
+    if (!Util::RemoveDirectoryRecursively(tempPath, false /* don't remove the directory itself */))
+    {
+        QMessageBox::critical(
+                    m_dialogParent, "Error",
+                    QString("Could not empty the temp directory \"%1\". No bookmark was imported.")
+                    .arg(tempPath));
+        return false;
+    }
 
     foreach (const ImportedBookmark& ib, elist.iblist)
     {

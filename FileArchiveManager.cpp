@@ -74,9 +74,9 @@ bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool syst
     //Remove the original file.
     if (systemTrashOriginalFile)
     {
-        success = filesTransaction->SystemTrashFile(filePathName);
+        bool Trashsuccess = filesTransaction->SystemTrashFile(filePathName);
         //We do NOT return FALSE in case of failure.
-        if (!success)
+        if (!Trashsuccess)
         {
             Error(QString("Error while %1:\nCould not delete the original file from your filesystem. "
                           "You should manually delete it yourself.\n\nFile: %2")
