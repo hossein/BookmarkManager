@@ -146,6 +146,7 @@ void MHTSaver::ResourceLoadingFinished()
     if (reply->error() != QNetworkReply::NoError)
         return DeleteReplyAndCheckForFinish(reply);
 
+    QString redirectLocation = QString();
     int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     if (httpStatus == 301 || httpStatus == 302 || httpStatus == 303 || httpStatus == 307 || httpStatus == 308)
     {
@@ -156,9 +157,9 @@ void MHTSaver::ResourceLoadingFinished()
         //Only for the main page we fully replace the redirect target with the original thing user
         //  passed in; this also changes main http status code and main error, for other resources
         //  the function continues and the `AddResource` call adds the resource to our list.
-        QString newLocation = reply->header(QNetworkRequest::LocationHeader).toString();
-        ///qDebug() << "LOAD: Redirect to: " << newLocation;
-        LoadResource(QUrl(newLocation));
+        redirectLocation = reply->header(QNetworkRequest::LocationHeader).toString();
+        ///qDebug() << "LOAD: Redirect to: " << redirectLocation;
+        LoadResource(QUrl(redirectLocation));
         if (isMainResource)
             return DeleteReplyAndCheckForFinish(reply);
     }
@@ -170,11 +171,9 @@ void MHTSaver::ResourceLoadingFinished()
     }
 
     //Add the resource.
-    AddResource(reply);
+    QString contentType = AddResource(reply, redirectLocation);
 
     //Determine the file type and add any more contents.
-    QUrl url = reply->url();
-    QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
     //ContentType is usually 'text/html; charset=UTF-8' for web pages (gzipped and chunked contents
     //  are already handled and removed)
     int indexOfSemicolon = contentType.indexOf(';');
@@ -182,15 +181,20 @@ void MHTSaver::ResourceLoadingFinished()
         contentType = contentType.left(indexOfSemicolon);
     ///qDebug() << "LOAD: ContentType is " << contentType;
 
-    if (m_htmlContentTypes.contains(contentType))
+    QUrl url = reply->url();
+    if (!redirectLocation.isEmpty())
+    {
+        //If a redirect, don't parse it at all. Only exit the if/else ladder and go to end of the function.
+    }
+    else if (m_htmlContentTypes.contains(contentType))
     {
         //A common error is to have css or js files with this content type. check extesnsion here.
         //  Actually any thing including images and downloaded files can come here too but we don't
         //  check them.
         //We use url's `path()` to make sure it doesn't contain query string or fragments.
-        if (reply->url().path().right(4).toLower() == ".css")
+        if (url.path().right(4).toLower() == ".css")
             ParseAndAddCSSResources(reply);
-        else if (reply->url().path().right(3).toLower() == ".js")
+        else if (url.path().right(3).toLower() == ".js")
             {} //Scripts don't need parsing.
         else
             ParseAndAddHTMLResources(reply); //Now normal html
@@ -218,7 +222,7 @@ void MHTSaver::ResourceLoadingFinished()
         //  Actually any thing including images and downloaded files can come here too but we don't
         //  check them.
         //We use url's `path()` to make sure it doesn't contain query string or fragments.
-        if (reply->url().path().right(4).toLower() == ".css")
+        if (url.path().right(4).toLower() == ".css")
             ParseAndAddCSSResources(reply);
     }
 
@@ -227,7 +231,7 @@ void MHTSaver::ResourceLoadingFinished()
     //  some title to not let it be empty. We use QFileInfo and it may be able to extract some name
     //  for the file.
     if (isMainResource && m_status.mainResourceTitle.isEmpty())
-        m_status.mainResourceTitle = "File_" + QFileInfo(reply->url().path()).fileName();
+        m_status.mainResourceTitle = "File_" + QFileInfo(url.path()).fileName();
 
     DeleteReplyAndCheckForFinish(reply);
 }
@@ -263,7 +267,7 @@ void MHTSaver::DeleteReplyAndCheckForFinish(QNetworkReply* reply)
     }
 }
 
-void MHTSaver::AddResource(QNetworkReply* reply)
+QString MHTSaver::AddResource(QNetworkReply* reply, const QString& redirectLocation)
 {
     QUrl url = reply->url();
 
@@ -272,33 +276,31 @@ void MHTSaver::AddResource(QNetworkReply* reply)
         if (res.fullUrl == url)
         {
             qDebug() << "ASSERTION FAILED! Resource " << url << " already exists!";
-            return;
+            return QString();
         }
     }
 
     const QByteArray data = reply->peek(reply->bytesAvailable());
-    QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
-
-    if (contentType.isEmpty())
-    {
-        const QMimeType mimeType = QMimeDatabase().mimeTypeForFileNameAndData(QFileInfo(url.path()).fileName(), data);
-        contentType = mimeType.name();
-        //qDebug() << "ADDRESOURCE: ContentType decided for url: " << url << mimeType.name();
-    }
+    QString contentType = getOrGuessMimeType(reply, data);
+    //We don't strip the 'charset=' part of the content type here.
 
     Resource res;
     res.fullUrl = url;
     res.contentType = contentType;
     res.data = data;
+    if (!redirectLocation.isEmpty())
+        res.redirectTo = QUrl(redirectLocation);
+
     m_resources.append(res);
     m_status.resourceCount += 1;
     m_status.resourceSuccess += (reply->error() == QNetworkReply::NoError ? 1 : 0);
+
+    return contentType;
 }
 
 void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
 {
     QUrl url = reply->url();
-    //QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
     QByteArray data = reply->readAll();
     QString str = QString::fromUtf8(data);
 
@@ -333,7 +335,6 @@ void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
 void MHTSaver::ParseAndAddCSSResources(QNetworkReply* reply)
 {
     QUrl url = reply->url();
-    //QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
     QByteArray data = reply->readAll();
     QString str = QString::fromUtf8(data);
 
@@ -493,6 +494,7 @@ bool MHTSaver::isMimeTypeTextFile(const QString& mimeType)
         << "application/ecmascript"
         << "application/json"
         << "application/javascript"
+        << "application/x-javascript"
         << "application/rss+xml"
         << "application/xhtml+xml"
         << "application/xml";
@@ -507,4 +509,16 @@ bool MHTSaver::isMimeTypeTextFile(const QString& mimeType)
     }
 
     return false;
+}
+
+QString MHTSaver::getOrGuessMimeType(QNetworkReply* reply, const QByteArray& data)
+{
+    QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
+    if (contentType.isEmpty())
+    {
+        const QMimeType mimeType = QMimeDatabase().mimeTypeForFileNameAndData(
+                    QFileInfo(reply->url().path()).fileName(), data);
+        contentType = mimeType.name();
+    }
+    return contentType;
 }

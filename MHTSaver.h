@@ -77,6 +77,7 @@ private:
         QUrl fullUrl;
         QString contentType;
         QByteArray data;
+        QUrl redirectTo;
     };
     QList<Resource> m_resources;
 
@@ -114,7 +115,7 @@ private:
     void LoadResource(const QUrl& url);
     Q_SLOT void ResourceLoadingFinished();
     void DeleteReplyAndCheckForFinish(QNetworkReply* reply);
-    void AddResource(QNetworkReply* reply);
+    QString AddResource(QNetworkReply* reply, const QString& redirectLocation);
 
     //// File Parsing /////////////////////////////////////////////////////////
     void ParseAndAddHTMLResources(QNetworkReply* reply);
@@ -125,4 +126,5 @@ private:
     // Have all resources, now generate the MHT file
     void GenerateMHT();
     bool isMimeTypeTextFile(const QString& mimeType);
+    QString getOrGuessMimeType(QNetworkReply* reply, const QByteArray& data);
 };
