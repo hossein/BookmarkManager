@@ -8,7 +8,6 @@
 
 //TODO:
 //- Redirect depth check
-//- google sprite problem
 
 class QTimer;
 class QNetworkReply;
@@ -38,7 +37,8 @@ class QNetworkAccessManager;
 ///     5. Doesn't strip scripts.
 ///     6. Doesn't load resources that are additionally loaded in scripts, or change DOM after
 ///        loading a page; only a browser can do that.
-///     7. Redirections support is limited and is only done correctly for the main page. Although
+///     7. Doesn't load resources referenced in 'style="..."' attributes. Supports <style> though.
+///     8. Redirections support is limited and is only done correctly for the main page. Although
 ///        the redirect targets are being fetched and saved, they are NOT displayed e.g in case of
 ///        pictures, because we neither modify the urls in the html/css files nor do we save the
 ///        redirect locations under the old addresses. Ideally we had to do both, i.e convert the
@@ -47,10 +47,10 @@ class QNetworkAccessManager;
 ///        content-type of the redirect target url. This doesn't require us to modify urls in the
 ///        source file. This works for all resources except the main resource, which uses its
 ///        original redirect handling.
-///     8. I DID NOT GUARANTEE CORRECTNESS OF %-encoded URLS and other similar issues. I didn't
-///        study QUrl<->QString conversions thoroughly about how to treat the encoding issues.
 ///     9. This is a feature, not a limitation: For single files, e.g image or pdf files, it will
 ///        create a raw file and will set the status.fileSuffix to the file extension.
+///     10. I DID NOT GUARANTEE CORRECTNESS OF %-encoded URLS and other similar issues. I didn't
+///        study QUrl<->QString conversions thoroughly about how to treat the encoding issues.
 class MHTSaver : public QObject
 {
     Q_OBJECT
@@ -135,6 +135,7 @@ private:
     //// File Parsing /////////////////////////////////////////////////////////
     void ParseAndAddHTMLResources(QNetworkReply* reply);
     void ParseAndAddCSSResources(QNetworkReply* reply);
+    void ParseAndAddInlineCSSResources(const QUrl& baseUrl, const QByteArray& style);
     void DecideAndLoadURL(const QUrl& baseURL, const QString& linkedURL);
 
     //// MHT Format Handling //////////////////////////////////////////////////
@@ -150,5 +151,6 @@ private:
     bool isMimeTypeTextFile(const QString& mimeType);
     QString getOrGuessMimeType(QNetworkReply* reply, const QByteArray& data);
 
+    QByteArray getHTMLStyles(const QByteArray& html);
     QByteArray stripHTMLScripts(const QByteArray& html);
 };

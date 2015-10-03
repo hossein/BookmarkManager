@@ -336,6 +336,12 @@ void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
         DecideAndLoadURL(url, linkedUrl);
     }
 
+    //Add the resources referenced in <style> tags css too. The most notable use is for google
+    //  search results. (We do nothing about 'style=' attributes though.)
+    QByteArray htmlStyles = getHTMLStyles(data);
+    if (!htmlStyles.isEmpty())
+        ParseAndAddInlineCSSResources(url, htmlStyles);
+
     //Also, if this is the first resource, get the html <title> from it.
     if (m_resources.size() == 1)
     {
@@ -351,7 +357,12 @@ void MHTSaver::ParseAndAddCSSResources(QNetworkReply* reply)
 {
     QUrl url = reply->url();
     QByteArray data = reply->readAll();
-    QString str = QString::fromUtf8(data);
+    ParseAndAddInlineCSSResources(url, data);
+}
+
+void MHTSaver::ParseAndAddInlineCSSResources(const QUrl& baseUrl, const QByteArray& style)
+{
+    QString str = QString::fromUtf8(style);
 
     //The following QUESTION MARK actually makes our pattern recognize additional 'url('s that are
     //  not part of an import/*-image/background.
@@ -367,18 +378,18 @@ void MHTSaver::ParseAndAddCSSResources(QNetworkReply* reply)
     //Paths for CSS will be fine:
     //http://stackoverflow.com/questions/940451/using-relative-url-in-css-file-what-location-is-it-relative-to
 
-    ///qDebug() << "PARSE CSS: Base: " << url;
+    ///qDebug() << "PARSE CSS: Base: " << baseUrl;
     while (matches.hasNext())
     {
         QRegularExpressionMatch match = matches.next();
         QString linkedUrl = match.captured("url");
-        DecideAndLoadURL(url, linkedUrl);
+        DecideAndLoadURL(baseUrl, linkedUrl);
     }
     while (matches2.hasNext())
     {
         QRegularExpressionMatch match = matches2.next();
         QString linkedUrl = match.captured("url");
-        DecideAndLoadURL(url, linkedUrl);
+        DecideAndLoadURL(baseUrl, linkedUrl);
     }
 }
 
@@ -625,6 +636,54 @@ QString MHTSaver::getOrGuessMimeType(QNetworkReply* reply, const QByteArray& dat
         contentType = mimeType.name();
     }
     return contentType;
+}
+
+QByteArray MHTSaver::getHTMLStyles(const QByteArray& html)
+{
+    //Limitations:
+    //  Read `MHTSaver::stripHTMLScripts`'s limitations.
+
+    QByteArray output;
+    int startIndex = 0;
+
+    //In each round find a style tag and copy data inside it.
+    while (true)
+    {
+        //Find '<style'
+        int openStyleTagIndex = html.indexOf(QByteArray("<style"), startIndex);
+        if (openStyleTagIndex == -1)
+        {
+            break;
+        }
+
+        //Find '>'
+        int openStyleTagUntil = html.indexOf('>', openStyleTagIndex);
+        if (openStyleTagUntil == -1)
+        {
+            break;
+        }
+
+        int styleContentBeginning = openStyleTagUntil + 1; // `+ 1` to consume the '>' itself
+
+        //Find '</style>'
+        int closeStyleTagIndex = html.indexOf(QByteArray("</style>"), styleContentBeginning);
+        if (closeStyleTagIndex == -1)
+        {
+            //Unclosed style. Maybe tempted to copy it! Yes do it! Syntax errors are not a big deal here.
+            output += html.mid(styleContentBeginning);
+            break;
+        }
+        else
+        {
+            output += html.mid(styleContentBeginning, closeStyleTagIndex - styleContentBeginning);
+            output += " "; //Try to separate them.
+        }
+
+        //Skip the closing style tag to get ready for next round
+        startIndex = closeStyleTagIndex + 8; //8 is len("</style>")
+    }
+
+    return output;
 }
 
 QByteArray MHTSaver::stripHTMLScripts(const QByteArray& html)
