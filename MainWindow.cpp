@@ -606,6 +606,11 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     if (!success)
         return;
 
+    //Note about TRANSACTIONS:
+    //Import function imports each bookmark in its own transaction. This way is both just what we
+    //  did (i.e importing all of them under the same transaction was not more difficult and could
+    //  be done), and also the good point about it is that if it interrupts, we'll have some of our
+    //  bookmarks. So we don't need to start and wrap this in a transaction.
     success = bmim.InitializeImport();
     if (!success)
         return;
@@ -616,24 +621,22 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
         return;
 
     int result = importPreviewDialog->exec();
-    if (result != QDialog::Accepted)
-        return;
-
     importPreviewDialog->deleteLater();
+
+    //Don't return if rejected. Even if rejected some bookmarks may have been imported.
+    //if (result != QDialog::Accepted)
+    //    return;
+    Q_UNUSED(result);
 
     QList<long long> addedBIDs;
     QSet<long long> allAssociatedTIDs;
     bmim.FinalizeImport(addedBIDs, allAssociatedTIDs);
 
-
-    //Note about TRANSACTIONS:
-    //Import function imports each bookmark in its own transaction. This way is both just what we
-    //  did (i.e importing all of them under the same transaction was not more difficult and could
-    //  be done), and also the good point about it is that if it interrupts, we'll have some of our
-    //  bookmarks. So we don't need to start and wrap this in a transaction.
-    ///success = bmim.Import(elist, addedBIDs, allAssociatedTIDs);
-    ///if (!success)
-    ///    return;
+    ///Previously the preview dialog didn't import bookmarks, but now it imports them using its
+    ///  bookmarks processor. So we had to import the bookmarks after it was accepted here.
+    //success = bmim.Import(elist, addedBIDs, allAssociatedTIDs);
+    //if (!success)
+    //    return;
 
     //Refresh UI
     if (!addedBIDs.isEmpty())

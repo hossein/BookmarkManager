@@ -8,7 +8,6 @@
 #include <QMap>
 
 //TODOs:
-//- On cancel, refresh main window's data. it should finalize, etc correctly.
 //- On progressing, update this dialog's bookmark icons?
 //- I removed Yevpatoria wikipedia bm but on import it nagged about similar things!
 //  I removed its google search and thing got alright!
