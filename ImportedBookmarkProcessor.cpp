@@ -66,7 +66,7 @@ void ImportedBookmarkProcessor::EndProcess(bool successful)
 {
     m_isProcessing = false;
 
-    qDebug() << m_currId << " Done in " << m_elapsedTimer.elapsed() / 1000.0 << " seconds.";
+    qDebug() << m_currId << " Done (" << successful << ") in " << m_elapsedTimer.elapsed() / 1000.0 << " seconds.";
 
     emit ImportedBookmarkProcessed(m_currId, successful);
 }
@@ -141,34 +141,34 @@ void ImportedBookmarkProcessor::PageRetrieved(const QByteArray& data, const MHTS
     if (!m_isProcessing) //i.e MHTSaver's status.mainSuccess = false and status.mainHttpErrorCode = 0.
         return;
 
-    QString errorString = QString();
-
-    if (status.mainSuccess)
-    {
-        //We check the HTTP status here.
-        //1xx are informational and should not happen, 2xx show success, 3xx show redirection and
-        //  are handled by MHTSaver, 4xx and 5xx are client and server errors.
-        //However we consider anything other than 2xx fail!
-        if (status.mainHttpErrorCode < 200 || status.mainHttpErrorCode > 299)
-            errorString = QString("HTTP Error %1").arg(status.mainHttpErrorCode);
-
-        //Save the page
-        //The file is NOT always an mhtml; MHTSaver does not wrap e.g images and pdfs in this format.
-        m_ib->ExPr_attachedFileName = Util::PercentEncodeUnicodeAndFSChars(status.mainResourceTitle);
-        if (!status.fileSuffix.isEmpty())
-            m_ib->ExPr_attachedFileName += "." + status.fileSuffix;
-        m_ib->ExPr_attachedFileData = data;
-    }
-    else
-    {
-        errorString = QString("Error %1: %2").arg(status.mainNetworkReplyError)
-                                             .arg(status.mainNetworkReplyErrorString);
-    }
-
     //Set the file attach error status.
     //In case of success, if HTTP status is not successful errorString will contain the status.
     //In case of both success and HTTP status = 2xx the errorString will be empty.
-    m_ib->ExPr_attachedFileError = errorString;
+    m_ib->ExPr_attachedFileName = QString();
+    m_ib->ExPr_attachedFileError = QString();
+
+    if (!status.mainSuccess)
+    {
+        m_ib->ExPr_attachedFileError = QString("Error %1: %2")
+                                       .arg(status.mainNetworkReplyError)
+                                       .arg(status.mainNetworkReplyErrorString);
+        EndProcess(false);
+        return;
+    }
+
+    //We check the HTTP status here.
+    //1xx are informational and should not happen, 2xx show success, 3xx show redirection and
+    //  are handled by MHTSaver, 4xx and 5xx are client and server errors.
+    //However we consider anything other than 2xx fail!
+    if (status.mainHttpErrorCode < 200 || status.mainHttpErrorCode > 299)
+        m_ib->ExPr_attachedFileError = QString("HTTP Error %1").arg(status.mainHttpErrorCode);
+
+    //Save the page
+    //The file is NOT always an mhtml; MHTSaver does not wrap e.g images and pdfs in this format.
+    m_ib->ExPr_attachedFileName = Util::PercentEncodeUnicodeAndFSChars(status.mainResourceTitle);
+    if (!status.fileSuffix.isEmpty())
+        m_ib->ExPr_attachedFileName += "." + status.fileSuffix;
+    m_ib->ExPr_attachedFileData = data;
 
     //`.simplified` is needed since e.g an i3e explore title contained newlines and tabs in it!
     //Also for e.g pdfs, it won't contain the file extension, but firefox already saved a title for

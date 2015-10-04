@@ -10,7 +10,6 @@
 //TODOs:
 //- Close the dialog if user cancels the progress dialog.
 //  Otherwise we have to recalculate all statuses and show a 'Close' button.
-//- On cancel, the last bookmarks that are processing are imported without attached files.
 //- On cancel, refresh main window's data. it should finalize, etc correctly.
 //- On progressing, update this dialog's bookmark icons?
 //- I removed Yevpatoria wikipedia bm but on import it nagged about similar things!
