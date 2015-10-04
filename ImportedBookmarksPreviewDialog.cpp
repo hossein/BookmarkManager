@@ -51,6 +51,8 @@ ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* 
     icon_exact            = QIcon(":/res/import_duplicate_exact.png");
     icon_overwrite        = QIcon(":/res/import_overwrite.png");
     icon_append           = QIcon(":/res/import_append.png");
+    icon_waiting          = QIcon(":/res/import_waiting.png");
+    icon_fail             = QIcon(":/res/import_fail.png");
 
     //Initialize the data we will need during the conversion.
     for (int i = 0; i < elist->ibflist.size(); i++)
@@ -121,7 +123,6 @@ void ImportedBookmarksPreviewDialog::accept()
     //Also collect some stats.
     int similarDuplicateBookmarksToBeImported = 0;
     int exactDuplicateBookmarksToBeIgnored = 0;
-    //foreach (const ImportedBookmark& ib, elist->iblist)
     for (int i = 0; i < elist->iblist.size(); i++)
     {
         //By reference
@@ -179,6 +180,15 @@ void ImportedBookmarksPreviewDialog::accept()
     ui->widLeftPane->setVisible(false);
     ui->buttonBox->setEnabled(false);
 
+    //Change icons of ImportOK bookmarks from a big green check mark to a 'loading file' icon.
+    //  This is to make the item less shiny! than the 'Imported' icon (which is the Exact Duplicate
+    //  icon) during importing.
+    foreach (const ImportedBookmark& ib, elist->iblist)
+    {
+        if (ib.Ex_finalImport == true && ib.Ex_status == ImportedBookmark::S_AnalyzedImportOK)
+            bookmarkItems[ib.intId]->setIcon(0, icon_waiting);
+    }
+
     //Begin processing
     m_bookmarksProcessor->BeginProcessing(elist);
     //Now `ProcessingDone` or `ProcessingCancelled` signal/slot connections will finish the job,
@@ -209,19 +219,18 @@ void ImportedBookmarksPreviewDialog::ImportedBookmarkProcessed(ImportedBookmark*
     if (ib == NULL || !bookmarkItems.contains(ib->intId))
         return;
 
-    //Set icon as Done (Exact Duplicate, because it is already imported!) or Don't Import (because
-    //  it wasn't imported) and correct its title if it was a [title-less bookmarks]. Correcting its
-    //  text formatting is difficult and potentially removes information that user previously saw,
-    //  so we don't do it.
+    //Set icon as Done or Fail. Also correct the title if it was a [title-less bookmarks].
+    //  Correcting its text formatting is difficult and potentially removes information that user
+    //  previously saw, so we don't do it.
     QTreeWidgetItem* twi = bookmarkItems[ib->intId];
     if (successful)
     {
-        twi->setIcon(0, icon_exact);
+        twi->setIcon(0, icon_okay);
         twi->setText(0, ib->title);
     }
     else
     {
-        twi->setIcon(0, icon_dontimport);
+        twi->setIcon(0, icon_fail);
     }
 }
 

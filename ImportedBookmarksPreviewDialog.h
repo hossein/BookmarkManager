@@ -44,6 +44,8 @@ private:
     QIcon icon_exact;
     QIcon icon_overwrite;
     QIcon icon_append;
+    QIcon icon_waiting;
+    QIcon icon_fail;
 
     enum TreeWidgetItemData
     {
