@@ -554,7 +554,7 @@ QString BookmarkImporter::GetURLForAlmostExactComparison(const QString& original
 {
     //These work okay with "file:" and "mailto:" urls.
     QUrl url(originalUrl);
-    return url.host() + '/' + url.path() + '#' + url.fragment();
+    return url.host() + '/' + url.path() + '?' + url.query() + '#' + url.fragment();
 }
 
 QString BookmarkImporter::extraInfoField(const QString& fieldName, const QList<BookmarkManager::BookmarkExtraInfoData>& extraInfos)

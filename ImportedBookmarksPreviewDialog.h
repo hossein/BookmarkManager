@@ -7,10 +7,6 @@
 #include <QIcon>
 #include <QMap>
 
-//TODOs:
-//- I removed Yevpatoria wikipedia bm but on import it nagged about similar things!
-//  I removed its google search and thing got alright!
-
 class QTreeWidgetItem;
 class BookmarkImporter;
 class ImportedBookmarksProcessor;
