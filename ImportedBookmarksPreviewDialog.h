@@ -14,7 +14,6 @@
 //- On progressing, update this dialog's bookmark icons?
 //- I removed Yevpatoria wikipedia bm but on import it nagged about similar things!
 //  I removed its google search and thing got alright!
-//- Don't get files for exact or whatever bookmarks!
 
 class QTreeWidgetItem;
 class BookmarkImporter;

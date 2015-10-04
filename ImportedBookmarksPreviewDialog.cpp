@@ -119,8 +119,12 @@ void ImportedBookmarksPreviewDialog::accept()
     //Also collect some stats.
     int similarDuplicateBookmarksToBeImported = 0;
     int exactDuplicateBookmarksToBeIgnored = 0;
-    foreach (const ImportedBookmark& ib, elist->iblist)
+    //foreach (const ImportedBookmark& ib, elist->iblist)
+    for (int i = 0; i < elist->iblist.size(); i++)
     {
+        //By reference
+        ImportedBookmark& ib = elist->iblist[i];
+
         if (!ib.Ex_finalImport) //Not Ex_import
             continue;
 
@@ -136,9 +140,15 @@ void ImportedBookmarksPreviewDialog::accept()
         }
         else if (ib.Ex_status == ImportedBookmark::S_ReplaceExisting ||
                  ib.Ex_status == ImportedBookmark::S_AppendToExisting)
+        {
             similarDuplicateBookmarksToBeImported += 1;
+        }
         else if (ib.Ex_status == ImportedBookmark::S_AnalyzedExactExistent)
+        {
+            ib.Ex_finalImport = false;
             exactDuplicateBookmarksToBeIgnored += 1;
+            importedCount -= 1;
+        }
     }
 
     //Show import statistics to user and confirm.

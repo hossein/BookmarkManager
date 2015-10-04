@@ -373,6 +373,8 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib)
     }
     else if (ib.Ex_status == ImportedBookmark::S_AnalyzedExactExistent)
     {
+        //WE SHOULD NEVER REACH HERE. ib.Ex_finalImport must have been set to false by PreviewDialog
+        //  for these bookmarks.
         //We don't need to do anything! Bookmark already in DB.
         //We don't even update its mht file.
     }
