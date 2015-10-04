@@ -190,11 +190,15 @@ void ImportedBookmarksPreviewDialog::ProcessingDone()
 
 void ImportedBookmarksPreviewDialog::ProcessingCanceled()
 {
-    //Let the UI work again
-    ui->widLeftPane->setVisible(true);
-    ui->buttonBox->setEnabled(true);
+    ///Let the UI work again
+    //ui->widLeftPane->setVisible(true);
+    //ui->buttonBox->setEnabled(true);
 
-    //QDialog::accept();
+    ///Instead of letting the UI work again, we CLOSE the dialog if user cancels the progress dlg.
+    ///  Otherwise we have to recalculate all statuses and show a 'Close' button.
+
+    //Rejecting here merely means user stopped the import operation in the middle.
+    QDialog::reject();
 }
 
 void ImportedBookmarksPreviewDialog::on_twBookmarks_itemSelectionChanged()

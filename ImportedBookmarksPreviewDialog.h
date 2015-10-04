@@ -8,8 +8,6 @@
 #include <QMap>
 
 //TODOs:
-//- Close the dialog if user cancels the progress dialog.
-//  Otherwise we have to recalculate all statuses and show a 'Close' button.
 //- On cancel, refresh main window's data. it should finalize, etc correctly.
 //- On progressing, update this dialog's bookmark icons?
 //- I removed Yevpatoria wikipedia bm but on import it nagged about similar things!
@@ -20,7 +18,9 @@ class BookmarkImporter;
 class ImportedBookmarksProcessor;
 namespace Ui { class ImportedBookmarksPreviewDialog; }
 
-/// This class also configures the to-be-imported bookmarks, not just preview them.
+/// This dialog also configures AND imports the to-be-imported bookmarks, not just preview them.
+/// If it is rejected, it can both mean user didn't import anything, or they merely stopped the
+///   import operation in the middle.
 class ImportedBookmarksPreviewDialog : public QDialog
 {
     Q_OBJECT
