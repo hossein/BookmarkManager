@@ -3,6 +3,7 @@
 
 class QProgressDialog;
 class BookmarkImporter;
+struct ImportedBookmark;
 struct ImportedEntityList;
 class ImportedBookmarkProcessor;
 
@@ -41,5 +42,6 @@ private slots:
 signals:
     void ProcessingDone();
     void ProcessingCanceled();
+    void ImportedBookmarkProcessed(ImportedBookmark* ib, bool successful);
 
 };

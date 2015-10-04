@@ -40,6 +40,8 @@ ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* 
     m_bookmarksProcessor = new ImportedBookmarksProcessor(dbm->conf->concurrentBookmarkProcessings, bmim, this, this);
     connect(m_bookmarksProcessor, SIGNAL(ProcessingDone()), this, SLOT(ProcessingDone()));
     connect(m_bookmarksProcessor, SIGNAL(ProcessingCanceled()), this, SLOT(ProcessingCanceled()));
+    connect(m_bookmarksProcessor, SIGNAL(ImportedBookmarkProcessed(ImportedBookmark*,bool)),
+            this, SLOT(ImportedBookmarkProcessed(ImportedBookmark*,bool)));
 
     icon_folder           = QIcon(":/res/import_folder.png");
     icon_folderdontimport = QIcon(":/res/import_folderdontimport.png");
@@ -199,6 +201,28 @@ void ImportedBookmarksPreviewDialog::ProcessingCanceled()
 
     //Rejecting here merely means user stopped the import operation in the middle.
     QDialog::reject();
+}
+
+void ImportedBookmarksPreviewDialog::ImportedBookmarkProcessed(ImportedBookmark* ib, bool successful)
+{
+    //Must not happen. Just in case.
+    if (ib == NULL || !bookmarkItems.contains(ib->intId))
+        return;
+
+    //Set icon as Done (Exact Duplicate, because it is already imported!) or Don't Import (because
+    //  it wasn't imported) and correct its title if it was a [title-less bookmarks]. Correcting its
+    //  text formatting is difficult and potentially removes information that user previously saw,
+    //  so we don't do it.
+    QTreeWidgetItem* twi = bookmarkItems[ib->intId];
+    if (successful)
+    {
+        twi->setIcon(0, icon_exact);
+        twi->setText(0, ib->title);
+    }
+    else
+    {
+        twi->setIcon(0, icon_dontimport);
+    }
 }
 
 void ImportedBookmarksPreviewDialog::on_twBookmarks_itemSelectionChanged()

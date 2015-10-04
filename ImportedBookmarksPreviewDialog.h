@@ -8,7 +8,7 @@
 #include <QMap>
 
 //TODOs:
-//- On progressing, update this dialog's bookmark icons?
+//- Show errors of all those whose imports failed.
 //- I removed Yevpatoria wikipedia bm but on import it nagged about similar things!
 //  I removed its google search and thing got alright!
 
@@ -61,8 +61,11 @@ public:
 
 public slots:
     void accept();
+
+private slots:
     void ProcessingDone();
     void ProcessingCanceled();
+    void ImportedBookmarkProcessed(ImportedBookmark* ib, bool successful);
 
 private slots:
     void on_twBookmarks_itemSelectionChanged();

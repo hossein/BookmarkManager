@@ -77,6 +77,7 @@ void ImportedBookmarksProcessor::BookmarkProcessed(int id, bool successful)
     m_progressDialog->setLabelText(QString("%1:<br/>\n<strong>%2</strong><br/>\n(%3)")
                                    .arg(resultStr, lastProcessedIB->title, lastProcessedIB->uri));
     m_progressDialog->setValue(m_processedCount);
+    emit ImportedBookmarkProcessed(lastProcessedIB, successful);
 
     if (m_processedCount == m_toBeImportedCount) //Last processor
     {
