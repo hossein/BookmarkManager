@@ -62,6 +62,10 @@ struct ImportedBookmark
     QByteArray ExPr_attachedFileData;
 
     QList<BookmarkManager::BookmarkExtraInfoData> ExPr_ExtraInfosList;
+
+    //== After importing (by the processor) ===================================
+    //This is the final error that should be read anywhere.
+    QString ExIm_finalError;
 };
 
 struct ImportedBookmarkFolder

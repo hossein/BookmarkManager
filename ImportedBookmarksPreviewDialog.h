@@ -8,7 +8,6 @@
 #include <QMap>
 
 //TODOs:
-//- Show errors of all those whose imports failed.
 //- I removed Yevpatoria wikipedia bm but on import it nagged about similar things!
 //  I removed its google search and thing got alright!
 

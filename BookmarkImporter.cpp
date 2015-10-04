@@ -199,11 +199,13 @@ bool BookmarkImporter::Analyze(ImportedEntityList& elist)
 }
 
 bool BookmarkImporter::Import(ImportedEntityList& elist, QList<long long>& addedBIDs,
-                              QSet<long long>& allAssociatedTIDs)
+                              QSet<long long>& allAssociatedTIDs,
+                              QList<ImportedBookmark*>& failedProcessOrImports)
 {
     //Do it for caller
     addedBIDs.clear();
     allAssociatedTIDs.clear();
+    failedProcessOrImports.clear();
 
     if (!InitializeImport())
         return false;
@@ -214,7 +216,7 @@ bool BookmarkImporter::Import(ImportedEntityList& elist, QList<long long>& added
             continue; //Actually never return. Import all the bookmarks.
     }
 
-    FinalizeImport(addedBIDs, allAssociatedTIDs);
+    FinalizeImport(addedBIDs, allAssociatedTIDs, failedProcessOrImports);
 
     return true;
 }
@@ -223,6 +225,7 @@ bool BookmarkImporter::InitializeImport()
 {
     m_addedBIDs.clear();
     m_allAssociatedTIDs.clear();
+    m_failedProcessOrImports.clear();
 
     m_tempPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/BMTemp";
     if (!QDir().mkpath(m_tempPath))
@@ -410,10 +413,17 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib)
     return true;
 }
 
-void BookmarkImporter::FinalizeImport(QList<long long>& addedBIDs, QSet<long long>& allAssociatedTIDs)
+void BookmarkImporter::MarkAsFailed(ImportedBookmark* ib)
+{
+    m_failedProcessOrImports.append(ib);
+}
+
+void BookmarkImporter::FinalizeImport(QList<long long>& addedBIDs, QSet<long long>& allAssociatedTIDs,
+                                      QList<ImportedBookmark*>& failedProcessOrImports)
 {
     addedBIDs = m_addedBIDs;
     allAssociatedTIDs = m_allAssociatedTIDs;
+    failedProcessOrImports = m_failedProcessOrImports;
 }
 
 QString BookmarkImporter::bookmarkTagAccordingToParentFolders(ImportedEntityList& elist, int bookmarkIndex)

@@ -14,6 +14,7 @@
 #include <QDir>
 #include <QDesktopWidget>
 #include <QMessageBox>
+#include <QPlainTextEdit>
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QToolButton>
@@ -630,7 +631,8 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
 
     QList<long long> addedBIDs;
     QSet<long long> allAssociatedTIDs;
-    bmim.FinalizeImport(addedBIDs, allAssociatedTIDs);
+    QList<ImportedBookmark*> failedProcessOrImports;
+    bmim.FinalizeImport(addedBIDs, allAssociatedTIDs, failedProcessOrImports);
 
     ///Previously the preview dialog didn't import bookmarks, but now it imports them using its
     ///  bookmarks processor. So we had to import the bookmarks after it was accepted here.
@@ -648,10 +650,30 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     //Show success message
     QString importCompleteMessage;
     if (addedBIDs.isEmpty())
-        importCompleteMessage = "No bookmarks were imported";
+        importCompleteMessage = "No bookmarks were imported.";
     else
         importCompleteMessage = QString("%1 bookmark(s) were imported.").arg(addedBIDs.size());
+    if (!failedProcessOrImports.isEmpty())
+        importCompleteMessage += "\n\nSome bookmarks encountered errors while importing. "
+                                 "Click OK to view the error messages.";
     QMessageBox::information(this, "Import complete", importCompleteMessage);
+
+    if (!failedProcessOrImports.isEmpty())
+    {
+        QString errorMessages;
+        foreach (ImportedBookmark* ib, failedProcessOrImports)
+            errorMessages += QString("%1 (%2):\n%3\n\n").arg(ib->title, ib->uri, ib->ExIm_finalError);
+        QPlainTextEdit* ptxErrors = new QPlainTextEdit(NULL /* no parent : makes it top-level window. */);
+        ptxErrors->setWindowTitle("Bookmark Processing and Import Errors");
+        ptxErrors->setPlainText(errorMessages);
+        ptxErrors->resize(this->size() * 0.75);
+        ptxErrors->show();
+
+
+        /*QRect geom = geometry();
+        geom.moveCenter(QApplication::desktop()->availableGeometry().center());
+        this->setGeometry(geom);*/
+    }
 }
 
 #include "MHTSaver.h"

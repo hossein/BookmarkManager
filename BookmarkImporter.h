@@ -31,19 +31,27 @@ private:
 
     QList<long long> m_addedBIDs;
     QSet<long long> m_allAssociatedTIDs;
+    QList<ImportedBookmark*> m_failedProcessOrImports;
     QString m_tempPath;
 
 public:
     BookmarkImporter(DatabaseManager* dbm, QWidget* dialogParent);
 
+    //Initial init and analyzing functions.
     bool Initialize();
     bool Analyze(ImportedEntityList& elist);
-    bool Import(ImportedEntityList& elist, QList<long long>& addedBIDs,
-                QSet<long long>& allAssociatedTIDs);
 
+    //Cumulative import function. Doesn't mark anything as failed.
+    bool Import(ImportedEntityList& elist, QList<long long>& addedBIDs,
+                QSet<long long>& allAssociatedTIDs,
+                QList<ImportedBookmark*>& failedProcessOrImports);
+
+    //Controlled one-by-one import functions. Use these.
     bool InitializeImport();
     bool ImportOne(const ImportedBookmark& ib);
-    void FinalizeImport(QList<long long>& addedBIDs, QSet<long long>& allAssociatedTIDs);
+    void MarkAsFailed(ImportedBookmark* ib);
+    void FinalizeImport(QList<long long>& addedBIDs, QSet<long long>& allAssociatedTIDs,
+                        QList<ImportedBookmark*>& failedProcessOrImports);
 
 private:
     QString bookmarkTagAccordingToParentFolders(ImportedEntityList& elist, int bookmarkIndex);

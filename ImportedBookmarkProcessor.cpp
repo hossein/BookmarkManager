@@ -152,6 +152,17 @@ void ImportedBookmarkProcessor::PageRetrieved(const QByteArray& data, const MHTS
         m_ib->ExPr_attachedFileError = QString("Error %1: %2")
                                        .arg(status.mainNetworkReplyError)
                                        .arg(status.mainNetworkReplyErrorString);
+        m_ib->ExIm_finalError = m_ib->ExPr_attachedFileError;
+        m_bmim->MarkAsFailed(m_ib);
+        EndProcess(false);
+        return;
+    }
+    if (status.mainSuccess && status.mainHttpErrorCode == 0)
+    {
+        //User cancelled the operation
+        m_ib->ExPr_attachedFileError = QString("User cancelled the web page saving operation.");
+        m_ib->ExIm_finalError = m_ib->ExPr_attachedFileError;
+        //Do NOT mark as error: m_bmim->MarkAsFailed(m_ib);
         EndProcess(false);
         return;
     }
@@ -194,6 +205,14 @@ void ImportedBookmarkProcessor::Import()
 {
     //No need to check return value.
     bool successful = m_bmim->ImportOne(*m_ib);
+
+    if (!successful)
+    {
+        if (!m_ib->ExIm_finalError.isEmpty())
+            m_ib->ExIm_finalError += "\n";
+        m_ib->ExIm_finalError += "Importer Error.";
+        m_bmim->MarkAsFailed(m_ib);
+    }
 
     //After import, free some memory
     m_ib->ExPr_attachedFileData.clear();
