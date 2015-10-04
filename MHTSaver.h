@@ -56,7 +56,7 @@ class MHTSaver : public QObject
     Q_OBJECT
 
 public:
-    //If mainSuccess = true and mainHttpErrorCode = 0 this shows user cancelling the operation.
+    //If mainSuccess = TRUE and mainHttpErrorCode = 0 this shows user cancelling the operation.
     struct Status
     {
         bool mainSuccess;

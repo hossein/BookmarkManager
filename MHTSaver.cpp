@@ -274,7 +274,7 @@ void MHTSaver::DeleteReplyAndCheckForFinish(QNetworkReply* reply)
         //If user cancelled, emit the special status when resources finish.
         if (m_ongoingReplies.size() == 0)
         {
-            m_status.mainSuccess = false;
+            m_status.mainSuccess = true;
             m_status.mainHttpErrorCode = 0;
             m_overallTimer->stop();
             emit MHTDataReady(QByteArray(), m_status);
