@@ -13,6 +13,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QDesktopWidget>
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QResizeEvent>
@@ -171,9 +172,14 @@ void MainWindow::on_action_importFirefoxBookmarks_triggered()
 
 void MainWindow::on_actionImportFirefoxBookmarksJSONfile_triggered()
 {
-    //TODO [IMPORT]: Real url
-    //ImportFirefoxJSONFile("C:\\Users\\Hossein\\Desktop\\bookmarks-2014-11-09_1730 - Pretty.json");
-    ImportFirefoxJSONFile("C:\\Users\\Hossein\\Desktop\\bookmarks2Pretty.json");
+    QString jsonFilePath = QFileDialog::getOpenFileName(
+                this, "Import Firefox Bookmarks Backup JSON File", QString(),
+                "Firefox Bookmarks Backup (bookmarks*.json)");
+
+    if (jsonFilePath.isEmpty())
+        return;
+
+    ImportFirefoxJSONFile(jsonFilePath);
 }
 
 bool MainWindow::LoadDatabaseAndUI()
