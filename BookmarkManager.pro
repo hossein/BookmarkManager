@@ -12,6 +12,11 @@ TARGET = BookmarkManager
 TEMPLATE = app
 LIBS += Shell32.lib User32.lib Version.lib
 
+#Generate PDB files for the release build too.
+#TODO: Temporary, or make sure this doesn't mess up with the release build.
+QMAKE_CXXFLAGS_RELEASE += $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
+QMAKE_LFLAGS_RELEASE += $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
+
 #To generate header file dependency:
 #https://qt-project.org/forums/viewreply/82432/
 LOCAL_INCLUDE_DIRS = $$_PRO_FILE_PWD_ \
