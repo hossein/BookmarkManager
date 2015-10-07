@@ -415,7 +415,7 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib)
 
 void BookmarkImporter::MarkAsFailed(ImportedBookmark* ib)
 {
-    m_failedProcessOrImports.append(ib);
+    m_failedProcessOrImports.insert(ib);
 }
 
 void BookmarkImporter::FinalizeImport(QList<long long>& addedBIDs, QSet<long long>& allAssociatedTIDs,
@@ -423,7 +423,7 @@ void BookmarkImporter::FinalizeImport(QList<long long>& addedBIDs, QSet<long lon
 {
     addedBIDs = m_addedBIDs;
     allAssociatedTIDs = m_allAssociatedTIDs;
-    failedProcessOrImports = m_failedProcessOrImports;
+    failedProcessOrImports = m_failedProcessOrImports.toList();
 }
 
 QString BookmarkImporter::bookmarkTagAccordingToParentFolders(ImportedEntityList& elist, int bookmarkIndex)

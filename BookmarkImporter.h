@@ -31,7 +31,7 @@ private:
 
     QList<long long> m_addedBIDs;
     QSet<long long> m_allAssociatedTIDs;
-    QList<ImportedBookmark*> m_failedProcessOrImports;
+    QSet<ImportedBookmark*> m_failedProcessOrImports;
     QString m_tempPath;
 
 public:
@@ -47,6 +47,8 @@ public:
                 QList<ImportedBookmark*>& failedProcessOrImports);
 
     //Controlled one-by-one import functions. Use these.
+    //Note: Marking an import as failed does not mean the bookmark was not imported. Maybe only its
+    //  file saving was not successful. Calling MarkAsFailed twice on the same bookmark is safe.
     bool InitializeImport();
     bool ImportOne(const ImportedBookmark& ib);
     void MarkAsFailed(ImportedBookmark* ib);

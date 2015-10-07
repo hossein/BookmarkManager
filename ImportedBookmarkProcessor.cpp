@@ -153,16 +153,17 @@ void ImportedBookmarkProcessor::PageRetrieved(const QByteArray& data, const MHTS
                                        .arg(status.mainNetworkReplyError)
                                        .arg(status.mainNetworkReplyErrorString);
         m_ib->ExIm_finalError = m_ib->ExPr_attachedFileError;
+        //Mark as error but do NOT end the process, just the file saving failed!
         m_bmim->MarkAsFailed(m_ib);
-        EndProcess(false);
-        return;
+        //  EndProcess(false);
+        //  return;
     }
     if (status.mainSuccess && status.mainHttpErrorCode == 0)
     {
         //User cancelled the operation
         m_ib->ExPr_attachedFileError = QString("User cancelled the web page saving operation.");
         m_ib->ExIm_finalError = m_ib->ExPr_attachedFileError;
-        //Do NOT mark as error: m_bmim->MarkAsFailed(m_ib);
+        //Do NOT mark as error, just user stopped: m_bmim->MarkAsFailed(m_ib);
         EndProcess(false);
         return;
     }
@@ -172,7 +173,12 @@ void ImportedBookmarkProcessor::PageRetrieved(const QByteArray& data, const MHTS
     //  are handled by MHTSaver, 4xx and 5xx are client and server errors.
     //However we consider anything other than 2xx fail!
     if (status.mainHttpErrorCode < 200 || status.mainHttpErrorCode > 299)
-        m_ib->ExPr_attachedFileError = QString("HTTP Error %1").arg(status.mainHttpErrorCode);
+    {
+        if (!m_ib->ExPr_attachedFileError.isEmpty())
+            m_ib->ExPr_attachedFileError += "\n";
+        m_ib->ExPr_attachedFileError += QString("HTTP Error %1").arg(status.mainHttpErrorCode);
+        m_ib->ExIm_finalError = m_ib->ExPr_attachedFileError;
+    }
 
     //Save the page
     //The file is NOT always an mhtml; MHTSaver does not wrap e.g images and pdfs in this format.
