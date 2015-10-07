@@ -268,7 +268,7 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib)
         {
             const QFileInfo safeFileNameInfo(safeFileName);
             const QString cbaseName = safeFileNameInfo.completeBaseName();
-            safeFileName = cbaseName.left(qMin(64, cbaseName.length()));
+            safeFileName = cbaseName.left(qMin(64, cbaseName.length())).trimmed();
             if (!safeFileNameInfo.suffix().isEmpty())
                 safeFileName += "." + safeFileNameInfo.suffix();
         }
