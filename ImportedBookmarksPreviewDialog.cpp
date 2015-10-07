@@ -17,6 +17,8 @@ ImportedBookmarksPreviewDialog::ImportedBookmarksPreviewDialog(DatabaseManager* 
 {
     ui->setupUi(this);
 
+    setWindowTitle(QString(windowTitle() + " (%1 bookmarks)").arg(elist->iblist.size()));
+
     //With only stretches applied to the layout, the left widget changed size on each bookmark select
     //  with different types (e.g exactly similar, already similar etc). We need to fix the size.
     int sizeForDPI = 300 * (qApp->screens()[0]->logicalDotsPerInch() / 96.0);
