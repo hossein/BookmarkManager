@@ -137,6 +137,16 @@ void BookmarkViewDialog::resizeEvent(QResizeEvent* event)
     }
 }
 
+void BookmarkViewDialog::showEvent(QShowEvent* event)
+{
+    QDialog::showEvent(event);
+
+    //txtDesc will remain at end in the beginning.
+    //This doesn't work at constructor.
+    if (ui->txtDesc->verticalScrollBar() != NULL)
+        ui->txtDesc->verticalScrollBar()->setValue(0);
+}
+
 bool BookmarkViewDialog::canShow()
 {
     return canShowTheDialog;
@@ -413,12 +423,13 @@ void BookmarkViewDialog::PopulateExtraInfos()
     QString alternateBackColorStyle = "background-color: #DDDDDD;";
 
     //Note: "style" doesn't set the width for table and td. Used "width=..." approach in both of them.
-    propertiesHTML += "<table style=\"width: 100%\" width=\"100%\">";
+    propertiesHTML += "<table style=\"width: 100%;\" width=\"100%\">";
     propertiesHTML += QString("<tr><td colspan=\"2\" style=\"%1\"><strong>Additional Properties:</strong></td></tr>")
                       .arg(paddingStyle + alternateBackColorStyle);
 
     int i = 0;
-    QString rowText = "<tr><td style=\"%1\"><strong>%2</strong></td><td style=\"%1\" width=\"100%\">%3</td></tr>\n";
+    QString rowText = "<tr><td style=\"white-space: nowrap; %1\"><strong>%2</strong></td>"
+                      "<td style=\"width: 100%; %1\" width=\"100%\">%3</td></tr>\n";
     foreach (const BookmarkManager::BookmarkExtraInfoData& exInfo, sortedExInfos.values())
     {
         //We escape html tags, etc (instead of maybe directly inserting html and text fragments or
