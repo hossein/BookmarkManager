@@ -198,7 +198,8 @@ bool FirefoxBookmarkJSONFileParser::processFolder(const QJsonObject& obj, Import
 {
     QStringList requiredFolderKeys, otherFolderKeys;
     requiredFolderKeys << "title" << "id" << "type" << "children";
-    otherFolderKeys << "index" << "guid" << "parent" << "dateAdded" << "lastModified" << "annos" << "root";
+    otherFolderKeys << "index" << "guid" << "parent" << "dateAdded" << "lastModified" << "annos"
+                    << "root" << "livemark";
 
     //Case sensitive compare
     QStringList keys = obj.keys();
@@ -250,7 +251,9 @@ bool FirefoxBookmarkJSONFileParser::processFolder(const QJsonObject& obj, Import
             {
                 ibf.description = annoValue;
             }
-            else if (annoName == "bookmarkPropertiesDialog/folderLastUsed")
+            else if (annoName == "bookmarkPropertiesDialog/folderLastUsed" ||
+                     annoName == "placesInternal/READ_ONLY" ||
+                     annoName == "livemark/feedURI" || annoName == "livemark/siteURI")
             {
                 //Discard this.
             }
@@ -288,7 +291,7 @@ bool FirefoxBookmarkJSONFileParser::processAnno(const QJsonObject& obj, int anno
 {
     QStringList requiredAnnosKeys, otherAnnosKeys;
     requiredAnnosKeys << "name"  << "value";
-    otherAnnosKeys    << "flags" << "expires";
+    otherAnnosKeys    << "flags" << "expires" << "mimeType" << "type";
 
     //Case sensitive compare.
     QStringList keys = obj.keys();
