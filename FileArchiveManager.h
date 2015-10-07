@@ -35,9 +35,14 @@ private:
     ///       the file in the FileArchive.
     QString CalculateFileArchiveURL(const QString& fileFullPathName, const QString& groupHint);
     int FileNameHash(const QString& fileNameOnly);
-    ///Must return only ASCII characters for the file name.
-    QString SafeAndShortFSName(const QString& fsName, bool isFileName);
     QString FolderNameInitialsForASCIIChar(char c, bool startedWithPercent);
+
+public:
+    ///Utility function
+    ///`isFileName=true` will not try to find illegal characters for file names, however it
+    /// recognizes and re-adds a file extension (only if the extension is less 20 characters).
+    /// The output will contain only ASCII characters.
+    static QString SafeAndShortFSName(const QString& fsName, bool isFileName);
 
 public:
     QString GetFullArchivePathForRelativeURL(const QString& fileArchiveURL);

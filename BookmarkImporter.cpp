@@ -1,6 +1,7 @@
 #include "BookmarkImporter.h"
 
 #include "BookmarksBusinessLogic.h"
+#include "FileArchiveManager.h"
 #include "Util.h"
 
 #include <QDebug>
@@ -262,17 +263,7 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib)
     QList<FileManager::BookmarkFile> bookmarkFiles;
     if (ib.ExPr_attachedFileError.isEmpty())
     {
-        //Same logic is used in FAM.
-        QString safeFileName = Util::PercentEncodeUnicodeAndFSChars(ib.ExPr_attachedFileName);
-        if (safeFileName.length() > 64) //For WINDOWS!
-        {
-            const QFileInfo safeFileNameInfo(safeFileName);
-            const QString cbaseName = safeFileNameInfo.completeBaseName();
-            safeFileName = cbaseName.left(qMin(64, cbaseName.length())).trimmed();
-            if (!safeFileNameInfo.suffix().isEmpty())
-                safeFileName += "." + safeFileNameInfo.suffix();
-        }
-
+        QString safeFileName = FileArchiveManager::SafeAndShortFSName(ib.ExPr_attachedFileName, true);
         mhtFilePathName = m_tempPath + "/" + safeFileName;
         QFile mhtfile(mhtFilePathName);
         if (!mhtfile.open(QIODevice::WriteOnly))

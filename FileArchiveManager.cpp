@@ -198,38 +198,6 @@ int FileArchiveManager::FileNameHash(const QString& fileNameOnly)
     return sum;
 }
 
-QString FileArchiveManager::SafeAndShortFSName(const QString& fsName, bool isFileName)
-{
-    //IMPORTANT: Must return only ASCII characters for the file name.
-    //Same logic is used in BookmarkImporter::Import.
-    QString safeFileName;
-    if (isFileName) //We know it is a valid file name then
-        safeFileName = Util::PercentEncodeUnicodeChars(fsName);
-    else //Arbitrary name
-        safeFileName = Util::PercentEncodeUnicodeAndFSChars(fsName);
-
-    if (safeFileName.length() > 64) //For WINDOWS!
-    {
-        if (isFileName)
-        {
-            //Shorten the file name
-            //Using 'complete' base name but 'short' suffix to resist long file names with
-            //  accidental dots in them.
-            const QFileInfo safeFileNameInfo(safeFileName);
-            const QString cbaseName = safeFileNameInfo.completeBaseName();
-            safeFileName = cbaseName.left(qMin(64, cbaseName.length())).trimmed();
-            if (!safeFileNameInfo.suffix().isEmpty())
-                safeFileName += "." + safeFileNameInfo.suffix();
-        }
-        else
-        {
-            //Is e.g an arbitrary name or a folder name
-            safeFileName = safeFileName.left(qMin(64, safeFileName.length())).trimmed();
-        }
-    }
-    return safeFileName;
-}
-
 QString FileArchiveManager::FolderNameInitialsForASCIIChar(char c, bool startedWithPercent)
 {
     if ('A' <= c && c <= 'Z') //Uppercase
@@ -242,6 +210,55 @@ QString FileArchiveManager::FolderNameInitialsForASCIIChar(char c, bool startedW
         return QString(startedWithPercent ? "@Sign" : "@Unicode");
     else //All other signs, including '@'.
         return QString("@Sign");
+}
+
+QString FileArchiveManager::SafeAndShortFSName(const QString& fsName, bool isFileName)
+{
+    //IMPORTANT: Must return only ASCII characters for the file name.
+
+    QString safeFileName = fsName;
+
+    //First remove consecutive dots; this prevents Qt from being able to copy files on Windows.
+    int sfOldLength;
+    do
+    {
+        sfOldLength = safeFileName.length();
+        safeFileName.replace("..", ".");
+    } while (sfOldLength != safeFileName.length());
+
+    //Percent encode invalid and unicode characters.
+    if (isFileName) //We know it is a valid file name then
+        safeFileName = Util::PercentEncodeUnicodeChars(safeFileName);
+    else //Arbitrary name
+        safeFileName = Util::PercentEncodeUnicodeAndFSChars(safeFileName);
+
+    if (safeFileName.length() > 64) //For WINDOWS!
+    {
+        if (isFileName)
+        {
+            //Shorten the file name
+            //Using 'complete' base name but 'short' suffix to resist long file names with
+            //  accidental dots in them.
+            const QFileInfo safeFileNameInfo(safeFileName);
+            const QString suffix = safeFileNameInfo.suffix();
+            if (suffix.isEmpty() || suffix.length() > 20) //Too long suffixes can be just file names.
+            {
+                safeFileName = safeFileNameInfo.fileName().left(qMin(64, safeFileName.length()));
+            }
+            else
+            {
+                const QString cbaseName = safeFileNameInfo.completeBaseName();
+                safeFileName = cbaseName.left(qMin(64, cbaseName.length()));
+                safeFileName += "." + safeFileNameInfo.suffix();
+            }
+        }
+        else
+        {
+            //Is e.g an arbitrary name or a folder name
+            safeFileName = safeFileName.left(qMin(64, safeFileName.length()));
+        }
+    }
+    return safeFileName.trimmed();
 }
 
 QString FileArchiveManager::GetFullArchivePathForRelativeURL(const QString& fileArchiveURL)
