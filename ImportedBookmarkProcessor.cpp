@@ -107,10 +107,13 @@ void ImportedBookmarkProcessor::AddMetaData()
             m_ib->ExPr_ExtraInfosList.append(exInfo);
         }
 
-        exInfo.Name = "firefox: guid";
-        exInfo.Type = ExInfoData::Type_Text;
-        exInfo.Value = m_ib->guid;
-        m_ib->ExPr_ExtraInfosList.append(exInfo);
+        if (!m_ib->guid.isEmpty())
+        {
+            exInfo.Name = "firefox: guid";
+            exInfo.Type = ExInfoData::Type_Text;
+            exInfo.Value = m_ib->guid;
+            m_ib->ExPr_ExtraInfosList.append(exInfo);
+        }
 
         exInfo.Name = "firefox: charset";
         exInfo.Type = ExInfoData::Type_Text;

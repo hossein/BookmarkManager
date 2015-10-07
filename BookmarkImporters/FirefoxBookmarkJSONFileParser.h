@@ -24,6 +24,6 @@ private:
     bool processBookmark(const QJsonObject& obj, ImportedEntityList& elist);
     bool processFolder(const QJsonObject& obj, ImportedEntityList& elist);
 
-    bool processAnno(const QJsonObject& obj, int annoIndex, const QString& quickGuid,
+    bool processAnno(const QJsonObject& obj, int annoIndex, const QString& quickId,
                      QString& annoName, QString& annoValue);
 };

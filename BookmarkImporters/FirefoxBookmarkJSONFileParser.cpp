@@ -87,21 +87,21 @@ bool FirefoxBookmarkJSONFileParser::processObject(const QJsonObject& obj, Import
     value = obj[KEY]; \
     if (!value.isDouble()) \
         return Error(QString("Error in bookmark %1: Value of %2 field is not a number.") \
-                     .arg(quickGuid, KEY)); \
+                     .arg(quickId, KEY)); \
     VARNAME = value.toInt();
 
 #define CHECK_AND_STORE_STRING(VARNAME,KEY) \
     value = obj[KEY]; \
     if (!value.isString()) \
         return Error(QString("Error in bookmark %1: Value of %2 field is not a string.") \
-                     .arg(quickGuid, KEY)); \
+                     .arg(quickId, KEY)); \
     VARNAME = value.toString();
 
 #define CHECK_AND_STORE_DTSTAMP(VARNAME,KEY) \
     value = obj[KEY]; \
     if (!value.isDouble()) \
         return Error(QString("Error in bookmark %1: Value of %2 field is not a number/date.") \
-                     .arg(quickGuid, KEY)); \
+                     .arg(quickId, KEY)); \
     /* We avoid integer overflow; we don't use value.toInt(); should use this way. */ \
     VARNAME = QDateTime::fromMSecsSinceEpoch(static_cast<long long>(value.toDouble()));
 
@@ -118,35 +118,35 @@ bool FirefoxBookmarkJSONFileParser::processObject(const QJsonObject& obj, Import
 bool FirefoxBookmarkJSONFileParser::processBookmark(const QJsonObject& obj, ImportedEntityList& elist)
 {
     QStringList requiredBookmarkKeys, otherBookmarkKeys;
-    requiredBookmarkKeys << "title" << "guid" << "id" << "parent" << "type" << "uri";
-    otherBookmarkKeys << "index" << "dateAdded" << "lastModified" << "annos" << "charset";
+    requiredBookmarkKeys << "title" << "id" << "parent" << "type" << "uri";
+    otherBookmarkKeys << "index" << "guid" << "dateAdded" << "lastModified" << "annos" << "charset";
 
     //Case sensitive compare
     QStringList keys = obj.keys();
     UtilT::ListDifference(requiredBookmarkKeys, keys);
     UtilT::ListDifference(otherBookmarkKeys, keys); //To remove otherKeys entries from keys.
 
-    QString quickGuid = obj["guid"].toString(); /* may be empty */
+    QString quickId = obj["id"].toString(); /* may not be empty */
     if (requiredBookmarkKeys.length() > 0)
         return Error(QString("Required attributes don't exist for bookmark %1: %2")
-                     .arg(quickGuid, requiredBookmarkKeys.join(", ")));
+                     .arg(quickId, requiredBookmarkKeys.join(", ")));
 
     if (keys.length() > 0)
         //We don't expect other names; but they may appear in future firefox versions.
         qDebug() << QString("Extra unknown attributes for bookmark %1: %2")
-                    .arg(quickGuid, keys.join(", "));
+                    .arg(quickId, keys.join(", "));
 
     QJsonValue value;
     keys = obj.keys(); //Required for the macros.
 
     ImportedBookmark ib;
     CHECK_AND_STORE_STRING (ib.title     , "title"       );
-    CHECK_AND_STORE_STRING (ib.guid      , "guid"        );
     CHECK_AND_STORE_INTEGER(ib.intId     , "id"          );
     CHECK_AND_STORE_INTEGER(ib.parentId  , "parent"      );
     CHECK_AND_STORE_STRING (ib.uri       , "uri"         );
 
     STORE_IF_EXISTS_STRING (ib.charset   , "charset"     , QString());
+    STORE_IF_EXISTS_STRING (ib.guid      , "guid"        , QString());
     STORE_IF_EXISTS_INTEGER(ib.intIndex  , "index"       , -1);
     STORE_IF_EXISTS_DTSTAMP(ib.dtAdded   , "dateAdded"   , QDateTime());
     STORE_IF_EXISTS_DTSTAMP(ib.dtModified, "lastModified", QDateTime());
@@ -154,17 +154,17 @@ bool FirefoxBookmarkJSONFileParser::processBookmark(const QJsonObject& obj, Impo
     if (keys.contains("annos"))
     {
         if (!obj["annos"].isArray())
-            return Error(QString("'Annos' for bookmark %1 is not an array.").arg(quickGuid));
+            return Error(QString("'Annos' for bookmark with id %1 is not an array.").arg(quickId));
 
         QString annoName, annoValue;
         QJsonArray annos = obj["annos"].toArray();
         for (int i = 0; i < annos.size(); i++)
         {
             if (!annos[i].isObject())
-                return Error(QString("An 'annos' entry for bookmark %1 is not an object.").arg(quickGuid));
+                return Error(QString("An 'annos' entry for bookmark with id %1 is not an object.").arg(quickId));
 
             const QJsonObject anno = annos[i].toObject();
-            if (!processAnno(anno, i, quickGuid, annoName, annoValue))
+            if (!processAnno(anno, i, quickId, annoName, annoValue))
                 return false;
 
             if (annoName == "bookmarkProperties/description")
@@ -177,8 +177,8 @@ bool FirefoxBookmarkJSONFileParser::processBookmark(const QJsonObject& obj, Impo
             }
             else
             {
-                qDebug() << QString("Unknown annos[%1] for bookmark %2: %3 = %4")
-                            .arg(QString::number(i), quickGuid, annoName, annoValue);
+                qDebug() << QString("Unknown annos[%1] for bookmark with id %2: %3 = %4")
+                            .arg(QString::number(i), quickId, annoName, annoValue);
             }
         }
     }
@@ -197,33 +197,33 @@ bool FirefoxBookmarkJSONFileParser::processBookmark(const QJsonObject& obj, Impo
 bool FirefoxBookmarkJSONFileParser::processFolder(const QJsonObject& obj, ImportedEntityList& elist)
 {
     QStringList requiredFolderKeys, otherFolderKeys;
-    requiredFolderKeys << "title" << "guid" << "id" << "type" << "children";
-    otherFolderKeys << "index" << "parent" << "dateAdded" << "lastModified" << "annos" << "root";
+    requiredFolderKeys << "title" << "id" << "type" << "children";
+    otherFolderKeys << "index" << "guid" << "parent" << "dateAdded" << "lastModified" << "annos" << "root";
 
     //Case sensitive compare
     QStringList keys = obj.keys();
     UtilT::ListDifference(requiredFolderKeys, keys);
     UtilT::ListDifference(otherFolderKeys, keys); //To remove otherKeys entries from keys.
 
-    QString quickGuid = obj["guid"].toString(); /* may be empty */
+    QString quickId = obj["id"].toString(); /* may not be empty */
     if (requiredFolderKeys.length() > 0)
-        return Error(QString("Required attributes don't exist for folder %1: %2")
-                     .arg(quickGuid, requiredFolderKeys.join(", ")));
+        return Error(QString("Required attributes don't exist for folder with id %1: %2")
+                     .arg(quickId, requiredFolderKeys.join(", ")));
 
     if (keys.length() > 0)
         //We don't expect other names; but they may appear in future firefox versions.
-        qDebug() << QString("Extra unknown attributes for folder %1: %2")
-                    .arg(quickGuid, keys.join(", "));
+        qDebug() << QString("Extra unknown attributes for folder with id %1: %2")
+                    .arg(quickId, keys.join(", "));
 
     QJsonValue value;
     keys = obj.keys(); //Required for the macros.
 
     ImportedBookmarkFolder ibf;
     CHECK_AND_STORE_STRING (ibf.title     , "title"       );
-    CHECK_AND_STORE_STRING (ibf.guid      , "guid"        );
     CHECK_AND_STORE_INTEGER(ibf.intId     , "id"          );
 
     STORE_IF_EXISTS_STRING (ibf.root      , "root"        , QString());
+    STORE_IF_EXISTS_STRING (ibf.guid      , "guid"        , QString());
     STORE_IF_EXISTS_INTEGER(ibf.intIndex  , "index"       , -1);
     STORE_IF_EXISTS_INTEGER(ibf.parentId  , "parent"      , -1);
     STORE_IF_EXISTS_DTSTAMP(ibf.dtAdded   , "dateAdded"   , QDateTime());
@@ -232,18 +232,18 @@ bool FirefoxBookmarkJSONFileParser::processFolder(const QJsonObject& obj, Import
     if (keys.contains("annos"))
     {
         if (!obj["annos"].isArray())
-            return Error(QString("'Annos' for bookmark %1 is not an array.").arg(quickGuid));
+            return Error(QString("'Annos' for folder with id %1 is not an array.").arg(quickId));
 
         QString annoName, annoValue;
         QJsonArray annos = obj["annos"].toArray();
         for (int i = 0; i < annos.size(); i++)
         {
             if (!annos[i].isObject())
-                return Error(QString("annos[%1] entry for bookmark %2 is not an object.")
-                             .arg(QString::number(i), quickGuid));
+                return Error(QString("annos[%1] entry for folder with id %2 is not an object.")
+                             .arg(QString::number(i), quickId));
 
             const QJsonObject anno = annos[i].toObject();
-            if (!processAnno(anno, i, quickGuid, annoName, annoValue))
+            if (!processAnno(anno, i, quickId, annoName, annoValue))
                 return false;
 
             if (annoName == "bookmarkProperties/description")
@@ -256,8 +256,8 @@ bool FirefoxBookmarkJSONFileParser::processFolder(const QJsonObject& obj, Import
             }
             else
             {
-                qDebug() << QString("Unknown annos[%1] for bookmark %2: %3 = %4")
-                            .arg(QString::number(i), quickGuid, annoName, annoValue);
+                qDebug() << QString("Unknown annos[%1] for folder with id %2: %3 = %4")
+                            .arg(QString::number(i), quickId, annoName, annoValue);
             }
         }
     }
@@ -265,14 +265,14 @@ bool FirefoxBookmarkJSONFileParser::processFolder(const QJsonObject& obj, Import
     elist.ibflist.append(ibf);
 
     if (!obj["children"].isArray())
-        return Error(QString("Children attribute for folder %1 is not an array.").arg(quickGuid));
+        return Error(QString("Children attribute for folder with id %1 is not an array.").arg(quickId));
 
     QJsonArray childrenArray = obj["children"].toArray();
     for (int i = 0; i < childrenArray.size(); i++)
     {
         if (!childrenArray[i].isObject())
-            return Error(QString("children[%1] entry for folder %2 is not an object.")
-                         .arg(QString::number(i), quickGuid));
+            return Error(QString("children[%1] entry for folder with id %2 is not an object.")
+                         .arg(QString::number(i), quickId));
 
         const QJsonObject child = childrenArray[i].toObject();
         if (!processObject(child, elist))
@@ -283,7 +283,7 @@ bool FirefoxBookmarkJSONFileParser::processFolder(const QJsonObject& obj, Import
     return true;
 }
 
-bool FirefoxBookmarkJSONFileParser::processAnno(const QJsonObject& obj, int annoIndex, const QString& quickGuid,
+bool FirefoxBookmarkJSONFileParser::processAnno(const QJsonObject& obj, int annoIndex, const QString& quickId,
                                                 QString& annoName, QString& annoValue)
 {
     QStringList requiredAnnosKeys, otherAnnosKeys;
@@ -296,13 +296,13 @@ bool FirefoxBookmarkJSONFileParser::processAnno(const QJsonObject& obj, int anno
     UtilT::ListDifference(otherAnnosKeys, keys);
 
     if (requiredAnnosKeys.length() > 0)
-        return Error(QString("Required attributes don't exist for annos[%1] of bookmark %2: %3")
-                     .arg(QString::number(annoIndex), quickGuid, requiredAnnosKeys.join(", ")));
+        return Error(QString("Required attributes don't exist for annos[%1] of bookmark/folder with id %2: %3")
+                     .arg(QString::number(annoIndex), quickId, requiredAnnosKeys.join(", ")));
 
     if (keys.length() > 0)
         //Maybe extra attributes appear in future firefox versions.
-        qDebug() << QString("Extra unknown attributes for annos[%1] of bookmark %2: %3")
-                    .arg(QString::number(annoIndex), quickGuid, keys.join(", "));
+        qDebug() << QString("Extra unknown attributes for annos[%1] of bookmark/folder with id %2: %3")
+                    .arg(QString::number(annoIndex), quickId, keys.join(", "));
 
     QJsonValue value;
     CHECK_AND_STORE_STRING(annoName , "name" );

@@ -38,6 +38,8 @@ bool BookmarkImporter::Initialize()
     //Also if unique ids match but urls dont then don't assume bookmarks are equal. So what was its
     //      usage after all? So it was removed. (btw it might not be called 'firefox-guid' in newer
     //      revisions.)
+    //Also, update: guid seems to be an attribute with firefox's sync or sth. It doesn't exist on
+    //      older firefox's bookmarks backup files.
 
     return true;
 }
@@ -525,7 +527,7 @@ bool BookmarkImporter::FindDuplicate(const ImportedBookmark& ib, const QList<lon
             //  if (!retrieveSuccess)
             //      return false;
             //  QString ffGuidField = extraInfoField("firefox-guid", extraInfos);
-            //  detailsMatch = detailsMatch && (!ffGuidField.isNull() && ib.guid == bdata.Name);
+            //  detailsMatch = detailsMatch && (!ffGuidField.isNull() && ib.guid == ffGuidField);
 
             detailsMatch = detailsMatch && (ib.description.trimmed() == bdata.Desc.trimmed());
             detailsMatch = detailsMatch && (ib.uri == bdata.URL);
