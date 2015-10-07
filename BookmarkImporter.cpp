@@ -515,9 +515,13 @@ bool BookmarkImporter::FindDuplicate(const ImportedBookmark& ib, const QList<lon
                 duplicateBID = existentBID;
 
             //Exact URL match. Check all the properties for exact match also.
+            //Checking to make sure this is not one of [title-less bookmarks] is necessary to avoid
+            //  clashing with the existent bookmark where an automatic (or user-selected) title was
+            //  assigned.
             //`.trimmed()` is necesessary, at least for `ib`.
             bool detailsMatch = true;
-            detailsMatch = detailsMatch && (ib.title.trimmed() == bdata.Name.trimmed());
+            if (!ib.title.trimmed().isEmpty())
+                detailsMatch = detailsMatch && (ib.title.trimmed() == bdata.Name.trimmed());
 
             //Note: To generalize the code below, at least one of the guids of e.g Tagged bookmarks
             //  must match. Probably can't check with single-line if's.
@@ -529,7 +533,11 @@ bool BookmarkImporter::FindDuplicate(const ImportedBookmark& ib, const QList<lon
             //  QString ffGuidField = extraInfoField("firefox-guid", extraInfos);
             //  detailsMatch = detailsMatch && (!ffGuidField.isNull() && ib.guid == ffGuidField);
 
-            detailsMatch = detailsMatch && (ib.description.trimmed() == bdata.Desc.trimmed());
+            //The isEmpty check makes sure we don't unnecessarily nag on a bookmark where user has
+            //  added desctiptions themselves after previous import.
+            if (!ib.description.trimmed().isEmpty())
+                detailsMatch = detailsMatch && (ib.description.trimmed() == bdata.Desc.trimmed());
+
             detailsMatch = detailsMatch && (ib.uri == bdata.URL);
 
             if (detailsMatch)
