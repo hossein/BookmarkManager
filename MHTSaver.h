@@ -82,6 +82,7 @@ private:
     Q_PROPERTY(bool stripJS READ stripJS WRITE setStripJS)
     bool m_stripJS;
 
+    enum RedirectSettings { MAX_REDIRECT_DEPTH = 20 };
     struct Resource
     {
         QUrl fullUrl;

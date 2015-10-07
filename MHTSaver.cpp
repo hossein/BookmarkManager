@@ -179,7 +179,7 @@ void MHTSaver::ResourceLoadingFinished()
         //Btw prevent redirect loops: if we detect one, we just use the current resource and won't
         //  redirect anymore.
         int redirectDepth = m_ongoingReplies[reply].redirectDepth + 1;
-        if (redirectDepth <= 20)
+        if (redirectDepth <= MAX_REDIRECT_DEPTH)
         {
             redirectLocation = reply->header(QNetworkRequest::LocationHeader).toString();
             ///qDebug() << "LOAD: Redirect to: " << redirectLocation;
@@ -565,11 +565,14 @@ void MHTSaver::GenerateMHT()
         //First off, if the file was a redirect replace original data and content type with the
         //  redirect target. We don't replace the url as that requires changing files' source.
         //  We don't remove the target resource or something. It will mess up m_resources list.
+        //Although we have a limit on number of redirects, two pages that redirect to each other
+        //  will cause an infinite loop here. So we use a depth counter here as well.
+        int redirectDepth = 0;
         QUrl redirectTo = res.redirectTo;
         while (!redirectTo.isEmpty())
         {
             int i = findResourceWithURL(redirectTo);
-            if (i == -1)
+            if (i == -1 || redirectDepth++ <= MAX_REDIRECT_DEPTH)
                 break;
 
             currentRedirectUrl = m_resources[i].fullUrl;
