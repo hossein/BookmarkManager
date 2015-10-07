@@ -12,6 +12,9 @@ int main(int argc, char *argv[])
 
     BMApplication app("uniqueid.BookmarkManager", argc, argv);
 
+    //Collect all Qt plugins in a 'plugins/' subdir.
+    app.addLibraryPath(app.applicationDirPath() + "/plugins");
+
     //QtSingleApplication
     //This app needs to be single instance both because of database usage, and because we delete
     //  SandBox folder contents on startup, and also we use only one log file.
