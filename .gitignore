@@ -1,6 +1,3 @@
-# Exclude local revisions
-Revisions/*.7z
-
 # C++ objects and libs
 
 *.slo
