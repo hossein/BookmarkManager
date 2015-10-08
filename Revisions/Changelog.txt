@@ -68,3 +68,8 @@
 2015-09-29  15  Import bugfix
 2015-09-30  16  Import bug finally fixed!
 2015-10-01  17  Fixing import preview dialog
+2015-10-02  16  MHTSaver bugfixes
+2015-10-03  16  Bookmark importer and preview dlg bugfixes
+2015-10-04  15  Import bookmarks together with processing
+2015-10-07  14  Begin using the program finally. From now on project structure changes, and release
+                archives and descriptions will be less frequently made and updated.
