@@ -1,5 +1,7 @@
 #include "LocalHTMLPreviewHandler.h"
 
+#include "BMWebView.h"
+
 #include <QFileInfo>
 #include <QApplication>
 
@@ -7,7 +9,6 @@
 #include <QFrame>
 #include <QProgressBar>
 #include <QToolButton>
-#include <QWebView>
 
 void LocalHTMLPreviewCursorChanger::SetBusyLoadingCursor()
 {
@@ -83,7 +84,7 @@ QWidget* LocalHTMLPreviewHandler::CreateAndFreeWidget(QWidget* parent)
     prgLoadProgress->setTextVisible(false);
     toolbarLayout->addWidget(prgLoadProgress);
 
-    QWebView* webViewWidget = new QWebView(webViewFrame);
+    BMWebView* webViewWidget = new BMWebView(webViewFrame);
     frameLayout->addWidget(webViewWidget, 1);
 
     //Loading and rendering webkit contents os a long asynchronous operation, so we manage cursors.
@@ -115,7 +116,7 @@ bool LocalHTMLPreviewHandler::ClearAndSetDataToWidget(const QString& filePathNam
     if (webViewFrame == NULL || webViewFrame->children().size() == 0)
         return false;
 
-    QWebView* webViewWidget = webViewFrame->findChild<QWebView*>();
+    BMWebView* webViewWidget = webViewFrame->findChild<BMWebView*>();
     if (webViewWidget == NULL)
         return false;
 

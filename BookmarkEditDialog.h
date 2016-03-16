@@ -54,7 +54,7 @@ private slots:
     /// UI Things /////////////////////////////////////////////////////////////////////////////////
     void on_dialRating_valueChanged(int value);
     void on_dialRating_sliderMoved(int position);
-    void on_dialRating_dialReleased();
+    void on_dialRating_sliderReleased();
 
     /// Tags Section //////////////////////////////////////////////////////////////////////////////
     void InitializeTagsUI();

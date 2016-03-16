@@ -173,7 +173,7 @@ void BookmarkEditDialog::on_dialRating_sliderMoved(int position)
     //ui->dialRating->setValue((position / 10) * 10);
 }
 
-void BookmarkEditDialog::on_dialRating_dialReleased()
+void BookmarkEditDialog::on_dialRating_sliderReleased()
 {
     //This only applies to moving with mouse.
     //Required
