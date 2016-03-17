@@ -17,5 +17,8 @@
         <file>res/import_fail.png</file>
         <file>res/web_refresh.png</file>
         <file>res/web_stop.png</file>
+        <file>res/folder-delete.png</file>
+        <file>res/folder-new.png</file>
+        <file>res/folder-edit.png</file>
     </qresource>
 </RCC>

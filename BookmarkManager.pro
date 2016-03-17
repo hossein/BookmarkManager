@@ -71,6 +71,8 @@ SOURCES += main.cpp\
     BookmarksSortFilterProxyModel.cpp \
     PreviewHandlers/BMWebView.cpp \
     BookmarkFolderManager.cpp \
+    BookmarkFoldersView.cpp \
+    BookmarkFolderEditDialog.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -120,6 +122,8 @@ HEADERS  += MainWindow.h \
     BookmarkFilter.h \
     PreviewHandlers/BMWebView.h \
     BookmarkFolderManager.h \
+    BookmarkFoldersView.h \
+    BookmarkFolderEditDialog.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \
@@ -127,7 +131,8 @@ FORMS    += MainWindow.ui \
     OpenWithDialog.ui \
     QuickBookmarkSelectDialog.ui \
     BookmarkExtraInfoAddEditDialog.ui \
-    ImportedBookmarksPreviewDialog.ui
+    ImportedBookmarksPreviewDialog.ui \
+    BookmarkFolderEditDialog.ui
 
 RESOURCES += \
     BookmarkManager.qrc

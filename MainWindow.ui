@@ -23,16 +23,25 @@
       <property name="childrenCollapsible">
        <bool>false</bool>
       </property>
-      <widget class="QListWidget" name="lwTags">
-       <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
+      <widget class="QSplitter" name="splitterFT">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
        </property>
-       <property name="verticalScrollMode">
-        <enum>QAbstractItemView::ScrollPerPixel</enum>
+       <property name="childrenCollapsible">
+        <bool>false</bool>
        </property>
-       <property name="horizontalScrollMode">
-        <enum>QAbstractItemView::ScrollPerPixel</enum>
-       </property>
+       <widget class="BookmarkFoldersView" name="tf" native="true"/>
+       <widget class="QListWidget" name="lwTags">
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="verticalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
+        </property>
+        <property name="horizontalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
+        </property>
+       </widget>
       </widget>
       <widget class="QWidget" name="widget" native="true">
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
@@ -201,6 +210,12 @@
    <class>BookmarksView</class>
    <extends>QWidget</extends>
    <header>BookmarksView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>BookmarkFoldersView</class>
+   <extends>QWidget</extends>
+   <header>BookmarkFoldersView.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

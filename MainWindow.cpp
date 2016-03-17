@@ -36,9 +36,11 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setGeometry(geom);
 
     // Set additional UI sizes
-    QList<int> sizes;
-    sizes << this->width() / 3 << this->width() * 2 / 3;
-    ui->splitter->setSizes(sizes);
+    QList<int> hsizes, vsizes;
+    hsizes << this->width() / 3 << this->width() * 2 / 3;
+    ui->splitter->setSizes(hsizes);
+    vsizes << this->height() * 2 / 3 << this->height() / 3;
+    ui->splitterFT->setSizes(vsizes);
 
     // Add additional UI controls
     QMenu* importMenu = new QMenu("Import");
@@ -67,6 +69,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->bv, SIGNAL(activated(long long)), this, SLOT(bvActivated(long long)));
     connect(ui->bv, SIGNAL(currentRowChanged(long long,long long)),
             this, SLOT(bvCurrentRowChanged(long long,long long)));
+
+    ui->tf->Initialize(&dbm);
 
     // Additional sub-parts initialization.
     if (!dbm.files.InitializeFileArchives())
@@ -654,6 +658,7 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     {
         RefreshUIDataDisplay(true, RA_CustomSelectAndFocus, addedBIDs[0],
                 RA_SaveSelAndScrollAndCheck, -1, allAssociatedTIDs.toList());
+        //TODO: Show the folder 0.
     }
 
     //Show success message
