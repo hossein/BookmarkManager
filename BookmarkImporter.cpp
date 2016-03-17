@@ -323,6 +323,7 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib)
 
         BookmarkManager::BookmarkData bdata;
         bdata.BID = -1; //Not important.
+        bdata.FOID = 0; //We always import into the "Unsorted bookmarks" folder.
         bdata.Name = ib.title.trimmed(); //[title-less bookmarks] are not possible after processing.
         bdata.URL = ib.uri;
         bdata.Desc = ib.description;

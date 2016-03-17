@@ -134,6 +134,7 @@ void BookmarkEditDialog::accept()
     //TODO [handle]: If already exists, show warning, switch to the already existent, etc etc
     BookmarkManager::BookmarkData bdata;
     bdata.BID = editBId; //Not important.
+    bdata.FOID = (editBId == -1 ? 0 : editOriginalBData.FOID);
     bdata.Name = ui->leName->text().trimmed();
     bdata.URL = ui->leURL->text().trimmed();
     bdata.Desc = ui->ptxDesc->toPlainText();

@@ -60,6 +60,7 @@ public:
     struct BookmarkIndexes
     {
         int BID;
+        int FOID;
         int Name;
         int URL;
         int Desc;
@@ -71,6 +72,7 @@ public:
     struct BookmarkData
     {
         long long BID;
+        long long FOID;
         QString Name;
         QString URL;
         QString Desc;
@@ -100,10 +102,12 @@ public:
     bool SetBookmarkDefBFID(long long BID, long long BFID);
     bool RemoveBookmark(long long BID);
 
+    bool RetrieveBookmarksInFolder(QList<long long>& BIDs, const long long FOID);
+
     bool InsertBookmarkIntoTrash(
-            const QString& Name, const QString& URL, const QString& Description, const QString& Tags,
-            const QString& AttachedFIDs, const long long DefFID, const int Rating, long long AddDate,
-            const QString& ExtraInfos);
+            const QString& Folder, const QString& Name, const QString& URL, const QString& Description,
+            const QString& Tags, const QString& AttachedFIDs, const long long DefFID, const int Rating,
+            long long AddDate, const QString& ExtraInfos);
 
     bool RetrieveLinkedBookmarks(long long BID, QList<long long>& linkedBIDs);
     bool UpdateLinkedBookmarks(long long BID, const QList<long long>& originalLinkedBIDs,

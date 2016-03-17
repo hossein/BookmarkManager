@@ -63,6 +63,7 @@ void BookmarksView::Initialize(DatabaseManager* dbm, ListMode listMode, QAbstrac
     if (hh->count() > 0) //This can happen on database errors.
     {
         hh->hideSection(bidx.BID);
+        hh->hideSection(bidx.FOID);
         hh->hideSection(bidx.Desc);
         hh->hideSection(bidx.DefBFID);
         hh->hideSection(bidx.AddDate);

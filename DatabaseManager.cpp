@@ -12,7 +12,8 @@
 #include <QtSql/QSqlResult>
 
 DatabaseManager::DatabaseManager(QWidget* dialogParent, Config* conf)
-    : IManager(dialogParent, conf), bms(dialogParent, conf), files(dialogParent, conf)
+    : IManager(dialogParent, conf)
+    , bms(dialogParent, conf), bfs(dialogParent, conf), files(dialogParent, conf)
     , fview(dialogParent, conf), sets(dialogParent, conf), tags(dialogParent, conf)
 {
 }
@@ -31,6 +32,7 @@ bool DatabaseManager::BackupOpenOrCreate(const QString& fileName)
         success = CreateDatabase(fileName);
 
     bms.setSqlDatabase(db);
+    bfs.setSqlDatabase(db);
     files.setSqlDatabase(db);
     fview.setSqlDatabase(db);
     sets.setSqlDatabase(db);
@@ -48,6 +50,7 @@ void DatabaseManager::Close()
 void DatabaseManager::PopulateModelsAndInternalTables()
 {
     bms.PopulateModelsAndInternalTables();
+    bfs.PopulateModelsAndInternalTables();
     files.PopulateModelsAndInternalTables();
     fview.PopulateModelsAndInternalTables();
     sets.PopulateModelsAndInternalTables();
@@ -123,6 +126,7 @@ bool DatabaseManager::CreateDatabase(const QString& fileName)
     query.exec("INSERT INTO Info(Version) VALUES(" + QString::number(conf->programDatabaseVersion) + ")");
 
     bms.CreateTables();
+    bfs.CreateTables();
     files.CreateTables();
     fview.CreateTables();
     sets.CreateTables();
@@ -293,6 +297,61 @@ bool DatabaseManager::UpgradeDatabase(int dbVersion)
         if (!query.exec("ALTER TABLE BookmarkTag2 RENAME TO BookmarkTag"))
             return Error("Migration Error: v1, Renaming BookmarkTag", query.lastError());
 
+
+        /// New BookmarkFolder table
+        //Copied from BookmarkFolderManager::CreateTables
+        if (!query.exec("CREATE TABLE BookmarkFolder "
+                        "( FOID INTEGER PRIMARY KEY AUTOINCREMENT, ParentFOID INTEGER, "
+                        "  Name TEXT, Desc TEXT, DefFileArchive TEXT, "
+                        "  FOREIGN KEY(ParentFOID) REFERENCES BookmarkFolder(FOID) ON DELETE RESTRICT )"))
+            return Error("Migration Error: v1, Creating BookmarkFolder", query.lastError());
+
+        query.prepare("INSERT INTO BookmarkFolder(FOID, ParentFOID, Name, Desc, DefFileArchive) VALUES (?, ?, ?, ?, ?);");
+        query.addBindValue(0); //Force first PK to be 0.
+        query.addBindValue(-1);
+        query.addBindValue("Unsorted Bookmarks");
+        query.addBindValue("Bookmarks that still aren't in a folder.");
+        query.addBindValue(":arch0:");
+        if (!query.exec())
+            return Error("Migration Error: v1, Inserting into BookmarkFolder", query.lastError());
+
+
+        /// Bookmark has a new FOID field
+        if (!query.exec("CREATE TABLE Bookmark2 "
+                        "( BID INTEGER PRIMARY KEY AUTOINCREMENT, FOID INTEGER, Name TEXT, URL TEXT, "
+                        "  Desc TEXT, DefBFID INTEGER, Rating INTEGER, AddDate INTEGER, "
+                        "  FOREIGN KEY(FOID) REFERENCES BookmarkFolder(FOID) ON DELETE RESTRICT )"))
+            return Error("Migration Error: v1, Creating Bookmark", query.lastError());
+
+        if (!query.exec("INSERT INTO Bookmark2 (BID, FOID, Name, URL, Desc, DefBFID, Rating, AddDate) "
+                        "SELECT BID, 0, Name, URL, Desc, DefBFID, Rating, AddDate FROM Bookmark"))
+            return Error("Migration Error: v1, Copying Bookmark", query.lastError());
+
+        if (!query.exec("DROP TABLE Bookmark"))
+            return Error("Migration Error: v1, Dropping Bookmark", query.lastError());
+
+        if (!query.exec("ALTER TABLE Bookmark2 RENAME TO Bookmark"))
+            return Error("Migration Error: v1, Renaming Bookmark", query.lastError());
+
+
+        /// BookmarkTrash must get the new FOID field, too.
+        if (!query.exec("CREATE TABLE BookmarkTrash2"
+                        "( BID INTEGER PRIMARY KEY AUTOINCREMENT, Folder TEXT, Name TEXT, URL TEXT, "
+                        "  Desc TEXT, AttachedFIDs TEXT, DefFID INTEGER, Rating INTEGER, "
+                        "  Tags TEXT, ExtraInfos TEXT, DeleteDate INTEGER, AddDate INTEGER )"))
+            return Error("Migration Error: v1, Creating BookmarkTrash", query.lastError());
+
+        if (!query.exec("INSERT INTO BookmarkTrash2 (BID, Folder, Name, URL, Desc, AttachedFIDs, "
+                        "  DefFID, Rating, Tags, ExtraInfos, DeleteDate, AddDate) "
+                        "SELECT BID, '', Name, URL, Desc, AttachedFIDs, "
+                        "  DefFID, Rating, Tags, ExtraInfos, DeleteDate, AddDate FROM BookmarkTrash"))
+            return Error("Migration Error: v1, Copying BookmarkTrash", query.lastError());
+
+        if (!query.exec("DROP TABLE BookmarkTrash"))
+            return Error("Migration Error: v1, Dropping BookmarkTrash", query.lastError());
+
+        if (!query.exec("ALTER TABLE BookmarkTrash2 RENAME TO BookmarkTrash"))
+            return Error("Migration Error: v1, Renaming BookmarkTrash", query.lastError());
     }
 
     //if (dbVersion <= 2)

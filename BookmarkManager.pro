@@ -69,7 +69,8 @@ SOURCES += main.cpp\
     qtsingleapplication/qtlocalpeer.cpp \
     qtsingleapplication/qtsingleapplication.cpp \
     BookmarksSortFilterProxyModel.cpp \
-    PreviewHandlers/BMWebView.cpp
+    PreviewHandlers/BMWebView.cpp \
+    BookmarkFolderManager.cpp \
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -117,7 +118,8 @@ HEADERS  += MainWindow.h \
     qtsingleapplication/qtsingleapplication.h \
     BookmarksSortFilterProxyModel.h \
     BookmarkFilter.h \
-    PreviewHandlers/BMWebView.h
+    PreviewHandlers/BMWebView.h \
+    BookmarkFolderManager.h \
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \

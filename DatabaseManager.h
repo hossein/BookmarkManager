@@ -1,6 +1,7 @@
 #pragma once
 #include "IManager.h"
 #include "BookmarkManager.h"
+#include "BookmarkFolderManager.h"
 #include "FileManager.h"
 #include "FileViewManager.h"
 #include "SettingsManager.h"
@@ -12,6 +13,7 @@ class DatabaseManager : public IManager
 public:
     QSqlDatabase db;
     BookmarkManager bms;
+    BookmarkFolderManager bfs;
     FileManager files;
     FileViewManager fview;
     SettingsManager sets;

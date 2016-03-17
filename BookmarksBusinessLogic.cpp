@@ -151,7 +151,7 @@ bool BookmarksBusinessLogic::AddOrEditBookmark(
     QList<long long> updatedBFIDs;
     success = dbm->files.UpdateBookmarkFiles(editBId, bdata.Name,
                                              editOriginalBData.Ex_FilesList, editedFilesList,
-                                             updatedBFIDs, dbm->conf->currentFileArchiveForAddingFiles,
+                                             updatedBFIDs, dbm->conf->currentFileArchiveForAddingFiles, //TODO: No!
                                              "storing bookmark files information");
     if (!success)
         return false;
@@ -203,7 +203,8 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
     //  5. Convert its tag names to CSV string.
     //  6. Convert its extra info to one big chunk of text, probably a json document.
     //  7. Linked bookmarks will be forgotten, as we can't keep the BIDs.
-    //  8. Move the information to BookmarkTrash table.
+    //  8. Convert folder ID to an absolute folder path.
+    //  9. Move the information to BookmarkTrash table.
 
     bool success = true;
     BookmarkManager::BookmarkData bdata;
@@ -241,7 +242,7 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
     //Foreign keys cascades will later delete the tags.
     QString tagNames = bdata.Ex_TagsList.join(",");
 
-    //Stor linked bookmarks' title as extra info.
+    //Store linked bookmarks' title as extra info.
     //No need to delete linked bookmarks. Foreign keys cascades will later delete the links.
     if (!bdata.Ex_LinkedBookmarksList.empty())
     {
@@ -291,10 +292,17 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
     }
     QString extraInfoJSonText = QString::fromUtf8(QJsonDocument(exInfoJsonArray).toJson(QJsonDocument::Compact));
 
+    //Convert folder ID to an absolute folder path.
+    BookmarkFolderManager::BookmarkFolderData fodata;
+    success = dbm->bfs.RetrieveBookmarkFolder(bdata.FOID, fodata);
+    if (!success)
+        return false;
+    QString folderPath = fodata.Ex_AbsolutePath;
+
     //Move the information to BookmarkTrash table
-    success = dbm->bms.InsertBookmarkIntoTrash(bdata.Name, bdata.URL, bdata.Desc, tagNames,
-                                               attachedFIDsStr, defaultFID, bdata.Rating,
-                                               bdata.AddDate, extraInfoJSonText);
+    success = dbm->bms.InsertBookmarkIntoTrash(
+                folderPath, bdata.Name, bdata.URL, bdata.Desc, tagNames,
+                attachedFIDsStr, defaultFID, bdata.Rating, bdata.AddDate, extraInfoJSonText);
     if (!success)
         return false;
 
