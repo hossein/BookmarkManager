@@ -537,6 +537,26 @@ QString FileManager::GetArchiveNameOfFile(const QString& fileArchiveURL)
     return fileArchiveName;
 }
 
+bool FileManager::GetUserFileArchivesAndPaths(QMap<QString, QString>& faPaths)
+{
+    QString retrieveError = "Could not get file archives information from the database.";
+
+    QSqlQuery query(db);
+    query.prepare("SELECT Name, Path FROM FileArchive WHERE UserAccess = 1");
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    faPaths.clear(); //Do it for caller
+    while (query.next())
+    {
+        QString aName = query.value("Name").toString();
+        QString aPath = GetAbsoluteFileArchivePath(query.value("Path").toString());
+        faPaths[aName] = aPath;
+    }
+
+    return true;
+}
+
 bool FileManager::PopulateAndRegisterFileArchives()
 {
     QString retrieveError = "Could not get file archives information from the database.";
@@ -600,7 +620,7 @@ void FileManager::CreateTables()
     //  stores its files, allowing it to be configurable and update-able in case of new versions.
     query.exec("CREATE TABLE FileArchive"
                "( FAID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Type INTEGER, Path TEXT,"
-               "  FileLayout INTEGER )");
+               "  FileLayout INTEGER, UserAccess INTEGER )");
     CreateDefaultArchives(query);
 
     //Require explicitly deleting the relationship before deleting bookmark and file.

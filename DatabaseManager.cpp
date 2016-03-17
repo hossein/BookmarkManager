@@ -352,6 +352,26 @@ bool DatabaseManager::UpgradeDatabase(int dbVersion)
 
         if (!query.exec("ALTER TABLE BookmarkTrash2 RENAME TO BookmarkTrash"))
             return Error("Migration Error: v1, Renaming BookmarkTrash", query.lastError());
+
+        /// FileArchive has a new field UserAccess
+        if (!query.exec("CREATE TABLE FileArchive2 "
+                        "( FAID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Type INTEGER, Path TEXT,"
+                        "  FileLayout INTEGER, UserAccess INTEGER )"))
+            return Error("Migration Error: v1, Creating FileArchive", query.lastError());
+
+        if (!query.exec("INSERT INTO FileArchive2 (FAID, Name, Type, Path, FileLayout, UserAccess) "
+                        "SELECT FAID, Name, Type, Path, FileLayout, 1 FROM FileArchive"))
+            return Error("Migration Error: v1, Copying FileArchive", query.lastError());
+
+        if (!query.exec("DROP TABLE FileArchive"))
+            return Error("Migration Error: v1, Dropping FileArchive", query.lastError());
+
+        if (!query.exec("ALTER TABLE FileArchive2 RENAME TO FileArchive"))
+            return Error("Migration Error: v1, Renaming FileArchive", query.lastError());
+
+        if (!query.exec("Update FileArchive Set UserAccess = 0 "
+                        "WHERE Name = ':trash:' OR Name = ':sandbox:'"))
+            return Error("Migration Error: v1, Updating FileArchive", query.lastError());
     }
 
     //if (dbVersion <= 2)

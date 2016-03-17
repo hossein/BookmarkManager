@@ -11,6 +11,9 @@ class IArchiveManager;
 
 /// FileManager which acts as an interface to file archives and can manage storing, deleting, moving,
 ///   copying and finally retrieving files from/among multiple different file archives.
+/// NOTE: It is important that File Archive names CAN NOT BE RENAMED or REMOVED; as other parts such
+///   as `BookmarkFolder:DefFileArchive` SQL column and `Config::currentFileArchiveForAddingFiles`
+///   config value rely on Archive NAMES, NOT Primary Keys.
 /// Note: The errors of many functions might not be evident to user, so many functions use a string
 ///   `errorWhileContext` argument to give some context for the error that just happened. So e.g it
 ///   adds 'Error while deleting file:' to the bare 'could not get file information' message.
@@ -171,6 +174,10 @@ private:
     /// contain a valid archived file URL. Does NOT check to make sure the fileArchiveName
     /// it returns exists or not.
     QString GetArchiveNameOfFile(const QString& fileArchiveURL);
+
+public:
+    //Helper functions
+    bool GetUserFileArchivesAndPaths(QMap<QString, QString>& faPaths);
 
 private:
     //Initialization
