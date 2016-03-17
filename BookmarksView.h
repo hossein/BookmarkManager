@@ -45,7 +45,7 @@ private:
 public:
     explicit BookmarksView(QWidget* parent = 0);
 
-    /// This class MUST be initialized by calling this function.
+    /// This class MUST be initialized after db is ready by calling this function.
     void Initialize(DatabaseManager* dbm, ListMode listMode, QAbstractItemModel* model);
 
     //QWidget interface

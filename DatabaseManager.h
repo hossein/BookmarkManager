@@ -34,9 +34,9 @@ private:
     bool BackupDatabase(const QString& fileName);
     bool CreateDatabase(const QString& fileName);
 
-    bool EnableForeignKeysSupport();
+    bool SetForeignKeysSupport(bool enable);
 
     bool CheckVersion();
-    bool UpgradeDatabase();
+    bool UpgradeDatabase(int dbVersion);
 
 };

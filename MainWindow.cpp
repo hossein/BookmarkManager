@@ -400,6 +400,9 @@ void MainWindow::NewBookmark()
     BookmarkEditDialog::OutParams outParams;
     BookmarkEditDialog bmEditDialog(&dbm, -1, &outParams, this);
 
+    if (!bmEditDialog.canShow())
+        return; //In case of errors a message is already shown.
+
     int result = bmEditDialog.exec();
     if (result != QDialog::Accepted)
         return;

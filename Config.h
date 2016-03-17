@@ -114,6 +114,7 @@
 ///   - MHTSave can't save e.g https://www.mozilla.org/en-US/firefox/new/. It simply doesn't show up
 ///     correctly!
 ///   - Prevent sleep while importing.
+///   - Option to download MHT on bookmark creation.
 
 class Config
 {
@@ -126,7 +127,7 @@ public:
         //// CONSTANTS
         concurrentBookmarkProcessings = 10;
 
-        programDatabaseVersion = 1;
+        programDatabaseVersion = 2;
         programDatabasetFileName = "bmmgr.sqlite";
 
         nominalFileArchiveDirName = "FileArchive";
