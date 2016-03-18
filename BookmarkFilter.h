@@ -12,14 +12,21 @@ struct BookmarkFilter
 {
 private:
     friend class BookmarksSortFilterProxyModel;
+    QSet<long long> filterFOIDs;
     QSet<long long> filterBIDs;
     QSet<long long> filterTIDs;
 
 public:
     void ClearFilters()
     {
+        filterFOIDs.clear();
         filterBIDs.clear();
         filterTIDs.clear();
+    }
+
+    void FilterSpecificFolderIDs(const QSet<long long>& FOIDs)
+    {
+        filterFOIDs = FOIDs;
     }
 
     void FilterSpecificBookmarkIDs(const QList<long long>& BIDs)
@@ -35,7 +42,8 @@ public:
 private:
     bool FilterEquals(const BookmarkFilter& another)
     {
-        return (filterBIDs == another.filterBIDs)
+        return (filterFOIDs== another.filterFOIDs)
+            && (filterBIDs == another.filterBIDs)
             && (filterTIDs == another.filterTIDs);
     }
 };

@@ -132,6 +132,41 @@ bool BookmarkManager::RetrieveBookmarksInFolder(QList<long long>& BIDs, const lo
     return true;
 }
 
+bool BookmarkManager::RetrieveBookmarksInFolders(QSet<long long>& BIDs, const QSet<long long>& FOIDs)
+{
+    /// Mostly same as TagManager::GetBookmarkIDsForTags
+
+    QString retrieveError = "Could not retrieve folders' bookmarks list from database.";
+    QSqlQuery query(db);
+
+    QString commaSeparatedFOIDs;
+    foreach (long long FOID, FOIDs)
+        commaSeparatedFOIDs += QString::number(FOID) + ",";
+    //Remove the last comma.
+    if (commaSeparatedFOIDs.length() > 0) //Empty-check
+        commaSeparatedFOIDs.chop(1);
+
+    //Note: Ordering by BID or anything here is useless. We use this info to filter the data later.
+    //  Also empty commaSeparatedFOIDs string is fine.
+    query.prepare("SELECT DISTINCT BID FROM Bookmark WHERE FOID IN (" + commaSeparatedFOIDs + ")");
+
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    //Do it for caller
+    BIDs.clear();
+
+    //`query.record()` works even if zero bookmarks were returned (related: query.isActive|isValid).
+    //  Moreover, the indexes are also correct in this case, just the record is empty.
+    //if (!query.first()) //Simply no results where returned.
+    //  return true;
+    int indexOfBID = query.record().indexOf("BID");
+    while (query.next())
+        BIDs.insert(query.value(indexOfBID).toLongLong());
+
+    return true;
+}
+
 bool BookmarkManager::InsertBookmarkIntoTrash(
         const QString& Folder, const QString& Name, const QString& URL, const QString& Description,
         const QString& Tags, const QString& AttachedFIDs, const long long DefFID, const int Rating,

@@ -36,6 +36,19 @@ bool BookmarksSortFilterProxyModel::populateFilteredBookmarkIDs()
     //  the first filter is unused.) Can't use `if (filteredBookmarkIDs.empty())` because it may
     //  have become empty in the previous filters, So we use a `first` variable.
 
+    if (!m_filter.filterFOIDs.empty())
+    {
+        allowAllBookmarks = false;
+        QSet<long long> bookmarkIDsForFolders;
+        if (!dbm->bms.RetrieveBookmarksInFolders(bookmarkIDsForFolders, m_filter.filterFOIDs))
+            success = false;
+        if (first)
+            filteredBookmarkIDs.unite(bookmarkIDsForFolders);
+        else
+            filteredBookmarkIDs.intersect(bookmarkIDsForFolders);
+        first = false;
+    }
+
     if (!m_filter.filterBIDs.empty())
     {
         allowAllBookmarks = false;

@@ -103,6 +103,7 @@ public:
     bool RemoveBookmark(long long BID);
 
     bool RetrieveBookmarksInFolder(QList<long long>& BIDs, const long long FOID);
+    bool RetrieveBookmarksInFolders(QSet<long long>& BIDs, const QSet<long long>& FOIDs);
 
     bool InsertBookmarkIntoTrash(
             const QString& Folder, const QString& Name, const QString& URL, const QString& Description,
