@@ -13,7 +13,7 @@
 #include <QVBoxLayout>
 
 BookmarkFoldersView::BookmarkFoldersView(QWidget *parent)
-    : QWidget(parent), dbm(NULL)
+    : QWidget(parent), dbm(NULL), m_lastEmittedChangeFOID(-1)
 {
     //Initialize this here to protect from some crashes
     twFolders = new QTreeWidget(this);
@@ -61,6 +61,13 @@ void BookmarkFoldersView::Initialize(DatabaseManager* dbm)
     //Select first folder ('0, Unsorted') and expand all items.
     twFolders->setCurrentItem(m_itemForFOID[0]); //Must be done AFTER CONNECTION to disable delete button.
     twFolders->expandAll();
+}
+
+long long BookmarkFoldersView::GetCurrentFOID()
+{
+    if (twFolders->currentItem() == NULL)
+        return 0; //Not possible; Just in case, e.g for uninitialized state.
+    return twFolders->currentItem()->data(0, Qt::UserRole+0).toLongLong();
 }
 
 void BookmarkFoldersView::focusInEvent(QFocusEvent* event)
@@ -143,11 +150,20 @@ void BookmarkFoldersView::RestoreExpands()
 void BookmarkFoldersView::twFoldersCurrentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)
 {
     Q_UNUSED(previous);
-    if (current == NULL)
-        return; //Happens when clearing items.
-    bool enabled = (current->data(0, Qt::UserRole+0).toLongLong() != 0);
+    //`current` becomes NULL when clearing items.
+    bool enabled = (current != NULL && current->data(0, Qt::UserRole+0).toLongLong() != 0);
     m_editAction->setEnabled(enabled);
     m_deleteAction->setEnabled(enabled);
+
+    if (current != NULL)
+    {
+        long long currentFOID = current->data(0, Qt::UserRole+0).toLongLong();
+        if (m_lastEmittedChangeFOID != currentFOID)
+        {
+            emit CurrentFolderChanged(currentFOID);
+            m_lastEmittedChangeFOID = currentFOID;
+        }
+    }
 }
 
 void BookmarkFoldersView::btnNewFolderClicked()

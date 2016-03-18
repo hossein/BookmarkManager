@@ -35,6 +35,7 @@ private slots:
     void on_btnDelete_clicked();
     void bvActivated(long long BID);
     void bvCurrentRowChanged(long long currentBID, long long previousBID);
+    void tfCurrentFolderChanged(long long FOID);
     void lwTagsItemChanged(QListWidgetItem* item);
 
     void on_action_importFirefoxBookmarks_triggered();

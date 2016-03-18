@@ -70,7 +70,12 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->bv, SIGNAL(currentRowChanged(long long,long long)),
             this, SLOT(bvCurrentRowChanged(long long,long long)));
 
+    //Connecting signal after Initialize()ing tf will miss the first emitted signal, which is
+    //  folder '0, Unsorted' being activated. So this relies on a tf behaviour which returns FOID=0
+    //  when it's not initalized.
     ui->tf->Initialize(&dbm);
+    connect(ui->tf, SIGNAL(CurrentFolderChanged(long long)),
+            this, SLOT(tfCurrentFolderChanged(long long)));
 
     // Additional sub-parts initialization.
     if (!dbm.files.InitializeFileArchives())
@@ -127,6 +132,12 @@ void MainWindow::bvCurrentRowChanged(long long currentBID, long long previousBID
     ui->btnView->setEnabled(valid);
     ui->btnEdit->setEnabled(valid);
     ui->btnDelete->setEnabled(valid);
+}
+
+void MainWindow::tfCurrentFolderChanged(long long FOID)
+{
+    Q_UNUSED(FOID);
+    RefreshUIDataDisplay(false, RA_Focus);
 }
 
 void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
@@ -375,9 +386,12 @@ void MainWindow::RefreshTVBookmarksModelView()
                                 || m_allTagsChecked == TCSR_NoneChecked);
 
     BookmarkFilter bfilter;
+
+    bfilter.FilterSpecificFolderIDs(QSet<long long>() << ui->tf->GetCurrentFOID());
+
     if (allTagsOrNoneOfTheTags)
     {
-        //Let bfilter stay clear.
+        //Let bfilter stay clear (actually it's not clear; it has filtered folders already).
     }
     else
     {

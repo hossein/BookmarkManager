@@ -18,6 +18,7 @@ private:
     QAction* m_deleteAction;
     QHash<long long, QTreeWidgetItem*> m_itemForFOID;
     QHash<long long, bool> m_expandedState;
+    long long m_lastEmittedChangeFOID;
 
 public:
     explicit BookmarkFoldersView(QWidget *parent = 0);
@@ -25,6 +26,8 @@ public:
 
     /// This class MUST be initialized after db is ready by calling this function.
     void Initialize(DatabaseManager* dbm);
+
+    long long GetCurrentFOID();
 
     //QWidget interface
 protected:
@@ -44,7 +47,6 @@ private slots:
     void btnDeleteFolderClicked();
 
 signals:
-
-public slots:
+    void CurrentFolderChanged(long long FOID);
 
 };
