@@ -72,7 +72,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //Connecting signal after Initialize()ing tf will miss the first emitted signal, which is
     //  folder '0, Unsorted' being activated. So this relies on a tf behaviour which returns FOID=0
-    //  when it's not initalized.
+    //  when it's not initalized. TODO: Because of this and also the status labels, I think initing the UI must come after these lines.
     ui->tf->Initialize(&dbm);
     connect(ui->tf, SIGNAL(CurrentFolderChanged(long long)),
             this, SLOT(tfCurrentFolderChanged(long long)));
@@ -362,8 +362,7 @@ void MainWindow::RefreshStatusLabels()
 
     if (allTagsOrNoneOfTheTags)
     {
-        ui->lblFilter->setText("Showing All Bookmarks");
-        ui->lblBMCount->setText(QString("%1 Bookmarks").arg(dbm.bms.model.rowCount()));
+        ui->lblFilter->setText("Showing bookmarks");
     }
     else
     {
@@ -374,11 +373,19 @@ void MainWindow::RefreshStatusLabels()
         //We are sure there was at least one tag selected.
         checkedTagsNameList.chop(2);
 
-        ui->lblFilter->setText("Filtering By Tags: " + checkedTagsNameList);
-        ui->lblBMCount->setText(QString("%1/%2 Bookmarks")
-                                .arg(ui->bv->GetDisplayedBookmarksCount())
-                                .arg(ui->bv->GetTotalBookmarksCount()));
+        ui->lblFilter->setText("Showing bookmarks tagged <span style=\"color:green;\">"
+                               + checkedTagsNameList + "</span>");
     }
+
+    QString currentFolder = dbm.bfs.bookmarkFolders[ui->tf->GetCurrentFOID()].Ex_AbsolutePath;
+    if (currentFolder.isEmpty()) //For the '0, Unsorted' folder the path is empty.
+        currentFolder =  dbm.bfs.bookmarkFolders[ui->tf->GetCurrentFOID()].Name;
+    currentFolder = " in folder <span style=\"color:blue;\">" + currentFolder + "</span>";
+    ui->lblFilter->setText(ui->lblFilter->text() + currentFolder);
+
+    ui->lblBMCount->setText(QString("%1/%2 Bookmarks")
+                            .arg(ui->bv->GetDisplayedBookmarksCount())
+                            .arg(ui->bv->GetTotalBookmarksCount()));
 }
 
 void MainWindow::RefreshTVBookmarksModelView(bool forceResetFilter)

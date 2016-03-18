@@ -118,6 +118,8 @@
 ///   - The current way of managing models and 'repopulating' them on each change is very wrong.
 ///     They don't need to be refreshed everytime we change the database. Eliminate them if we
 ///     really can't handle their complexity.
+///   - An 'integrity test' that checks all attached files match with database entries, deletes
+///     empty folder, etc.
 
 class Config
 {
