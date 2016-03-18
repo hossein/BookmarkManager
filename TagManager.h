@@ -31,6 +31,8 @@ public:
     /// exists or not.
     bool SetBookmarkTags(long long BID, const QStringList& tagsList, QList<long long>& associatedTIDs);
 
+    bool GetBookmarkIDsForTags(const QSet<long long>& TIDs, QSet<long long>& BIDs);
+
 private:
     long long MaybeCreateTagAndReturnTID(const QString& tagName);
 

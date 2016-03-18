@@ -178,7 +178,7 @@ void BookmarkEditDialog::on_dialRating_sliderReleased()
 {
     //This only applies to moving with mouse.
     //Required
-    ui->dialRating->setValue((ui->dialRating->value() / 10) * 10);
+    ui->dialRating->setValue(qRound(ui->dialRating->value() / 10.0) * 10);
 }
 
 void BookmarkEditDialog::InitializeTagsUI()

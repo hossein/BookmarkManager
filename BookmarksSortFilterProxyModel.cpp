@@ -50,7 +50,7 @@ bool BookmarksSortFilterProxyModel::populateFilteredBookmarkIDs()
     {
         allowAllBookmarks = false;
         QSet<long long> bookmarkIDsForTags;
-        if (!getBookmarkIDsForTags(m_filter.filterTIDs, bookmarkIDsForTags))
+        if (!dbm->tags.GetBookmarkIDsForTags(m_filter.filterTIDs, bookmarkIDsForTags))
             success = false;
         if (first)
             filteredBookmarkIDs.unite(bookmarkIDsForTags);
@@ -60,38 +60,6 @@ bool BookmarksSortFilterProxyModel::populateFilteredBookmarkIDs()
     }
 
     return success;
-}
-
-bool BookmarksSortFilterProxyModel::getBookmarkIDsForTags(const QSet<long long>& tagIDs, QSet<long long>& bookmarkIDs)
-{
-    QString commaSeparatedTIDs;
-    foreach (long long TID, tagIDs)
-        commaSeparatedTIDs += QString::number(TID) + ",";
-    //Remove the last comma.
-    if (commaSeparatedTIDs.length() > 0) //Empty-check
-        commaSeparatedTIDs.chop(1);
-
-    QString retrieveError = "Could not get tag information for bookmarks from database.";
-    QSqlQuery query(dbm->db);
-    //Note: Ordering by BID or anything here is useless. We use this info to filter the data later.
-    //  Also empty commaSeparatedTIDs string is fine.
-    query.prepare("SELECT DISTINCT BID FROM BookmarkTag WHERE TID IN (" + commaSeparatedTIDs + ")");
-
-    if (!query.exec())
-        return Error(retrieveError, query.lastError());
-
-    //Do it for caller.
-    bookmarkIDs.clear();
-
-    //`query.record()` works even if zero bookmarks were returned (related: query.isActive|isValid).
-    //  Moreover, the indexes are also correct in this case, just the record is empty.
-    //if (!query.first()) //Simply no results where returned.
-    //  return true;
-    int indexOfBID = query.record().indexOf("BID");
-    while (query.next())
-        bookmarkIDs.insert(query.value(indexOfBID).toLongLong());
-
-    return true;
 }
 
 bool BookmarksSortFilterProxyModel::filterAcceptsRow

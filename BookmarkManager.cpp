@@ -138,8 +138,8 @@ bool BookmarkManager::InsertBookmarkIntoTrash(
         long long AddDate, const QString& ExtraInfos)
 {
     QSqlQuery query(db);
-    query.prepare("INSERT INTO BookmarkTrash(Folder, Name, Folder, URL, Desc, AttachedFIDs, DefFID, Rating, Tags, "
-                  "                          ExtraInfos, DeleteDate, AddDate) VALUES (?,?,?,?,?,?,?,?,?,?)");
+    query.prepare("INSERT INTO BookmarkTrash(Folder, Name, URL, Desc, AttachedFIDs, DefFID, Rating, Tags, "
+                  "                          ExtraInfos, DeleteDate, AddDate) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
     query.addBindValue(Folder);
     query.addBindValue(Name);
     query.addBindValue(URL);

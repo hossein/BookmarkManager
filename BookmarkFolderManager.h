@@ -3,8 +3,6 @@
 #include "FileManager.h"
 #include <QHash>
 #include <QStringList>
-#include <QtSql/QSqlQueryModel>
-#include <QtSql/QSqlTableModel>
 
 class DatabaseManager;
 

@@ -29,7 +29,6 @@ public:
 
 private:
     bool populateFilteredBookmarkIDs();
-    bool getBookmarkIDsForTags(const QSet<long long>& tagIDs, QSet<long long>& bookmarkIDs);
 
 protected:
     virtual bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const;

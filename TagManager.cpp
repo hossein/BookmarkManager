@@ -98,6 +98,41 @@ bool TagManager::SetBookmarkTags(long long BID, const QStringList& tagsList,
     return true;
 }
 
+bool TagManager::GetBookmarkIDsForTags(const QSet<long long>& TIDs, QSet<long long>& BIDs)
+{
+    /// Mostly same as BookmarkManager::RetrieveBookmarksInFolders
+
+    QString retrieveError = "Could not get tag information for bookmarks from database.";
+    QSqlQuery query(db);
+
+    QString commaSeparatedTIDs;
+    foreach (long long TID, TIDs)
+        commaSeparatedTIDs += QString::number(TID) + ",";
+    //Remove the last comma.
+    if (commaSeparatedTIDs.length() > 0) //Empty-check
+        commaSeparatedTIDs.chop(1);
+
+    //Note: Ordering by BID or anything here is useless. We use this info to filter the data later.
+    //  Also empty commaSeparatedTIDs string is fine.
+    query.prepare("SELECT DISTINCT BID FROM BookmarkTag WHERE TID IN (" + commaSeparatedTIDs + ")");
+
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    //Do it for caller
+    BIDs.clear();
+
+    //`query.record()` works even if zero bookmarks were returned (related: query.isActive|isValid).
+    //  Moreover, the indexes are also correct in this case, just the record is empty.
+    //if (!query.first()) //Simply no results where returned.
+    //  return true;
+    int indexOfBID = query.record().indexOf("BID");
+    while (query.next())
+        BIDs.insert(query.value(indexOfBID).toLongLong());
+
+    return true;
+}
+
 long long TagManager::MaybeCreateTagAndReturnTID(const QString& tagName)
 {
     QString setTagsError = "Could not alter tag information for bookmark in the database.";

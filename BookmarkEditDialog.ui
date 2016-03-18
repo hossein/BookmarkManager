@@ -136,7 +136,7 @@
            <number>50</number>
           </property>
           <property name="notchTarget">
-           <double>12.500000000000000</double>
+           <double>10.000000000000000</double>
           </property>
           <property name="notchesVisible">
            <bool>true</bool>

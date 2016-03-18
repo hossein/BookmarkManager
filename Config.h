@@ -115,6 +115,9 @@
 ///     correctly!
 ///   - Prevent sleep while importing.
 ///   - Option to download MHT on bookmark creation.
+///   - The current way of managing models and 'repopulating' them on each change is very wrong.
+///     They don't need to be refreshed everytime we change the database. Eliminate them if we
+///     really can't handle their complexity.
 
 class Config
 {

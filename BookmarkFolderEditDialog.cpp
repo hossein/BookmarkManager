@@ -93,7 +93,7 @@ bool BookmarkFolderEditDialog::validate()
                              "There is already a folder with this name in the parent folder.");
         return false;
     }
-
+//TODO: Only allow valid filesystem names.
     return true;
 }
 

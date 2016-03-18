@@ -3,7 +3,6 @@
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
 #include <QtSql/QSqlResult>
-#include <QtSql/QSqlTableModel>
 
 #include "Util.h"
 
