@@ -82,6 +82,23 @@ bool BookmarkFolderManager::RemoveBookmarkFolder(long long FOID)
     return true;
 }
 
+bool BookmarkFolderManager::GetFileArchiveForBookmarkFolder(long long FOID, QString& fileArchiveName)
+{
+    if (!bookmarkFolders.contains(FOID))
+        return Error("Could not get folder file archive information: The selected folder was not found.");
+
+    fileArchiveName = bookmarkFolders[FOID].DefFileArchive;
+    while (fileArchiveName.isEmpty()) //Inherited from parent
+    {
+        //Important: The '0, Unsorted' folder must always have a fixed file archive set, or this
+        //  parent-finding will surpass that folder as well and cause errors.
+        FOID = bookmarkFolders[FOID].ParentFOID;
+        fileArchiveName = bookmarkFolders[FOID].DefFileArchive;
+    }
+
+    return true;
+}
+
 QList<long long> BookmarkFolderManager::GetChildrenIDs(long long FOID)
 {
     QList<long long> childrenIDs;
@@ -104,6 +121,7 @@ void BookmarkFolderManager::CreateTables()
 {
     QSqlQuery query(db);
 
+    //Empty DefFileArchive for a BookmarkFolder means it inherits its parent's DefFileArchive.
     //Don't allow removing a folder that has sub-folders: ON DELETE RESTRICT.
     query.exec("CREATE TABLE BookmarkFolder "
                "( FOID INTEGER PRIMARY KEY AUTOINCREMENT, ParentFOID INTEGER, "

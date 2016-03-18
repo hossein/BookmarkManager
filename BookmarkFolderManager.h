@@ -51,6 +51,9 @@ public:
     bool RemoveBookmarkFolder(long long FOID);
 
     //Helper functions
+    /// Finds the file archive for the folder, which may be inherited from its parent.
+    bool GetFileArchiveForBookmarkFolder(long long FOID, QString& fileArchiveName);
+
     /// The following two functions return a list of first-level sub folders.
     QList<long long> GetChildrenIDs(long long FOID);
     QStringList GetChildrenNames(long long FOID);

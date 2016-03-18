@@ -16,7 +16,10 @@ BookmarkFolderEditDialog::BookmarkFolderEditDialog(DatabaseManager* dbm,
     QMap<QString, int> fileArchiveIndexes;
     //`canShowTheDialog` a.k.a `bool success;`
     canShowTheDialog = dbm->files.GetUserFileArchivesAndPaths(fileArchives);
+    //Populate the archive list
     int i = 0;
+    ui->cboDefFileArchive->addItem("Default (inside parent folder archive)", "");
+    fileArchiveIndexes[""] = i++;
     foreach (const QString fa, fileArchives.keys())
     {
         ui->cboDefFileArchive->addItem(fa + "     " + fileArchives[fa], fa);
@@ -31,7 +34,9 @@ BookmarkFolderEditDialog::BookmarkFolderEditDialog(DatabaseManager* dbm,
         if (!canShowTheDialog)
             return;
 
-        ui->cboDefFileArchive->setCurrentIndex(fileArchiveIndexes[parentfodata.DefFileArchive]);
+        //We set this to "" which shows explicit inheritance of parent folder archive; we don't set
+        //  this to parentfodata.DefFileArchive.
+        ui->cboDefFileArchive->setCurrentIndex(0);
     }
     else
     {
