@@ -97,8 +97,8 @@ bool BookmarksBusinessLogic::AddOrEditBookmarkTrans(
     BeginActionTransaction();
     {
         success = AddOrEditBookmark(editBId, bdata, originalEditBId, editOriginalBData,
-                                     editedLinkedBookmarks, tagsList, associatedTIDs,
-                                     editedFilesList, defaultFileIndex);
+                                    editedLinkedBookmarks, tagsList, associatedTIDs,
+                                    editedFilesList, defaultFileIndex);
 
         if (!success)
         {
@@ -148,10 +148,15 @@ bool BookmarksBusinessLogic::AddOrEditBookmark(
     if (!success)
         return false;
 
+    QString fileArchiveName;
+    success = dbm->bfs.GetFileArchiveForBookmarkFolder(bdata.FOID, fileArchiveName);
+    if (!success)
+        return false;
+
     QList<long long> updatedBFIDs;
     success = dbm->files.UpdateBookmarkFiles(editBId, bdata.Name,
                                              editOriginalBData.Ex_FilesList, editedFilesList,
-                                             updatedBFIDs, dbm->conf->currentFileArchiveForAddingFiles, //TODO: No!
+                                             updatedBFIDs, fileArchiveName,
                                              "storing bookmark files information");
     if (!success)
         return false;

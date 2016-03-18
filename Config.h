@@ -125,7 +125,7 @@ public:
     Config()
     {
         //// CONFIGURATIONS
-        currentFileArchiveForAddingFiles = ":arch0:";
+        //None
 
         //// CONSTANTS
         concurrentBookmarkProcessings = 10;
@@ -145,7 +145,7 @@ public:
     ~Config() { }
 
     //// CONFIGURATIONS
-    QString currentFileArchiveForAddingFiles;
+    //None
 
 
     //// CONSTANTS
