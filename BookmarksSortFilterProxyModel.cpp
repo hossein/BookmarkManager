@@ -11,10 +11,10 @@ BookmarksSortFilterProxyModel::BookmarksSortFilterProxyModel
 
 }
 
-bool BookmarksSortFilterProxyModel::SetFilter(const BookmarkFilter& filter)
+bool BookmarksSortFilterProxyModel::SetFilter(const BookmarkFilter& filter, bool forceReset)
 {
     //If the number of bookmarks is big, we can show a busy cursor to user while filtering.
-    if (!m_filter.FilterEquals(filter))
+    if (forceReset || !m_filter.FilterEquals(filter))
     {
         m_filter = filter;
         bool success = populateFilteredBookmarkIDs();

@@ -298,8 +298,11 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
         }
     }
 
+    //Technically we only need to forceResetFilter only when adding and deleting a bookmark, so we
+    //  could have e.g a new action called `RA_ForceResetFilter`; but for simplicity we force
+    //  resetting the filter on every change, including the unneeded startup and editing actions.
     if (!(bookmarksAction & RA_NoRefreshView))
-        RefreshTVBookmarksModelView();
+        RefreshTVBookmarksModelView(rePopulateModels);
 
     //Refresh status labels.
     RefreshStatusLabels();
@@ -378,7 +381,7 @@ void MainWindow::RefreshStatusLabels()
     }
 }
 
-void MainWindow::RefreshTVBookmarksModelView()
+void MainWindow::RefreshTVBookmarksModelView(bool forceResetFilter)
 {
     //First we check if "All Items" is checked or not. If it's fully checked or fully unchecked,
     //  we don't filter by tags.
@@ -405,7 +408,7 @@ void MainWindow::RefreshTVBookmarksModelView()
         bfilter.FilterSpecificTagIDs(tagIDs);
     }
 
-    ui->bv->SetFilter(bfilter);
+    ui->bv->SetFilter(bfilter, forceResetFilter);
     ui->bv->RefreshView();
 }
 

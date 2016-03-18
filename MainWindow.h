@@ -70,7 +70,7 @@ private:
                               const QList<long long>& newTIDsToCheck = QList<long long>());
     void RefreshStatusLabels();
 
-    void RefreshTVBookmarksModelView();
+    void RefreshTVBookmarksModelView(bool forceResetFilter);
     void NewBookmark();
     void ViewSelectedBookmark();
     void EditSelectedBookmark();

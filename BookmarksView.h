@@ -59,7 +59,7 @@ public:
     void SelectBookmarkWithID(long long bookmarkId);
 
     //Passes to BookmarksSortFilterProxyModel
-    bool SetFilter(const BookmarkFilter& filter);
+    bool SetFilter(const BookmarkFilter& filter, bool forceReset);
 
     int GetTotalBookmarksCount() const;
     int GetDisplayedBookmarksCount() const;

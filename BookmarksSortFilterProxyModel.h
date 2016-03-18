@@ -25,7 +25,12 @@ public:
     //  (on sorting) or `rowsInserted/Removed` (probably on filtering) signals be emitted and
     //  be caught by the view using this model, causing it to update itself.
     //  Without `layoutChanged()` the Bookmarks view doesn't update itself.
-    bool SetFilter(const BookmarkFilter& filter);
+    //forceReset: If user adds/deletes a new bookmark to a folder/tag, refreshing the view doesn't
+    //  show the new bookmark because although bookmarks changed, folders/tags filters are the same
+    //  and the filter didn't change so this function skips filtering the bookmarks again. In such
+    //  situations, we should `forceReset` the filter and filtering the bookmarks again to include
+    //  the new bookmark.
+    bool SetFilter(const BookmarkFilter& filter, bool forceReset);
 
 private:
     bool populateFilteredBookmarkIDs();

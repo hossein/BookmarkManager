@@ -392,7 +392,7 @@ void BookmarkViewDialog::PopulateLinkedBookmarks()
 {
     BookmarkFilter bfilter;
     bfilter.FilterSpecificBookmarkIDs(viewBData.Ex_LinkedBookmarksList);
-    ui->bvLinkedBookmarks->SetFilter(bfilter);
+    ui->bvLinkedBookmarks->SetFilter(bfilter, false);
     ui->bvLinkedBookmarks->RefreshView();
 }
 

@@ -146,11 +146,11 @@ void BookmarksView::SelectBookmarkWithID(long long bookmarkId)
     tvBookmarks->scrollTo(matches[0], QAbstractItemView::EnsureVisible);
 }
 
-bool BookmarksView::SetFilter(const BookmarkFilter& filter)
+bool BookmarksView::SetFilter(const BookmarkFilter& filter, bool forceReset)
 {
     if (!filteredBookmarksModel)
         return false;
-    return filteredBookmarksModel->SetFilter(filter);
+    return filteredBookmarksModel->SetFilter(filter, forceReset);
 }
 
 int BookmarksView::GetTotalBookmarksCount() const

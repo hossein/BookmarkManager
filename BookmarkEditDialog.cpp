@@ -655,7 +655,7 @@ void BookmarkEditDialog::PopulateLinkedBookmarks()
 {
     BookmarkFilter bfilter;
     bfilter.FilterSpecificBookmarkIDs(editedLinkedBookmarks);
-    ui->bvLinkedBookmarks->SetFilter(bfilter);
+    ui->bvLinkedBookmarks->SetFilter(bfilter, false);
     ui->bvLinkedBookmarks->RefreshView();
 }
 
