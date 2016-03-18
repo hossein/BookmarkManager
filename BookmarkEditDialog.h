@@ -25,6 +25,7 @@ private:
     OutParams* outParams;
     long long originalEditBId;
     long long editBId;
+    long long addFOID;
     //The contents of this MUST NOT CHANGE during data editing in the dialog.
     BookmarkManager::BookmarkData editOriginalBData;
 
@@ -36,7 +37,7 @@ private:
     //long long editedDefBFID;
 
 public:
-    explicit BookmarkEditDialog(DatabaseManager* dbm, long long editBId = -1,
+    explicit BookmarkEditDialog(DatabaseManager* dbm, long long editBId = -1, long long addFOID = -1,
                                 OutParams* outParams = NULL, QWidget *parent = 0);
     ~BookmarkEditDialog();
 

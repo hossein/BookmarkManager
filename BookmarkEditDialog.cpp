@@ -35,11 +35,11 @@
 #   define setSectionResizeMode setResizeMode
 #endif
 
-BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId,
+BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId, long long addFOID,
                                        OutParams* outParams, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm),
     canShowTheDialog(false), outParams(outParams),
-    originalEditBId(editBId), editBId(editBId) //[why-two-editbids]
+    originalEditBId(editBId), editBId(editBId) /*[why-two-editbids]*/, addFOID(addFOID)
 {
     ui->setupUi(this);
 
@@ -134,7 +134,7 @@ void BookmarkEditDialog::accept()
     //TODO [handle]: If already exists, show warning, switch to the already existent, etc etc
     BookmarkManager::BookmarkData bdata;
     bdata.BID = editBId; //Not important.
-    bdata.FOID = (editBId == -1 ? 0 : editOriginalBData.FOID);
+    bdata.FOID = (editBId == -1 ? addFOID : editOriginalBData.FOID);
     bdata.Name = ui->leName->text().trimmed();
     bdata.URL = ui->leURL->text().trimmed();
     bdata.Desc = ui->ptxDesc->toPlainText();

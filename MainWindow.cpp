@@ -416,7 +416,7 @@ void MainWindow::NewBookmark()
     //  http://qt-project.org/forums/viewthread/15361
 
     BookmarkEditDialog::OutParams outParams;
-    BookmarkEditDialog bmEditDialog(&dbm, -1, &outParams, this);
+    BookmarkEditDialog bmEditDialog(&dbm, -1, ui->tf->GetCurrentFOID(), &outParams, this);
 
     if (!bmEditDialog.canShow())
         return; //In case of errors a message is already shown.
@@ -445,7 +445,7 @@ void MainWindow::EditSelectedBookmark()
 {
     BookmarkEditDialog::OutParams outParams;
     const long long BID = ui->bv->GetSelectedBookmarkID();
-    BookmarkEditDialog bmEditDialog(&dbm, BID, &outParams, this);
+    BookmarkEditDialog bmEditDialog(&dbm, BID, -1, &outParams, this);
 
     if (!bmEditDialog.canShow())
         return; //In case of errors a message is already shown.
