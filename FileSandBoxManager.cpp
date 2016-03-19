@@ -44,14 +44,10 @@ bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool syst
         return Error(QString("Error while %1:\nThe path \"%2\" does not point to a valid file!")
                      .arg(errorWhileContext, filePathName));
 
-    //Old:
-    //  We don't use `GetFullArchivePathForRelativeURL` here, we are generating the path now!
-    //  QString sandBoxFilePathName = m_archiveRoot + "/" + originalfi.fileName();
-    //New:
-    //  We no more put the files in the root dir. We always use a hash sub-dir now.
-
     const QString randomHash = Util::NonExistentRandomFileNameInDirectory(m_archiveRoot, 8);
-    const QString sandBoxFilePathName = m_archiveRoot + "/" + randomHash + "/" + originalfi.fileName();
+    const QString sandBoxFileRelPathName = randomHash + "/" + originalfi.fileName();
+    const QString sandBoxFilePathName = GetFullArchivePathForRelativeURL(sandBoxFileRelPathName);
+    fileArchiveURL = m_archiveName + "/" + sandBoxFileRelPathName; //Out param
 
     //Let's create the hashed directory
     if (!QDir(m_archiveRoot).mkdir(randomHash))
@@ -64,22 +60,16 @@ bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool syst
     {
         bool deleteSuccess = Util::RemoveDirectoryRecursively(sandBoxFilePathName);
         if (!deleteSuccess)
-        {
-            fileArchiveURL = QString();
             return Error(QString("Error while %1:\nThe target for creating sandboxed file '%2' is a "
                          "directory and cannot be deleted!").arg(errorWhileContext, sandBoxFilePathName));
-        }
     }
     else if (sbfi.exists()) //and is a file
     {
         bool deleteSuccess = QFile::remove(sandBoxFilePathName);
         if (!deleteSuccess)
-        {
-            fileArchiveURL = QString();
             return Error(QString("Error while %1:\nA file already exists at the target for creating "
-                                 "sandboxed file '%2' and cannot be deleted!")
+                         "sandboxed file '%2' and cannot be deleted!")
                          .arg(errorWhileContext, sandBoxFilePathName));
-        }
     }
     //else if (sbfi not exists)
     //  fine;
@@ -88,16 +78,11 @@ bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool syst
     bool copySuccess = QFile::copy(filePathName, sandBoxFilePathName);
     if (!copySuccess)
     {
-        fileArchiveURL = QString();
         return Error(QString("Error while %1:\n"
                              "Could not create a temporary, sandboxed file for read-only opening!\n"
                              "Can not continue\nSource File: %2\nDestination File: %3")
                      .arg(errorWhileContext, filePathName, sandBoxFilePathName));
     }
-
-    //Set the Output
-    //fileArchiveURL = sandBoxFilePathName; No: must be colon-ized :ArchiveName: URL.
-    fileArchiveURL = m_archiveName + "/" + randomHash + "/" + originalfi.fileName();
 
     //Remove the original file.
     if (systemTrashOriginalFile)

@@ -41,9 +41,11 @@ bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool syst
 
     //Decide where should the file be copied.
     QString fileRelArchiveURL = CalculateFileArchiveURL(filePathName, groupHint);
+    if (fileRelArchiveURL.isEmpty())
+        return false;
+
     QString targetFilePathName = GetFullArchivePathForRelativeURL(fileRelArchiveURL);
-    //Out param
-    fileArchiveURL = m_archiveName + "/" + fileRelArchiveURL;
+    fileArchiveURL = m_archiveName + "/" + fileRelArchiveURL; //Out param
 
     //Create its directory if doesn't exist.
     QString targetFileDir = QFileInfo(targetFilePathName).absolutePath();
@@ -183,7 +185,9 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
         return fileArchiveURL;
     }
 
-    return QString(); //Error obviously
+    Error(QString("Invalid layout for file archive %1: %2.")
+          .arg(m_archiveName, QString::number(m_fileLayout)));
+    return QString();
 }
 
 int FileArchiveManager::FileNameHash(const QString& fileNameOnly)
