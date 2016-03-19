@@ -54,7 +54,7 @@ bool FileSandBoxManager::AddFileToArchive(const QString& filePathName, bool syst
         return Error(QString("Error while %1:\nTemporary sandbox sub-directory could not be created!\n"
                              "Path: %2").arg(errorWhileContext, m_archiveRoot + "/" + randomHash));
 
-    //Try
+    //This must not happen; we've generated a non-existent random hash; code is here just in case.
     QFileInfo sbfi(sandBoxFilePathName);
     if (sbfi.isDir())
     {

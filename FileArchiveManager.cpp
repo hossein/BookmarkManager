@@ -138,37 +138,15 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
     else if (m_fileLayout == 1) //Normal hierarchical file name layout
     {
         bool isFileName = (groupHint.isEmpty());
-        QString nameForHier = (isFileName ? fi.fileName() : groupHint);
+        QString uHierName = (isFileName ? fi.fileName() : groupHint);
 
-        bool firstWasPercent  = (nameForHier.length() > 0 && nameForHier.at(0) == QChar('%'));
-        bool SecondWasPercent = (nameForHier.length() > 1 && nameForHier.at(1) == QChar('%'));
-
-        //Percent-encode as required and make it short.
-        QString sHierName = SafeAndShortFSName(nameForHier, isFileName);
-
-        //We know sHierName just contains ASCII characters.
-        //  Use the completeBaseName of the file name to not count e.g 'a.png' a two letter name.
-        //    So if it's not a file name we simply don't calculate it's base name!
-        //  The `if` check for file name length > 0 was put just in case we pass a file with an
-        //    empty base name e.g '.gitconfig', or for future usecases.
-        QString sbaseName = sHierName;
-        if (isFileName)
-            sbaseName = QFileInfo(sHierName).completeBaseName();
-
-        QString firstCharInit = "-";
-        if (sbaseName.length() > 0)
-            firstCharInit = FolderNameInitialsForASCIIChar(sbaseName.at(0).unicode(), firstWasPercent);
-
-        QString secondCharInit = "-";
-        if (sbaseName.length() > 1)
-            secondCharInit = FolderNameInitialsForASCIIChar(sbaseName.at(1).unicode(), SecondWasPercent);
-
-        //Put files like 'f/fi/{GroupHint|@BM_Files}/filename.ext'. Read commit msg for '@BM_Files' reason.
-        QString fileArchivePath = firstCharInit + "/" + firstCharInit + secondCharInit + "/";
+        //Put files like 'f/fi/{GroupHint|@BM_Files}/filename.ext'.
+        //  Files without groupHint go to '@BM_Files' dir instead of cluttering the folders.
+        QString fileArchivePath = FolderHierForName(uHierName, isFileName);
         if (groupHint.isEmpty())
             fileArchivePath += "@BM_Files/";
         else
-            fileArchivePath += sHierName + "/";
+            fileArchivePath += SafeAndShortFSName(uHierName, isFileName) + "/";
         QString safeFileName = SafeAndShortFSName(fi.fileName(), true);
         QString fileArchiveURL = fileArchivePath + safeFileName;
 
@@ -177,7 +155,7 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
         //`exists` returns `false` if symlink exists but its target doesn't.
         if (calculatedFileURLInfo.exists() || calculatedFileURLInfo.isSymLink())
         {
-            QString calculatedFileDir = calculatedFileURLInfo.absolutePath();
+            QString calculatedFileDir = calculatedFileURLInfo.absolutePath(); //i.e absolute `fileArchivePath`
             QString randomHash = Util::NonExistentRandomFileNameInDirectory(calculatedFileDir, 8);
             fileArchiveURL = fileArchivePath + randomHash + "/" + safeFileName;
         }
@@ -202,7 +180,20 @@ int FileArchiveManager::FileNameHash(const QString& fileNameOnly)
     return sum;
 }
 
-QString FileArchiveManager::FolderNameInitialsForASCIIChar(char c, bool startedWithPercent)
+QString FileArchiveManager::FolderHierForName(const QString& name, bool isFileName)
+{
+    //Calculate the initial chars for folder names.
+    //  Use the completeBaseName of the file name to not count e.g 'a.png' a two letter name.
+    //    So if it's not a file name we simply don't calculate it's base name!
+    //  The `if` check for file name length > 0 was put just in case we pass a file with an
+    //    empty base name e.g '.gitconfig', or for future usecases.
+    QString baseName = (isFileName ? QFileInfo(name).completeBaseName() : name);
+    QString firstCharInit  = (baseName.length() > 0 ? FolderNameInitialsForChar(baseName.at(0).unicode()) : "-");
+    QString secondCharInit = (baseName.length() > 1 ? FolderNameInitialsForChar(baseName.at(1).unicode()) : "-");
+    return firstCharInit + "/" + firstCharInit + secondCharInit + "/";
+}
+
+QString FileArchiveManager::FolderNameInitialsForChar(int c)
 {
     if ('A' <= c && c <= 'Z') //Uppercase
         return QString(QChar(c));
@@ -210,10 +201,10 @@ QString FileArchiveManager::FolderNameInitialsForASCIIChar(char c, bool startedW
         return QString(QChar(c - ('a' - 'A')));
     else if ('0' <= c && c <= '9') //Numbers
         return QString("@Digit");
-    else if (c == '%') //Percent encoded unicode
-        return QString(startedWithPercent ? "@Sign" : "@Unicode");
-    else //All other signs, including '@'.
+    else if (32 <= c && c <= 126) //Not including 127
         return QString("@Sign");
+    else
+        return QString("@Unicode");
 }
 
 QString FileArchiveManager::SafeAndShortFSName(const QString& fsName, bool isFileName)

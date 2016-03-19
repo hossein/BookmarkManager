@@ -27,7 +27,7 @@ public:
                                const QString& errorWhileContext);
 
 private:
-    /// Could be called `CreateFileArchiveURL` too.
+    /// Could be called `CreateFileArchiveURL` too. Return's a URL relative to archive root.
     /// Note: This only happens ONCE, and later if file name in archive, or any other property
     ///       that is used to calculate the hash or anyhting in the FileArchive changes, the file
     ///       remains in the folder that it always was and doesn't change location.
@@ -35,7 +35,9 @@ private:
     ///       the file in the FileArchive.
     QString CalculateFileArchiveURL(const QString& fileFullPathName, const QString& groupHint);
     int FileNameHash(const QString& fileNameOnly);
-    QString FolderNameInitialsForASCIIChar(char c, bool startedWithPercent);
+    ///FolderHierForName returns returns 'f/fi/' for 'fileName'.
+    QString FolderHierForName(const QString& name, bool isFileName);
+    QString FolderNameInitialsForChar(int c);
 
 public:
     ///Utility function
