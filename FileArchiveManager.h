@@ -21,8 +21,8 @@ public:
 
     /// A Files Transaction MUST have been started before calling Add/Remove functions.
     bool AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
-                          const QString& groupHint, const QString& errorWhileContext,
-                          QString& fileArchiveURL);
+                          const QString& folderHint, const QString& groupHint,
+                          const QString& errorWhileContext, QString& fileArchiveURL);
     bool RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash,
                                const QString& errorWhileContext);
 
@@ -33,7 +33,8 @@ private:
     ///       remains in the folder that it always was and doesn't change location.
     ///       Also, changing the file extension does NOT change the extension that is used with
     ///       the file in the FileArchive.
-    QString CalculateFileArchiveURL(const QString& fileFullPathName, const QString& groupHint);
+    QString CalculateFileArchiveURL(const QString& fileFullPathName,
+                                    const QString& folderHint, const QString& groupHint);
     int FileNameHash(const QString& fileNameOnly);
     ///FolderHierForName returns returns 'f/fi/' for 'fileName'.
     QString FolderHierForName(const QString& name, bool isFileName);

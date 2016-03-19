@@ -42,8 +42,8 @@ public:
     /// Also,  one must NEVER pre-calculate the file archive urls. Duplicate file names ay cause
     /// problems, especially in case of FAM.
     virtual bool AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
-                                  const QString& groupHint, const QString& errorWhileContext,
-                                  QString& fileArchiveURL) = 0;
+                                  const QString& folderHint, const QString& groupHint,
+                                  const QString& errorWhileContext, QString& fileArchiveURL) = 0;
     virtual bool RemoveFileFromArchive(const QString& fileRelArchiveURL, bool trash,
                                        const QString& errorWhileContext) = 0;
 

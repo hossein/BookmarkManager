@@ -172,11 +172,11 @@ bool FileManager::RetrieveBookmarkFiles(long long BID, QList<FileManager::Bookma
     return true;
 }
 
-bool FileManager::UpdateBookmarkFiles(long long BID, const QString& groupHint,
+bool FileManager::UpdateBookmarkFiles(long long BID, const QString& folderHint, const QString& groupHint,
                                       const QList<BookmarkFile>& originalBookmarkFiles,
                                       const QList<BookmarkFile>& editedBookmarkFiles,
                                       QList<long long>& editedBFIDs,
-                                      const QString& fileArchiveNameForNewFiles,
+                                      const QString& fileArchiveName,
                                       const QString& errorWhileContext)
 {
     //Find the bookmarks that were removed. We used BFID, not FID. No difference. Not even in
@@ -221,7 +221,7 @@ bool FileManager::UpdateBookmarkFiles(long long BID, const QString& groupHint,
         //Insert new files into our FileArchive.
         if (bf.FID)
         {
-            if (!AddFile(bf, fileArchiveNameForNewFiles, groupHint, errorWhileContext))
+            if (!AddFile(bf, fileArchiveName, folderHint, groupHint, errorWhileContext))
                 return false;
         }
 
@@ -277,7 +277,7 @@ bool FileManager::CopyFileToSandBoxAndGetAddress(const QString& filePathName, QS
     //FileSandBoxManager archive doesn't need transactions for its `AddFileToArchive`.
     QString fileArchiveURL;
     bool success = fileArchives[conf->sandboxArchiveName]
-            ->AddFileToArchive(filePathName, false, QString(), "copying file to sandbox", fileArchiveURL);
+            ->AddFileToArchive(filePathName, false, QString(), QString(), "copying file to sandbox", fileArchiveURL);
     if (!success)
         return false;
 
@@ -287,7 +287,8 @@ bool FileManager::CopyFileToSandBoxAndGetAddress(const QString& filePathName, QS
 bool FileManager::CopyFileToSandBoxAndGetAddress(long long FID, QString& fsFilePath)
 {
     QString fileArchiveURL;
-    bool success = CopyFile(FID, conf->sandboxArchiveName, "copying file to sandbox", fileArchiveURL);
+    bool success = CopyFile(
+        FID, conf->sandboxArchiveName, QString(), QString(), "copying file to sandbox", fileArchiveURL);
     if (!success)
         return false;
 
@@ -338,13 +339,14 @@ bool FileManager::UpdateFile(long long FID, const FileManager::BookmarkFile& bf,
 }
 
 bool FileManager::AddFile(FileManager::BookmarkFile& bf, const QString& fileArchiveName,
-                          const QString& groupHint, const QString& errorWhileContext)
+                          const QString& folderHint, const QString& groupHint,
+                          const QString& errorWhileContext)
 {
     //Add file to our FileArchive directory and also set the `bf.ArchiveURL` field.
     bool addFileToArchiveSuccess =
             fileArchives[fileArchiveName]->
-            AddFileToArchive(bf.OriginalName, bf.Ex_RemoveAfterAttach, groupHint, errorWhileContext,
-                             bf.ArchiveURL);
+            AddFileToArchive(bf.OriginalName, bf.Ex_RemoveAfterAttach, folderHint, groupHint,
+                             errorWhileContext, bf.ArchiveURL);
 
     if (!addFileToArchiveSuccess)
         return false;
@@ -425,7 +427,8 @@ bool FileManager::TrashFile(long long FID, const QString& errorWhileContext)
 
     //First move the physical file
     QString newFileArchiveURL;
-    bool success = MoveFile(FID, conf->trashArchiveName, errorWhileContext, newFileArchiveURL);
+    bool success = MoveFile(
+        FID, conf->trashArchiveName, QString(), QString(), errorWhileContext, newFileArchiveURL);
     if (!success)
         return false;
 
@@ -453,20 +456,24 @@ bool FileManager::RemoveFileFromArchive(const QString& fileArchiveURL, bool tras
 }
 
 bool FileManager::MoveFile(long long FID, const QString& destArchiveName,
+                           const QString& folderHint, const QString& groupHint,
                            const QString& errorWhileContext, QString& newFileArchiveURL)
 {
-    return MoveOrCopyAux(FID, destArchiveName, true, errorWhileContext, newFileArchiveURL);
+    return MoveOrCopyAux(FID, destArchiveName, true, folderHint, groupHint,
+                         errorWhileContext, newFileArchiveURL);
 }
 
 bool FileManager::CopyFile(long long FID, const QString& destArchiveName,
+                           const QString& folderHint, const QString& groupHint,
                            const QString& errorWhileContext, QString& newFileArchiveURL)
 {
-    return MoveOrCopyAux(FID, destArchiveName, false, errorWhileContext, newFileArchiveURL);
+    return MoveOrCopyAux(FID, destArchiveName, false, folderHint, groupHint,
+                         errorWhileContext, newFileArchiveURL);
 }
 
-bool FileManager::MoveOrCopyAux(long long FID, const QString& destArchiveName,
-                                bool removeOriginal, const QString& errorWhileContext,
-                                QString& newFileArchiveURL)
+bool FileManager::MoveOrCopyAux(long long FID, const QString& destArchiveName, bool removeOriginal,
+                                const QString& folderHint, const QString& groupHint,
+                                const QString& errorWhileContext, QString& newFileArchiveURL)
 {
     QString retrieveFileError = "Unable to retrieve file information from the database.";
     QSqlQuery query(db);
@@ -493,7 +500,7 @@ bool FileManager::MoveOrCopyAux(long long FID, const QString& destArchiveName,
     //  could only (System)Trash the file, not fully delete it by the way).
 
     bool success = fileArchives[destArchiveName]->AddFileToArchive(
-                fullArchiveFilePath, false, QString(), errorWhileContext, newFileArchiveURL);
+            fullArchiveFilePath, false, folderHint, groupHint, errorWhileContext, newFileArchiveURL);
     if (!success)
         return false;
 

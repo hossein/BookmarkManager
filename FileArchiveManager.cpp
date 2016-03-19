@@ -21,8 +21,8 @@ FileArchiveManager::~FileArchiveManager()
 }
 
 bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool systemTrashOriginalFile,
-                                          const QString& groupHint, const QString& errorWhileContext,
-                                          QString& fileArchiveURL)
+                                          const QString& folderHint, const QString& groupHint,
+                                          const QString& errorWhileContext, QString& fileArchiveURL)
 {
     //This is like an assert.
     if (!filesTransaction->isTransactionStarted())
@@ -40,7 +40,7 @@ bool FileArchiveManager::AddFileToArchive(const QString& filePathName, bool syst
                      .arg(errorWhileContext, filePathName));
 
     //Decide where should the file be copied.
-    QString fileRelArchiveURL = CalculateFileArchiveURL(filePathName, groupHint);
+    QString fileRelArchiveURL = CalculateFileArchiveURL(filePathName, folderHint, groupHint);
     if (fileRelArchiveURL.isEmpty())
         return false;
 
@@ -116,7 +116,8 @@ bool FileArchiveManager::RemoveFileFromArchive(const QString& fileRelArchiveURL,
     return true;
 }
 
-QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathName, const QString& groupHint)
+QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathName,
+                                                    const QString& folderHint, const QString& groupHint)
 {
     QFileInfo fi(fileFullPathName);
 
@@ -137,16 +138,34 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
     }
     else if (m_fileLayout == 1) //Normal hierarchical file name layout
     {
-        bool isFileName = (groupHint.isEmpty());
-        QString uHierName = (isFileName ? fi.fileName() : groupHint);
+        QString fileArchivePath;
 
-        //Put files like 'f/fi/{GroupHint|@BM_Files}/filename.ext'.
-        //  Files without groupHint go to '@BM_Files' dir instead of cluttering the folders.
-        QString fileArchivePath = FolderHierForName(uHierName, isFileName);
-        if (groupHint.isEmpty())
-            fileArchivePath += "@BM_Files/";
-        else
-            fileArchivePath += SafeAndShortFSName(uHierName, isFileName) + "/";
+        if (folderHint.isEmpty())
+        {
+            //Unsorted bookmarks, use groupHint
+            bool isFileName = (groupHint.isEmpty());
+            QString uHierName = (isFileName ? fi.fileName() : groupHint);
+
+            //Put files like 'f/fi/{GroupHint|@BM_Files}/filename.ext'.
+            //  Files without groupHint go to '@BM_Files' dir instead of cluttering the folders.
+            fileArchivePath = FolderHierForName(uHierName, isFileName);
+            if (groupHint.isEmpty())
+                fileArchivePath += "@BM_Files/";
+            else
+                fileArchivePath += SafeAndShortFSName(uHierName, isFileName) + "/";
+        }
+        else //if (!folderHint.isEmpty())
+        {
+            //File put in a folder; disregard groupHint and use the real path.
+            //  It is IMPORTANT that folderHint be a valid fileSystem path part.
+            fileArchivePath = folderHint;
+            if (fileArchivePath.startsWith('/'))
+                fileArchivePath = fileArchivePath.mid(1);
+            if (!fileArchivePath.endsWith('/'))
+                fileArchivePath += '/';
+        }
+
+        //Generate final file name.
         QString safeFileName = SafeAndShortFSName(fi.fileName(), true);
         QString fileArchiveURL = fileArchivePath + safeFileName;
 

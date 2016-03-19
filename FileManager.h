@@ -100,11 +100,11 @@ public:
     ///     actions are happening, this can't just change the parameters it wants.
     ///     This function just returns the BFIDs that are added or edited in EQUIVALENT INDEXES TO
     ///     the `editedBookmarkFiles` arg in `editedBFIDs` list.
-    bool UpdateBookmarkFiles(long long BID, const QString& groupHint,
+    bool UpdateBookmarkFiles(long long BID, const QString& folderHint, const QString& groupHint,
                              const QList<BookmarkFile>& originalBookmarkFiles,
                              const QList<BookmarkFile>& editedBookmarkFiles,
                              QList<long long>& editedBFIDs,
-                             const QString& fileArchiveNameForNewFiles,
+                             const QString& fileArchiveName,
                              const QString& errorWhileContext);
 
     //NEEDS Transaction.
@@ -134,7 +134,8 @@ private:
     /// Adds the file into the FileArchive folder and Updates the "FID" and "ArchiveURL" fields.
     /// Make sure 'fileArchiveName` exists before calling this function.
     bool AddFile(BookmarkFile& bf, const QString& fileArchiveName,
-                 const QString& groupHint, const QString& errorWhileContext);
+                 const QString& folderHint, const QString& groupHint,
+                 const QString& errorWhileContext);
 
     //Removing bookmarks
     /// This function will clean-up the no-more-used files automatically by calling "RemoveFile"
@@ -159,11 +160,14 @@ private:
     ///   If the ArchiveMan doesn't need transactions and we are simply copying, no transaction is
     ///   required.
     bool MoveFile(long long FID, const QString& destArchiveName,
+                  const QString& folderHint, const QString& groupHint,
                   const QString& errorWhileContext, QString& newFileArchiveURL);
     bool CopyFile(long long FID, const QString& destArchiveName,
+                  const QString& folderHint, const QString& groupHint,
                   const QString& errorWhileContext, QString& newFileArchiveURL);
     /// Auxiliary function used by the above functions.
     bool MoveOrCopyAux(long long FID, const QString& destArchiveName, bool removeOriginal,
+                       const QString& folderHint, const QString& groupHint,
                        const QString& errorWhileContext, QString& newFileArchiveURL);
 
 private:

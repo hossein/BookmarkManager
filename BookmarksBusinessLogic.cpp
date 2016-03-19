@@ -149,12 +149,13 @@ bool BookmarksBusinessLogic::AddOrEditBookmark(
         return false;
 
     QString fileArchiveName;
+    QString bookmarkFolderPath = dbm->bfs.bookmarkFolders[bdata.FOID].Ex_AbsolutePath;
     success = dbm->bfs.GetFileArchiveForBookmarkFolder(bdata.FOID, fileArchiveName);
     if (!success)
         return false;
 
     QList<long long> updatedBFIDs;
-    success = dbm->files.UpdateBookmarkFiles(editBId, bdata.Name,
+    success = dbm->files.UpdateBookmarkFiles(editBId, bookmarkFolderPath, bdata.Name,
                                              editOriginalBData.Ex_FilesList, editedFilesList,
                                              updatedBFIDs, fileArchiveName,
                                              "storing bookmark files information");
