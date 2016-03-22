@@ -58,6 +58,9 @@ public:
     QList<long long> GetChildrenIDs(long long FOID);
     QStringList GetChildrenNames(long long FOID);
 
+private:
+    bool CalculateAbsolutePaths();
+
 protected:
     // ISubManager interface
     void CreateTables();

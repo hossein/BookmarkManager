@@ -120,6 +120,11 @@
 ///     really can't handle their complexity.
 ///   - An 'integrity test' that checks all attached files match with database entries, deletes
 ///     empty folder, etc.
+///   - Also, add a 'Relocate all files' which fixes the URLs of all files, because moving files and
+///     folders, renaming folders, changing file archives, etc does not currently automatically fix
+///     their location on file system. See the end of BookmarkFolderManager::AddOrEditBookmarkFolder.
+///     In this case BookmarkFolderEdit and FileArchiveEdit dialogs must tell user that their
+///     changes will not be applied on the filesystem until they select the mentioned option.
 
 class Config
 {

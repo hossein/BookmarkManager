@@ -1,5 +1,6 @@
 #include "BookmarkFolderManager.h"
 
+#include <QQueue>
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
 #include <QtSql/QSqlResult>
@@ -21,12 +22,13 @@ bool BookmarkFolderManager::RetrieveBookmarkFolder(long long FOID, BookmarkFolde
 
 bool BookmarkFolderManager::AddOrEditBookmarkFolder(long long& FOID, BookmarkFolderData& fodata)
 {
-    QString updateError = (FOID == -1
+    bool isAdd = (FOID == -1);
+    QString updateError = (isAdd
                            ? "Could not add folder information to database."
                            : "Could not edit folder information.");
 
     QString querystr;
-    if (FOID == -1)
+    if (isAdd)
     {
         querystr = "INSERT INTO BookmarkFolder(ParentFOID, Name, Desc, DefFileArchive) "
                    "VALUES (?, ?, ?, ?);";
@@ -47,13 +49,13 @@ bool BookmarkFolderManager::AddOrEditBookmarkFolder(long long& FOID, BookmarkFol
     query.addBindValue(fodata.Desc);
     query.addBindValue(fodata.DefFileArchive);
 
-    if (FOID != -1) //Edit
+    if (!isAdd) //Edit
         query.addBindValue(FOID);
 
     if (!query.exec())
         return Error(updateError, query.lastError());
 
-    if (FOID == -1)
+    if (isAdd)
     {
         long long addedFOID = query.lastInsertId().toLongLong();
         FOID = addedFOID;
@@ -61,7 +63,45 @@ bool BookmarkFolderManager::AddOrEditBookmarkFolder(long long& FOID, BookmarkFol
     }
 
     //We are [RESPONSIBLE] for updating the internal tables.
-    fodata.Ex_AbsolutePath = bookmarkFolders[fodata.ParentFOID].Ex_AbsolutePath + fodata.Name + '/';
+    if (isAdd)
+    {
+        fodata.Ex_AbsolutePath = bookmarkFolders[fodata.ParentFOID].Ex_AbsolutePath + fodata.Name + '/';
+        bookmarkFolders[FOID] = fodata;
+    }
+    else
+    {
+        //Note: We can do additional checks and actions, but by our standards doing that would need
+        //  transactions and complete rolling back in case of return Errors and stuff; we won't do
+        //  them here!
+
+        QString originalName = bookmarkFolders[FOID].Name;
+        QString originalDefFileArchive = bookmarkFolders[FOID].DefFileArchive;
+        long long originalParentFOID = bookmarkFolders[FOID].ParentFOID;
+
+        if (originalName != fodata.Name)
+        {
+            //If name changed, we need to recursively fix the absolute paths of all children.
+            CalculateAbsolutePaths(); //We don't return it this fails (it just checks integrity).
+
+            //Note: We can also rename the folder on file system, but that would need transactions.
+        }
+        if (originalDefFileArchive != fodata.DefFileArchive)
+        {
+            //Note: We can also move files to new archive (taking into account the changed
+            //  fodata.Name of course), but that would need transactions.
+        }
+        if (originalParentFOID != fodata.ParentFOID)
+        {
+            //(Enabling this would need transactions.)
+            //If we allow all three together, implementation would become difficult. (But maybe not also!)
+            //if (originalName != fodata.Name || originalDefFileArchive != fodata.DefFileArchive)
+            //    return Error("Can't change parent folder while changing folder name or file archive.");
+
+            //Note: We can also move folders inside archive, but that would need transactions.
+        }
+    }
+
+    //And finally, don't forget to:
     bookmarkFolders[FOID] = fodata;
 
     return true;
@@ -115,6 +155,43 @@ QStringList BookmarkFolderManager::GetChildrenNames(long long FOID)
         if (fodata.ParentFOID == FOID)
             childrenNames.append(fodata.Name);
     return childrenNames;
+}
+
+bool BookmarkFolderManager::CalculateAbsolutePaths()
+{
+    //We can't assume all parents come before their children; either do it recursively or this way.
+    int count = 0;
+    QQueue<long long> foldersQueue;
+    foldersQueue.enqueue(0); //The '0, Unsorted' is the parent of all others.
+    while (!foldersQueue.isEmpty())
+    {
+        //Get a folder from queue
+        long long FOID = foldersQueue.dequeue();
+        count += 1;
+
+        //Calculate absolute path of this folder
+        if (FOID == 0)
+        {
+             //Don't care about the '0, Unsorted' folder.
+            bookmarkFolders[FOID].Ex_AbsolutePath = "";
+        }
+        else
+        {
+            long long ParentFOID = bookmarkFolders[FOID].ParentFOID;
+            bookmarkFolders[FOID].Ex_AbsolutePath =
+                    bookmarkFolders[ParentFOID].Ex_AbsolutePath +
+                    bookmarkFolders[FOID].Name + '/';
+        }
+
+        //Put children on queue
+        foreach (const BookmarkFolderData& fodata, bookmarkFolders)
+            if (fodata.ParentFOID == FOID)
+                foldersQueue.enqueue(fodata.FOID);
+    }
+
+    if (count != bookmarkFolders.count()) //We have an orphaned BookmarkFolder, error!
+        return Error("Error in bookmark folders' structure.");
+    return true;
 }
 
 void BookmarkFolderManager::CreateTables()
@@ -172,24 +249,7 @@ void BookmarkFolderManager::PopulateModelsAndInternalTables()
         bookmarkFolders.insert(fodata.FOID, fodata);
     }
 
-    //We do this in a separate loop because some parent-ids might come later than child ids.
-    //We can't assume all parents come before their children.
-    foreach (long long FOID, bookmarkFolders.keys())
-    {
-        if (FOID == 0)
-        {
-             //Don't care about the first Unsorted folder.
-            bookmarkFolders[FOID].Ex_AbsolutePath = "";
-        }
-        else
-        {
-            bookmarkFolders[FOID].Ex_AbsolutePath = bookmarkFolders[FOID].Name + '/';
-            long long ParentFOID = bookmarkFolders[FOID].ParentFOID;
-            while (ParentFOID != 0)
-            {
-                bookmarkFolders[FOID].Ex_AbsolutePath.insert(0, bookmarkFolders[ParentFOID].Name + '/');
-                ParentFOID = bookmarkFolders[ParentFOID].ParentFOID;
-            }
-        }
-    }
+    //We do this separate from the above loop loop because some parent-ids might come later than
+    //  child ids, e.g if/when we implement moving bookmark folders around and altering their tree.
+    CalculateAbsolutePaths();
 }
