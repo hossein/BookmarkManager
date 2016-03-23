@@ -136,13 +136,12 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
         QString fileArchiveURL = prefix + "/" + randomHash;
         return fileArchiveURL;
     }
-    else if (m_fileLayout == 1) //Normal hierarchical file name layout
+    else if (m_fileLayout == 1 || m_fileLayout == 2) //Normal hierarchical file name layout
     {
         QString fileArchivePath;
 
-        if (folderHint.isEmpty())
+        if (m_fileLayout == 1)
         {
-            //Unsorted bookmarks, use groupHint
             bool isFileName = (groupHint.isEmpty());
             QString uHierName = (isFileName ? fi.fileName() : groupHint);
 
@@ -154,15 +153,16 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
             else
                 fileArchivePath += SafeAndShortFSName(uHierName, isFileName) + "/";
         }
-        else //if (!folderHint.isEmpty())
+        else if (m_fileLayout == 2)
         {
-            //File put in a folder; disregard groupHint and use the real path.
-            //  It is IMPORTANT that folderHint be a valid fileSystem path part.
+            //It is IMPORTANT that folderHint be a valid fileSystem path part.
             fileArchivePath = folderHint;
             if (fileArchivePath.startsWith('/'))
                 fileArchivePath = fileArchivePath.mid(1);
             if (!fileArchivePath.endsWith('/'))
                 fileArchivePath += '/';
+            if (fileArchivePath == "/" && !groupHint.isEmpty()) //If folderHint empty, use groupHint
+                fileArchivePath = SafeAndShortFSName(groupHint, false) + "/";
         }
 
         //Generate final file name.

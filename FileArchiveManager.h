@@ -2,9 +2,10 @@
 #include "IArchiveManager.h"
 
 /// This class is also known as FAM.
-/// It supports two layouts:
+/// It supports three layouts:
 ///     Layout 0 stores files as :archivepath:/h/hash_of_filename.ext
 ///     Layout 1 stores files as :archivepath:/f/fi/filename.ext
+///     Layout 2 stores files as :archivepath:/folder/hint/hierarchy/[groupHint/]filename.ext
 class FileArchiveManager : public IArchiveManager
 {
 public:

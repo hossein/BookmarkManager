@@ -372,6 +372,10 @@ bool DatabaseManager::UpgradeDatabase(int dbVersion)
         if (!query.exec("Update FileArchive Set UserAccess = 0 "
                         "WHERE Name = ':trash:' OR Name = ':sandbox:'"))
             return Error("Migration Error: v1, Updating FileArchive", query.lastError());
+
+        /// Default FileLayout is now 2; FileLayout 1 that used file name prefixes is deprecated.
+        if (!query.exec("Update FileArchive Set FileLayout = 2 WHERE FileLayout = 1"))
+            return Error("Migration Error: v1, Updating FileLayout", query.lastError());
     }
 
     //if (dbVersion <= 2)
