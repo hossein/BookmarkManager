@@ -52,7 +52,7 @@ public:
     // File Properties Handling ///////////////////////////////////////////////////////////////////
     static QString UserReadableFileSize(long long size);
     static QByteArray GetMD5HashForFile(const QString& filePathName);
-    static bool IsValidFileName(const QString& fileName);
+    static bool IsValidFileName(const QString& fileName); //See starting comments
 
     // Math ///////////////////////////////////////////////////////////////////////////////////////
     static void SeedRandomWithTime();

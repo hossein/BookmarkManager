@@ -430,6 +430,12 @@ QByteArray Util::GetMD5HashForFile(const QString& filePathName)
 
 bool Util::IsValidFileName(const QString& fileName)
 {
+    /// Intentionally Incomplete.
+    /// Tries to find illegal file names to some extent, but not every dark corner is checked. See:
+    ///   https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
+    /// Also we do not check the underlying filesystem; we just check the OS which is not correct.
+    /// Anyway there lots of other errors that can happen while creating and working with files
+    ///   beside file name errors. Errors MUST BE CHECKED later.
     //http://stackoverflow.com/questions/3038351/check-whether-a-string-is-a-valid-filename-with-qt
     //http://www.boost.org/doc/libs/1_43_0/libs/filesystem/doc/portability_guide.htm
     //http://stackoverflow.com/questions/62771/how-check-if-given-string-is-legal-allowed-file-name-under-windows
@@ -474,7 +480,7 @@ bool Util::IsValidFileName(const QString& fileName)
 
 #elif defined(Q_OS_LINUX) || defined(Q_OS_UNIX) || defined(Q_OS_MAC)
     //So we are extremely free here and NOT conservative, unlike on windows.
-    if (fileName.contains('/'))
+    if (fileName.contains('/') || fileName == "null")
         return false;
 #endif
 

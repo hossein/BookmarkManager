@@ -161,8 +161,17 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
                 fileArchivePath = fileArchivePath.mid(1);
             if (!fileArchivePath.endsWith('/'))
                 fileArchivePath += '/';
-            if (fileArchivePath == "/" && !groupHint.isEmpty()) //If folderHint empty, use groupHint
-                fileArchivePath = SafeAndShortFSName(groupHint, false) + "/";
+
+            //If folderHint is empty, append groupHint to it.
+            if (fileArchivePath == "/" && !groupHint.isEmpty())
+                fileArchivePath = groupHint + "/";
+
+            //Make names Short and Safe
+            QStringList uParts = fileArchivePath.split('/');
+            QStringList sParts;
+            foreach (const QString& part, uParts)
+                sParts.append(SafeAndShortFSName(part, false));
+            fileArchivePath = sParts.join('/');
         }
 
         //Generate final file name.

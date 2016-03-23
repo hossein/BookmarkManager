@@ -1,6 +1,8 @@
 #include "BookmarkFolderEditDialog.h"
 #include "ui_BookmarkFolderEditDialog.h"
 
+#include "Util.h"
+
 BookmarkFolderEditDialog::BookmarkFolderEditDialog(DatabaseManager* dbm,
                                                    long long editFOID, long long addParentFOID,
                                                    OutParams* outParams, QWidget *parent)
@@ -98,7 +100,14 @@ bool BookmarkFolderEditDialog::validate()
                              "There is already a folder with this name in the parent folder.");
         return false;
     }
-//TODO: Only allow valid filesystem names.
+
+    if (!Util::IsValidFileName(folderName))
+    {
+        QMessageBox::warning(this, "Validation Error",
+                             "Folder name must be a valid name usable on file system.");
+        return false;
+    }
+
     return true;
 }
 
