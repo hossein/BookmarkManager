@@ -236,6 +236,33 @@ bool FileManager::UpdateBookmarkFiles(long long BID, const QString& folderHint, 
     return true;
 }
 
+bool FileManager::ChangeFileLocation(long long FID, const QString& destArchiveName,
+                                     const QString& folderHint, const QString& groupHint,
+                                     const QString& errorWhileContext)
+{
+    //Note: Since we are in a files transaction, we think DB transaction is started, too;
+    //  although even without DB transaction this function would be okay.
+    QString changeLocError = "Error while %1:\n"
+                             "Unable to update file location information in the database.";
+//TODO: Handle the same to/from locs;
+    //First move the physical file
+    QString newFileArchiveURL;
+    bool success = MoveFile(
+        FID, destArchiveName, folderHint, groupHint, errorWhileContext, newFileArchiveURL);
+    if (!success)
+        return false;
+
+    //Now update DB to change the file archive name accordingly.
+    QSqlQuery query(db);
+    query.prepare("Update File SET ArchiveURL = ? WHERE FID = ?");
+    query.addBindValue(newFileArchiveURL);
+    query.addBindValue(FID);
+    if (!query.exec())
+        return Error(changeLocError.arg(errorWhileContext), query.lastError());
+
+    return true;
+}
+
 bool FileManager::TrashAllBookmarkFiles(long long BID, const QString& errorWhileContext)
 {
     QString retrieveBookmarkFilesError =
@@ -419,27 +446,8 @@ bool FileManager::RemoveBookmarkFile(long long BFID, long long FID, const QStrin
 
 bool FileManager::TrashFile(long long FID, const QString& errorWhileContext)
 {
-    //Note: Since we are in a files transaction, we think DB transaction is started, too;
-    //  although even without DB transaction this function would be okay.
-    QString trashFileError = "Error while %1:\n"
-                             "Unable to record file trashing information in the database.";
-    QSqlQuery query(db);
-
-    //First move the physical file
-    QString newFileArchiveURL;
-    bool success = MoveFile(
-        FID, conf->trashArchiveName, QString(), QString(), errorWhileContext, newFileArchiveURL);
-    if (!success)
-        return false;
-
-    //Now update DB to change the file archive name accordingly.
-    query.prepare("Update File SET ArchiveURL = ? WHERE FID = ?");
-    query.addBindValue(newFileArchiveURL);
-    query.addBindValue(FID);
-    if (!query.exec())
-        return Error(trashFileError.arg(errorWhileContext), query.lastError());
-
-    return true;
+    return ChangeFileLocation(FID, conf->trashArchiveName, QString(), QString(),
+                              errorWhileContext + " (removing unneeded files)");
 }
 
 bool FileManager::RemoveFileFromArchive(const QString& fileArchiveURL, bool trash,

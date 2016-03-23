@@ -110,6 +110,17 @@ public:
                              const QString& errorWhileContext);
 
     //NEEDS Transaction.
+    /// Moves an existing file to a new fileArchive and/or location inside a fileArchive and updates
+    ///     the URL in DB.
+    ///     If source and destination point to the same filesystem location, it does not move the
+    ///     file on filesystem BUT STILL UPDATES the fileArchiveURL in the DB; useful for e.g when
+    ///     fileArchive paths for a folder changes and the files contained in it can be considered
+    ///     having a new path; also useful maybe for nested fileArchive directories on filesystem.
+    bool ChangeFileLocation(long long FID, const QString& destArchiveName,
+                            const QString& folderHint, const QString& groupHint,
+                            const QString& errorWhileContext);
+
+    //NEEDS Transaction.
     /// Remove all file attachment information of a bookmark and send all the files for to the trash
     ///     (only if they are not shared).
     bool TrashAllBookmarkFiles(long long BID, const QString& errorWhileContext);
