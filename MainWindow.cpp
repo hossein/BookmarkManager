@@ -147,7 +147,8 @@ void MainWindow::tfRequestMoveBookmarksToFolder(const QList<long long>& BIDs, lo
     BookmarksBusinessLogic bbLogic(&dbm, this);
     bbLogic.MoveBookmarksToFolderTrans(BIDs, FOID);
     ui->tf->SetCurrentFOIDSilently(FOID);
-    RefreshUIDataDisplay(false, RA_CustomSelectAndFocus, BIDs[0] /* This should select ALL of them later. */);
+    //Note [MULTI-BM-SELECT]: This should select ALL of them later.
+    RefreshUIDataDisplay(false, RA_CustomSelectAndFocus, BIDs[0]);
 }
 
 void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
@@ -690,9 +691,11 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
     //Refresh UI
     if (!addedBIDs.isEmpty())
     {
+        //Show '0, Unsorted' into which the bookmarks are imported.
+        ui->tf->SetCurrentFOIDSilently(0);
+        //Note [MULTI-BM-SELECT]: Select the whole list later.
         RefreshUIDataDisplay(true, RA_CustomSelectAndFocus, addedBIDs[0],
                 RA_SaveSelAndScrollAndCheck, -1, allAssociatedTIDs.toList());
-        //TODO: Show the folder 0.
     }
 
     //Show success message

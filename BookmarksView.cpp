@@ -144,6 +144,7 @@ void BookmarksView::SelectBookmarkWithID(long long bookmarkId)
     if (matches.length() != 1)
         return; //Not found for some reason, e.g filtered out.
 
+    //TODO: This does not ensure visible on bookmark adding and dragging bms onto folders.
     tvBookmarks->setCurrentIndex(matches[0]);
     tvBookmarks->scrollTo(matches[0], QAbstractItemView::EnsureVisible);
 }
