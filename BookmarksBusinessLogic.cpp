@@ -325,3 +325,71 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
 
     return true;
 }
+
+bool BookmarksBusinessLogic::MoveBookmarksToFolderTrans(const QList<long long>& BIDs, long long FOID)
+{
+    bool success;
+
+    BeginActionTransaction();
+    {
+        foreach (long long BID, BIDs)
+        {
+            success = MoveBookmarkToFolder(BID, FOID);
+            if (!success)
+            {
+                RollBackActionTransaction();
+                return false; //Always return false
+            }
+        }
+    }
+    CommitActionTransaction();
+
+    return success; //i.e `true`.
+}
+
+bool BookmarksBusinessLogic::MoveBookmarkToFolderTrans(long long BID, long long FOID)
+{
+    return MoveBookmarksToFolderTrans(QList<long long>() << BID, FOID);
+}
+
+bool BookmarksBusinessLogic::MoveBookmarkToFolder(long long BID, long long FOID)
+{
+    bool success = true;
+    BookmarkManager::BookmarkData bdata;
+
+    //Get bookmark and files info
+    success = dbm->bms.RetrieveBookmark(BID, bdata);
+    if (!success)
+        return false;
+
+    success = dbm->files.RetrieveBookmarkFiles(BID, bdata.Ex_FilesList);
+    if (!success)
+        return false;
+
+    //If already in the same folder, succeed silently.
+    if (bdata.FOID == FOID)
+        return true;
+
+    //Update FOID
+    bdata.FOID = FOID;
+    success = dbm->bms.AddOrEditBookmark(BID, bdata);
+    if (!success)
+        return false;
+
+    //Get target FOID and folderHint
+    QString fileArchiveName, folderHint;
+    success = dbm->bfs.GetFileArchiveAndFolderHint(FOID, fileArchiveName, folderHint);
+    if (!success)
+        return false;
+
+    //Move the files
+    foreach (const FileManager::BookmarkFile& bf, bdata.Ex_FilesList)
+    {
+        success = dbm->files.ChangeFileLocation(bf.FID, fileArchiveName, folderHint, bdata.Name,
+                                                "moving bookmark to folder");
+        if (!success)
+            return false;
+    }
+
+    return true;
+}

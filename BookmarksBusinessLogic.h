@@ -40,4 +40,9 @@ public:
     //  transaction.
     bool DeleteBookmarkTrans(long long BID);
     bool DeleteBookmark(long long BID);
+
+    //Need transactions. These MOVE bookmarks and their files; not for adding new bookmarks.
+    bool MoveBookmarksToFolderTrans(const QList<long long>& BIDs, long long FOID);
+    bool MoveBookmarkToFolderTrans(long long BID, long long FOID);
+    bool MoveBookmarkToFolder(long long BID, long long FOID);
 };
