@@ -57,23 +57,32 @@ MainWindow::MainWindow(QWidget *parent) :
     btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
     ui->mainToolBar->addWidget(btn);
 
-    // Load the application and logic
-    if (!LoadDatabaseAndUI())
+    // Load database
+    QString databaseFilePath = QDir::currentPath() + "/" + conf.programDatabasetFileName;
+    if (!dbm.BackupOpenOrCreate(databaseFilePath))
     {
         m_shouldExit = true;
         return;
     }
 
+    //Can't do full `RefreshUIDataDisplay` because bv and tf are not initialized yet; this line is
+    //  needed before initializing them:
+    dbm.PopulateModelsAndInternalTables();
+
     // Initialize important controls
     ui->bv->Initialize(&dbm, BookmarksView::LM_FullInformationAndEdit, &dbm.bms.model);
+    ui->tf->Initialize(&dbm);
+
+    //After initializing controls and before connecting signals, show data and status in the UI.
+    RefreshUIDataDisplay(false /* Already done above */, RA_Focus);
+
+    //Signal connections.
     connect(ui->bv, SIGNAL(activated(long long)), this, SLOT(bvActivated(long long)));
     connect(ui->bv, SIGNAL(currentRowChanged(long long,long long)),
             this, SLOT(bvCurrentRowChanged(long long,long long)));
-
-    //Connecting signal after Initialize()ing tf will miss the first emitted signal, which is
-    //  folder '0, Unsorted' being activated. So this relies on a tf behaviour which returns FOID=0
-    //  when it's not initalized. TODO: Because of this and also the status labels, I think initing the UI must come after these lines.
-    ui->tf->Initialize(&dbm);
+    //Connecting signal after Initialize()ing tf will miss the first emitted signal, which is folder
+    //  '0, Unsorted' being activated. But tf is already initialized and has already returned  the
+    //  correct FOID=0 in the above `RefreshUIDataDisplay` call thus correct bookmark are shown.
     connect(ui->tf, SIGNAL(CurrentFolderChanged(long long)),
             this,   SLOT(tfCurrentFolderChanged(long long)));
     connect(ui->tf, SIGNAL(RequestMoveBookmarksToFolder(QList<long long>,long long)),
@@ -206,19 +215,6 @@ void MainWindow::on_actionImportFirefoxBookmarksJSONfile_triggered()
         return;
 
     ImportFirefoxJSONFile(jsonFilePath);
-}
-
-bool MainWindow::LoadDatabaseAndUI()
-{
-    bool success;
-
-    QString databaseFilePath = QDir::currentPath() + "/" + conf.programDatabasetFileName;
-    success = dbm.BackupOpenOrCreate(databaseFilePath);
-    if (!success)
-        return false;
-
-    RefreshUIDataDisplay(true, RA_Focus);
-    return true;
 }
 
 void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,

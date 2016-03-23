@@ -44,9 +44,6 @@ private slots:
     void on_actionGetMHT_triggered();
 
 private:
-    /// Initialization functions, to be called JUST ONCE for loading //////////////////////////////
-    bool LoadDatabaseAndUI();
-
     /// Master functions for data refresh and display /////////////////////////////////////////////
     enum RefreshAction
     {
