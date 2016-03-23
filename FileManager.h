@@ -15,6 +15,8 @@ class IArchiveManager;
 ///   `BookmarkFolder:DefFileArchive` column rely on Archive NAMES, NOT Primary Keys. (That's prolly
 ///   the only part preventing renaming/removing the archives, but better research is needed before
 ///   trying to change this implementation.)
+/// Note: See BookmarkFolderManager docs for relationship between FileArchives and BookmarkFolders.
+///   It has insights on folder hierarchy, etc.
 /// Note: The errors of many functions might not be evident to user, so many functions use a string
 ///   `errorWhileContext` argument to give some context for the error that just happened. So e.g it
 ///   adds 'Error while deleting file:' to the bare 'could not get file information' message.

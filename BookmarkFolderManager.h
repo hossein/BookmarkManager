@@ -6,8 +6,42 @@
 
 class DatabaseManager;
 
-/// Manages bookmark folders. There is a folder '0, Unsorted Bookmarks' that is the parent of all
-///   other folders. Its parent is -1.
+/// Manages bookmark folders.
+/// The special folder '0, Unsorted Bookmarks' is the parent of all other folders. Its parent is -1.
+///
+/// Relationship with FileArchives:
+///   Each BookmarkFolder can specify its FileArchive so that the bookmarks in that folder store
+///   their files in the file archive. However, there is the question of how folders' layout should
+///   look like in each file archive. We have three choices:
+///   A. Don't reflect BookmarkFolder layout on filesystem folders.
+///   B. Reflect the full absolute path of BookmarkFolder on each file archive on the filesystem.
+///   C. Reflect the relative path of BookmarkFolder on the file archive.
+///   We don't want to choose A because it is unintuitive. We actually discontinued the use of the
+///   'f/fi/file' prefixed layout in FAM because it was unintuitive and anyway nowadays OSes support
+///   folders with lots of files in them.
+///   The difference between B and C is, if we have a BookmarkFolder layout like this:
+///     Root (arch0) --> F1 --> F2 --> F3 (arch1) --> F4
+///   Then using layout B, arch1's directory layout will look like this:
+///     C:\Arch1 (empty folder)\F1 (empty folder)\F2 (empty folder)\F3\{F4 folder and other Files}
+///   But with layout C arch1's directory will not contain unnecessary parent dirs:
+///     C:\Arch1\{F4 folder and other Files}
+///   Layout C is the most intuitive layout. So we use it, but we have to solve some problems first.
+///   Suppose we have the following BookmarkFolder layout:
+///     Root (arch0) --> F1 --> F2 (arch1) --> F3 --> F4 (arch0) --> F5
+///   Then in this case the directory of arch0 on the filesystem will contain both F1 and F5 as its
+///   children, while in reality F5 is logically a grandparent of F1. To solve it we can disallow
+///   setting a FileArchive on a BookmarkFolder when that same FileArchive was set on an ancestor
+///   BookmarkFolder. With some thinking we can conclude that this avoids the mentioned problem.
+///   But there is a more general problem.
+///   Suppose this second BookmarkFolder layout, which does not cause the previous problem:
+///     Root (arch0) --+-> F1 --> F2 (arch1) --> FN
+///                    \--> F4 --> F5 (arch1) --> FN
+///   Then arch1 will contain two separate folders, maybe with separate functions, and maybe with
+///   the same name. The final solution that comes to mind to prevent all of these issues is:
+///   We let each FileArchive be specified as the FileArchive OF AT MOST ONE BookmarkFolder.
+///   The mentioned problems will not happen then. However there is the problem that the user
+///   can specify the same filesystem folder for two or more file archives but that's another story
+///   and will be prevented in FileArchiveManager.
 class BookmarkFolderManager : public ISubManager
 {
     friend class DatabaseManager;
@@ -31,7 +65,10 @@ public:
         QString DefFileArchive;
 
         //This information are not saved in the database.
-        QString Ex_AbsolutePath; //ReadOnly
+        /// Ex_AbsolutePath is READ-ONLY.
+        /// It must not be used to get folderHint for a file inside a fileArchive, since some
+        /// folders can have separate file archives. Use `GetFileArchiveAndFolderHint()` instead.
+        QString Ex_AbsolutePath;
     };
 
 public:
@@ -52,7 +89,7 @@ public:
 
     //Helper functions
     /// Finds the file archive for the folder, which may be inherited from its parent.
-    bool GetFileArchiveForBookmarkFolder(long long FOID, QString& fileArchiveName);
+    bool GetFileArchiveAndFolderHint(long long FOID, QString& fileArchiveName, QString& folderHint);
 
     /// The following two functions return a list of first-level sub folders.
     QList<long long> GetChildrenIDs(long long FOID);

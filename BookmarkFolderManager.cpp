@@ -122,14 +122,18 @@ bool BookmarkFolderManager::RemoveBookmarkFolder(long long FOID)
     return true;
 }
 
-bool BookmarkFolderManager::GetFileArchiveForBookmarkFolder(long long FOID, QString& fileArchiveName)
+bool BookmarkFolderManager::GetFileArchiveAndFolderHint(long long FOID, QString& fileArchiveName,
+                                                        QString& folderHint)
 {
     if (!bookmarkFolders.contains(FOID))
         return Error("Could not get folder file archive information: The selected folder was not found.");
 
+    folderHint = "";
     fileArchiveName = bookmarkFolders[FOID].DefFileArchive;
     while (fileArchiveName.isEmpty()) //Inherited from parent
     {
+        folderHint = bookmarkFolders[FOID].Name + "/" + folderHint;
+
         //Important: The '0, Unsorted' folder must always have a fixed file archive set, or this
         //  parent-finding will surpass that folder as well and cause errors.
         FOID = bookmarkFolders[FOID].ParentFOID;

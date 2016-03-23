@@ -148,14 +148,16 @@ bool BookmarksBusinessLogic::AddOrEditBookmark(
     if (!success)
         return false;
 
-    QString fileArchiveName;
-    QString bookmarkFolderPath = dbm->bfs.bookmarkFolders[bdata.FOID].Ex_AbsolutePath;
-    success = dbm->bfs.GetFileArchiveForBookmarkFolder(bdata.FOID, fileArchiveName);
+    //Wrong: See comments at BookmarkFolderManager::BookmarkFolderData::Ex_AbsolutePath.
+    //  QString bookmarkFolderPath = dbm->bfs.bookmarkFolders[bdata.FOID].Ex_AbsolutePath;
+    //Right
+    QString fileArchiveName, folderHint;
+    success = dbm->bfs.GetFileArchiveAndFolderHint(bdata.FOID, fileArchiveName, folderHint);
     if (!success)
         return false;
 
     QList<long long> updatedBFIDs;
-    success = dbm->files.UpdateBookmarkFiles(editBId, bookmarkFolderPath, bdata.Name,
+    success = dbm->files.UpdateBookmarkFiles(editBId, folderHint, bdata.Name,
                                              editOriginalBData.Ex_FilesList, editedFilesList,
                                              updatedBFIDs, fileArchiveName,
                                              "storing bookmark files information");
@@ -182,7 +184,6 @@ bool BookmarksBusinessLogic::DeleteBookmarkTrans(long long BID)
 {
     bool success;
 
-    //IMPORTANT: Begin transaction.
     BeginActionTransaction();
     {
         success = DeleteBookmark(BID);
@@ -303,6 +304,12 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
     success = dbm->bfs.RetrieveBookmarkFolder(bdata.FOID, fodata);
     if (!success)
         return false;
+
+    //We use `Ex_AbsolutePath` instead of `GetFileArchiveAndFolderHint` as all files/paths go in one
+    //  Trash archive and we want to save the full hierarchy path in this case. This is only in DB;
+    //  on file system this is NOT used as folderHint. Trashing file is done before this  line and
+    //  it doesn't use a folderHint because folderHint will be ignored on FAM's FileLayout 1 which
+    //  is used by the Trash file archive.
     QString folderPath = fodata.Ex_AbsolutePath;
 
     //Move the information to BookmarkTrash table
