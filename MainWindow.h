@@ -36,6 +36,7 @@ private slots:
     void bvActivated(long long BID);
     void bvCurrentRowChanged(long long currentBID, long long previousBID);
     void tfCurrentFolderChanged(long long FOID);
+    void tfRequestMoveBookmarksToFolder(const QList<long long>& BIDs, long long FOID);
     void lwTagsItemChanged(QListWidgetItem* item);
 
     void on_action_importFirefoxBookmarks_triggered();

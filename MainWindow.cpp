@@ -75,7 +75,9 @@ MainWindow::MainWindow(QWidget *parent) :
     //  when it's not initalized. TODO: Because of this and also the status labels, I think initing the UI must come after these lines.
     ui->tf->Initialize(&dbm);
     connect(ui->tf, SIGNAL(CurrentFolderChanged(long long)),
-            this, SLOT(tfCurrentFolderChanged(long long)));
+            this,   SLOT(tfCurrentFolderChanged(long long)));
+    connect(ui->tf, SIGNAL(RequestMoveBookmarksToFolder(QList<long long>,long long)),
+            this,   SLOT(tfRequestMoveBookmarksToFolder(QList<long long>,long long)));
 
     // Additional sub-parts initialization.
     if (!dbm.files.InitializeFileArchives())
@@ -138,6 +140,10 @@ void MainWindow::tfCurrentFolderChanged(long long FOID)
 {
     Q_UNUSED(FOID);
     RefreshUIDataDisplay(false, RA_Focus);
+}
+
+void MainWindow::tfRequestMoveBookmarksToFolder(const QList<long long>& BIDs, long long FOID)
+{
 }
 
 void MainWindow::lwTagsItemChanged(QListWidgetItem* item)

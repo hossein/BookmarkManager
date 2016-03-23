@@ -72,7 +72,8 @@ SOURCES += main.cpp\
     PreviewHandlers/BMWebView.cpp \
     BookmarkFolderManager.cpp \
     BookmarkFoldersView.cpp \
-    BookmarkFolderEditDialog.cpp
+    BookmarkFolderEditDialog.cpp \
+    BookmarkFoldersTreeWidget.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -123,7 +124,8 @@ HEADERS  += MainWindow.h \
     PreviewHandlers/BMWebView.h \
     BookmarkFolderManager.h \
     BookmarkFoldersView.h \
-    BookmarkFolderEditDialog.h
+    BookmarkFolderEditDialog.h \
+    BookmarkFoldersTreeWidget.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \

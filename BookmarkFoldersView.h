@@ -1,17 +1,18 @@
 #pragma once
 #include <QWidget>
 
-class QTreeWidget;
+class BookmarkFoldersTreeWidget;
 class QTreeWidgetItem;
 
 class DatabaseManager;
 
+/// The widget that should be used from outside.
 class BookmarkFoldersView : public QWidget
 {
     Q_OBJECT
 
 private:
-    QTreeWidget* twFolders;
+    BookmarkFoldersTreeWidget* twFolders;
     DatabaseManager* dbm;
     QAction* m_newAction;
     QAction* m_editAction;
@@ -48,5 +49,6 @@ private slots:
 
 signals:
     void CurrentFolderChanged(long long FOID);
+    void RequestMoveBookmarksToFolder(const QList<long long>& BIDs, long long FOID);
 
 };

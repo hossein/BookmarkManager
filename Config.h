@@ -117,7 +117,8 @@
 ///   - Option to download MHT on bookmark creation.
 ///   - The current way of managing models and 'repopulating' them on each change is very wrong.
 ///     They don't need to be refreshed everytime we change the database. Eliminate them if we
-///     really can't handle their complexity.
+///     really can't handle their complexity. However Qt is better with them, e.g drag and drop
+///     support are a lot more complete for ItemViews than ItemWidgets.
 ///   - An 'integrity test' that checks all attached files match with database entries, deletes
 ///     empty folder, etc.
 ///   - Also, add a 'Relocate all files' which fixes the URLs of all files, because moving files and
@@ -148,6 +149,8 @@ public:
 
         nominalFileSandBoxDirName = "FileSandBox";
         sandboxArchiveName = ":sandbox:";
+
+        mimeTypeBookmarks = "application/x.bookmarkmanager.bookmarks";
     }
     ~Config() { }
 
@@ -169,4 +172,6 @@ public:
 
     QString nominalFileSandBoxDirName;
     QString sandboxArchiveName;
+
+    QString mimeTypeBookmarks;
 };

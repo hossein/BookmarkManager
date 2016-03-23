@@ -1,6 +1,7 @@
 #include "BookmarkFoldersView.h"
 
 #include "BookmarkFolderEditDialog.h"
+#include "BookmarkFoldersTreeWidget.h"
 #include "DatabaseManager.h"
 
 #include <QQueue>
@@ -9,14 +10,17 @@
 #include <QFocusEvent>
 #include <QHeaderView>
 #include <QToolBar>
-#include <QTreeWidget>
 #include <QVBoxLayout>
 
 BookmarkFoldersView::BookmarkFoldersView(QWidget *parent)
     : QWidget(parent), dbm(NULL), m_lastEmittedChangeFOID(-1)
 {
     //Initialize this here to protect from some crashes
-    twFolders = new QTreeWidget(this);
+    twFolders = new BookmarkFoldersTreeWidget(this);
+    twFolders->setAcceptDrops(true); // < v Either one was enough
+    twFolders->setDragDropMode(QAbstractItemView::DropOnly);
+    twFolders->setDropIndicatorShown(false);
+    twFolders->setDragDropOverwriteMode(true);
     twFolders->setEditTriggers(QAbstractItemView::NoEditTriggers);
     twFolders->setSelectionMode(QAbstractItemView::SingleSelection);
     twFolders->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -34,6 +38,7 @@ BookmarkFoldersView::~BookmarkFoldersView()
 void BookmarkFoldersView::Initialize(DatabaseManager* dbm)
 {
     this->dbm = dbm;
+    twFolders->Initialize(dbm->conf);
 
     //Create the UI
     QVBoxLayout* vLayout = new QVBoxLayout(this);
@@ -57,6 +62,8 @@ void BookmarkFoldersView::Initialize(DatabaseManager* dbm)
     //Connections
     connect(twFolders,   SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
             this, SLOT(twFoldersCurrentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
+    connect(twFolders, SIGNAL(RequestMoveBookmarksToFolder(QList<long long>,long long)),
+            this,      SIGNAL(RequestMoveBookmarksToFolder(QList<long long>,long long)));
 
     //Select first folder ('0, Unsorted') and expand all items.
     twFolders->setCurrentItem(m_itemForFOID[0]); //Must be done AFTER CONNECTION to disable delete button.

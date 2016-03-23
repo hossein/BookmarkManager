@@ -1,5 +1,9 @@
 #include "BookmarksSortFilterProxyModel.h"
 
+#include "Config.h"
+
+#include <QMimeData>
+
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
 #include <QtSql/QSqlResult>
@@ -22,6 +26,53 @@ bool BookmarksSortFilterProxyModel::SetFilter(const BookmarkFilter& filter, bool
         return success;
     }
     return true;
+}
+
+Qt::ItemFlags BookmarksSortFilterProxyModel::flags(const QModelIndex& index) const
+{
+    //This is required to make items draggable. However the drag pixmap is ugly; researching it led
+    //  to the need reimplement QAbstractItemView::startDrag, which uses D-pointers so we stopped.
+
+    //As per docs: 'Using Drag and Drop with Item Views'
+    Qt::ItemFlags defaultFlags = QSortFilterProxyModel::flags(index);
+    return index.isValid() ? Qt::ItemIsDragEnabled | defaultFlags : defaultFlags;
+}
+
+QStringList BookmarksSortFilterProxyModel::mimeTypes() const
+{
+    return QStringList() << conf->mimeTypeBookmarks;
+}
+
+QMimeData* BookmarksSortFilterProxyModel::mimeData(const QModelIndexList& indexes) const
+{
+    //indexes contains a list of all rows and each column separately. So we first collect all BIDs.
+    QSet<long long> BIDs;
+    foreach (const QModelIndex& index, indexes)
+    {
+        if (!index.isValid())
+            continue;
+        long long BID = this->index(index.row(), dbm->bms.bidx.BID).data().toLongLong();
+        BIDs.insert(BID);
+    }
+
+    QByteArray encData;
+    foreach (long long BID, BIDs)
+    {
+        encData += QByteArray::number(BID);
+        encData += ',';
+    }
+    encData.chop(1);
+
+    QMimeData *mimeData = new QMimeData();
+    mimeData->setData(conf->mimeTypeBookmarks, encData);
+    return mimeData;
+}
+
+Qt::DropActions BookmarksSortFilterProxyModel::supportedDragActions() const
+{
+    //QSortFilterProxyModel::supportedDragActions() supports Copy only.
+    //This must match BookmarkFoldersTreeWidget::supportedDropActions.
+    return Qt::MoveAction;
 }
 
 bool BookmarksSortFilterProxyModel::populateFilteredBookmarkIDs()

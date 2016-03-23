@@ -17,6 +17,8 @@ BookmarksView::BookmarksView(QWidget *parent)
 {
     //Initialize this here to protect from some crashes
     tvBookmarks = new QTableView(this);
+    tvBookmarks->setDragEnabled(true); // < v Either one was enough
+    tvBookmarks->setDragDropMode(QAbstractItemView::DragOnly);
     tvBookmarks->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tvBookmarks->setSelectionMode(QAbstractItemView::SingleSelection);
     tvBookmarks->setSelectionBehavior(QAbstractItemView::SelectRows);

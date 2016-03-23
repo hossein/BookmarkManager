@@ -32,6 +32,13 @@ public:
     //  the new bookmark.
     bool SetFilter(const BookmarkFilter& filter, bool forceReset);
 
+    // QAbstractItemModel interface
+public:
+    virtual Qt::ItemFlags flags(const QModelIndex& index) const;
+    virtual QStringList mimeTypes() const;
+    virtual QMimeData* mimeData(const QModelIndexList& indexes) const;
+    virtual Qt::DropActions supportedDragActions() const;
+
 private:
     bool populateFilteredBookmarkIDs();
 
