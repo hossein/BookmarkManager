@@ -19,6 +19,7 @@ private:
     QAction* m_deleteAction;
     QHash<long long, QTreeWidgetItem*> m_itemForFOID;
     QHash<long long, bool> m_expandedState;
+    bool m_onceNoEmitChangeFOID; //But still records last emitted FOID
     long long m_lastEmittedChangeFOID;
 
 public:
@@ -29,6 +30,7 @@ public:
     void Initialize(DatabaseManager* dbm);
 
     long long GetCurrentFOID();
+    void SetCurrentFOIDSilently(long long FOID);
 
     //QWidget interface
 protected:

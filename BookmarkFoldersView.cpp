@@ -13,7 +13,7 @@
 #include <QVBoxLayout>
 
 BookmarkFoldersView::BookmarkFoldersView(QWidget *parent)
-    : QWidget(parent), dbm(NULL), m_lastEmittedChangeFOID(-1)
+    : QWidget(parent), dbm(NULL), m_onceNoEmitChangeFOID(false), m_lastEmittedChangeFOID(-1)
 {
     //Initialize this here to protect from some crashes
     twFolders = new BookmarkFoldersTreeWidget(this);
@@ -75,6 +75,12 @@ long long BookmarkFoldersView::GetCurrentFOID()
     if (twFolders->currentItem() == NULL)
         return 0; //Not possible; Just in case, e.g for uninitialized state.
     return twFolders->currentItem()->data(0, Qt::UserRole+0).toLongLong();
+}
+
+void BookmarkFoldersView::SetCurrentFOIDSilently(long long FOID)
+{
+    m_onceNoEmitChangeFOID = true; //Prevent emiting CurrentFolderChanged.
+    twFolders->setCurrentItem(m_itemForFOID[FOID]);
 }
 
 void BookmarkFoldersView::focusInEvent(QFocusEvent* event)
@@ -167,7 +173,9 @@ void BookmarkFoldersView::twFoldersCurrentItemChanged(QTreeWidgetItem* current, 
         long long currentFOID = current->data(0, Qt::UserRole+0).toLongLong();
         if (m_lastEmittedChangeFOID != currentFOID)
         {
-            emit CurrentFolderChanged(currentFOID);
+            if (!m_onceNoEmitChangeFOID)
+                emit CurrentFolderChanged(currentFOID);
+            m_onceNoEmitChangeFOID = false;
             m_lastEmittedChangeFOID = currentFOID;
         }
     }

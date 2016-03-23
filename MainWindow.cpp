@@ -146,6 +146,8 @@ void MainWindow::tfRequestMoveBookmarksToFolder(const QList<long long>& BIDs, lo
 {
     BookmarksBusinessLogic bbLogic(&dbm, this);
     bbLogic.MoveBookmarksToFolderTrans(BIDs, FOID);
+    ui->tf->SetCurrentFOIDSilently(FOID);
+    RefreshUIDataDisplay(false, RA_CustomSelectAndFocus, BIDs[0] /* This should select ALL of them later. */);
 }
 
 void MainWindow::lwTagsItemChanged(QListWidgetItem* item)
