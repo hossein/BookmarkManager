@@ -73,7 +73,8 @@ SOURCES += main.cpp\
     BookmarkFolderManager.cpp \
     BookmarkFoldersView.cpp \
     BookmarkFolderEditDialog.cpp \
-    BookmarkFoldersTreeWidget.cpp
+    BookmarkFoldersTreeWidget.cpp \
+    SettingsDialog.cpp
 
 HEADERS  += MainWindow.h \
     DatabaseManager.h \
@@ -125,7 +126,8 @@ HEADERS  += MainWindow.h \
     BookmarkFolderManager.h \
     BookmarkFoldersView.h \
     BookmarkFolderEditDialog.h \
-    BookmarkFoldersTreeWidget.h
+    BookmarkFoldersTreeWidget.h \
+    SettingsDialog.h
 
 FORMS    += MainWindow.ui \
     BookmarkEditDialog.ui \
@@ -134,7 +136,8 @@ FORMS    += MainWindow.ui \
     QuickBookmarkSelectDialog.ui \
     BookmarkExtraInfoAddEditDialog.ui \
     ImportedBookmarksPreviewDialog.ui \
-    BookmarkFolderEditDialog.ui
+    BookmarkFolderEditDialog.ui \
+    SettingsDialog.ui
 
 RESOURCES += \
     BookmarkManager.qrc

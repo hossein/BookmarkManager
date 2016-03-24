@@ -10,6 +10,8 @@
 #include "ImportedBookmarksPreviewDialog.h"
 #include "BookmarkImporters/FirefoxBookmarkJSONFileParser.h"
 
+#include "SettingsDialog.h"
+
 #include <QDebug>
 #include <QDir>
 #include <QDesktopWidget>
@@ -43,15 +45,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->splitterFT->setSizes(vsizes);
 
     // Add additional UI controls
-    QMenu* importMenu = new QMenu("Import");
-    importMenu->addAction(ui->
-                          action_importFirefoxBookmarks);
-    importMenu->addAction(ui->actionImportFirefoxBookmarksJSONfile);
-    importMenu->addAction(ui->actionGetMHT);
+    QMenu* myMenu = new QMenu("&Menu");
+    myMenu->addActions(this->findChildren<QAction*>(QString(), Qt::FindDirectChildrenOnly));
 
     QToolButton* btn = new QToolButton();
-    btn->setText("Import/Export");
-    btn->setMenu(importMenu);
+    btn->setText("    &Menu    ");
+    btn->setMenu(myMenu);
     btn->setPopupMode(QToolButton::InstantPopup);
     //btn->setArrowType(Qt::LeftArrow);
     btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
@@ -215,6 +214,12 @@ void MainWindow::on_actionImportFirefoxBookmarksJSONfile_triggered()
         return;
 
     ImportFirefoxJSONFile(jsonFilePath);
+}
+
+void MainWindow::on_actionSettings_triggered()
+{
+    SettingsDialog setsDlg(&dbm, this);
+    setsDlg.exec();
 }
 
 void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,

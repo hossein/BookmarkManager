@@ -42,6 +42,7 @@ private slots:
     void on_action_importFirefoxBookmarks_triggered();
     void on_actionImportFirefoxBookmarksJSONfile_triggered();
     void on_actionGetMHT_triggered();
+    void on_actionSettings_triggered();
 
 private:
     /// Master functions for data refresh and display /////////////////////////////////////////////
