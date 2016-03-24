@@ -9,8 +9,8 @@ SettingsDialog::SettingsDialog(DatabaseManager* dbm, QWidget *parent) :
 {
     ui->setupUi(this);
 
-    bool FsTransformUnicode = (QString("0") !=
-            dbm->sets.GetSetting("FsTransformUnicode", dbm->conf->defaultFsTransformUnicode));
+    bool FsTransformUnicode = dbm->sets.GetSettingBool("FsTransformUnicode",
+                                                       dbm->conf->defaultFsTransformUnicode);
     ui->chkFsTransformUnicode->setChecked(FsTransformUnicode);
 }
 
@@ -23,8 +23,7 @@ void SettingsDialog::accept()
 {
     //Error messages will be shown by SettingsManager in case of errors.
 
-    QString FsTransformUnicode = (ui->chkFsTransformUnicode->isChecked() ? "1" : "0");
-    if (!dbm->sets.SetSetting("FsTransformUnicode", FsTransformUnicode))
+    if (!dbm->sets.SetSetting("FsTransformUnicode", ui->chkFsTransformUnicode->isChecked()))
         return;
 
     QDialog::accept();

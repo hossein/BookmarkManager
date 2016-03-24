@@ -17,6 +17,12 @@ QString SettingsManager::GetSetting(const QString& name, const QString& defaultV
         return defaultValue;
 }
 
+bool SettingsManager::GetSettingBool(const QString& name, const QString& defaultValue)
+{
+    QString strSetting = GetSetting(name, defaultValue);
+    return (strSetting != QString("0"));
+}
+
 bool SettingsManager::HaveSetting(const QString& name)
 {
     return m_settings.contains(name);
@@ -52,6 +58,11 @@ bool SettingsManager::SetSetting(const QString& name, QString value)
     m_settings[name] = value;
 
     return true;
+}
+
+bool SettingsManager::SetSetting(const QString& name, bool value)
+{
+    return SetSetting(name, QString(value ? "1" : "0"));
 }
 
 bool SettingsManager::DeleteSetting(const QString& name)
