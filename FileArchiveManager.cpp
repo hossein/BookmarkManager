@@ -1,5 +1,7 @@
 #include "FileArchiveManager.h"
 
+#include "Config.h"
+#include "DatabaseManager.h"
 #include "TransactionalFileOperator.h"
 #include "Util.h"
 
@@ -119,6 +121,8 @@ bool FileArchiveManager::RemoveFileFromArchive(const QString& fileRelArchiveURL,
 QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathName,
                                                     const QString& folderHint, const QString& groupHint)
 {
+    bool FsTransformUnicode =
+            dbm->sets.GetSettingBool("FsTransformUnicode", dbm->conf->defaultFsTransformUnicode);
     QFileInfo fi(fileFullPathName);
 
     if (m_fileLayout == 0) //File hash layout
@@ -151,7 +155,7 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
             if (groupHint.isEmpty())
                 fileArchivePath += "@BM_Files/";
             else
-                fileArchivePath += Util::SafeAndShortFSName(uHierName, isFileName) + "/";
+                fileArchivePath += Util::SafeAndShortFSName(uHierName, isFileName, FsTransformUnicode) + "/";
         }
         else if (m_fileLayout == 2)
         {
@@ -170,12 +174,18 @@ QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathN
             QStringList uParts = fileArchivePath.split('/');
             QStringList sParts;
             foreach (const QString& part, uParts)
-                sParts.append(Util::SafeAndShortFSName(part, false));
+            {
+                //The empty check is needed; SafeAndShortFSName returns "@Name_" for empty inputs.
+                if (part.isEmpty())
+                    sParts.append("");
+                else
+                    sParts.append(Util::SafeAndShortFSName(part, false, FsTransformUnicode));
+            }
             fileArchivePath = sParts.join('/');
         }
 
         //Generate final file name.
-        QString safeFileName = Util::SafeAndShortFSName(fi.fileName(), true);
+        QString safeFileName = Util::SafeAndShortFSName(fi.fileName(), true, FsTransformUnicode);
         QString fileArchiveURL = fileArchivePath + safeFileName;
 
         //If file exists, put it in a hashed directory.

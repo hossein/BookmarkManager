@@ -207,9 +207,9 @@ QByteArray Util::EncodeQuotedPrintable(const QByteArray& byteArray, bool binaryD
     return encoded;
 }
 
-QString Util::SafeAndShortFSName(const QString& fsName, bool isFileName)
+QString Util::SafeAndShortFSName(const QString& fsName, bool isFileName, bool transformUnicode)
 {
-    //Important: If FsTransformUnicode setting is true, this function must return only ASCII
+    //Important: If transformUnicode setting is true, this function must return only ASCII
     //           characters for the file name.
 
     QString safeFileName = fsName;
@@ -222,11 +222,19 @@ QString Util::SafeAndShortFSName(const QString& fsName, bool isFileName)
         safeFileName.replace("..", ".");
     } while (sfOldLength != safeFileName.length());
 
-    //Percent encode invalid and unicode characters.
-    if (isFileName) //We know it is a valid file name then
-        safeFileName = PercentEncodeUnicodeChars(safeFileName);
-    else //Arbitrary name
-        safeFileName = PercentEncodeUnicodeAndFSChars(safeFileName);
+    //If `isFileName` we know it is a valid file name, otherwise it is an arbitrary name and its
+    //  invalid chars need to be percent-encoded.
+    //If `transformUnicode` we also need to percent-encode its unicode characters.
+    if (transformUnicode)
+    {
+        safeFileName = isFileName ? PercentEncodeUnicodeChars(safeFileName)
+                                  : PercentEncodeUnicodeAndFSChars(safeFileName);
+    }
+    else
+    {
+        safeFileName = isFileName ? safeFileName
+                                  : PercentEncodeFSChars(safeFileName);
+    }
 
     if (safeFileName.length() > 64) //For WINDOWS!
     {

@@ -1,6 +1,7 @@
 #include "BookmarkImporter.h"
 
 #include "BookmarksBusinessLogic.h"
+#include "Config.h"
 #include "Util.h"
 
 #include <QDebug>
@@ -262,7 +263,9 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib)
     QList<FileManager::BookmarkFile> bookmarkFiles;
     if (ib.ExPr_attachedFileError.isEmpty())
     {
-        QString safeFileName = Util::SafeAndShortFSName(ib.ExPr_attachedFileName, true);
+        bool FsTransformUnicode = dbm->sets.GetSettingBool("FsTransformUnicode",
+                                                           dbm->conf->defaultFsTransformUnicode);
+        QString safeFileName = Util::SafeAndShortFSName(ib.ExPr_attachedFileName, true, FsTransformUnicode);
         mhtFilePathName = m_tempPath + "/" + safeFileName;
         QFile mhtfile(mhtFilePathName);
         if (!mhtfile.open(QIODevice::WriteOnly))

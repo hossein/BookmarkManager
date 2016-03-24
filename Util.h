@@ -31,8 +31,8 @@ public:
     ///Utility function
     ///`isFileName=true` will not try to find illegal characters for file names, however it
     /// recognizes and re-adds a file extension (only if the extension is less 20 characters).
-    /// If FsTransformUnicode setting is true, the output will contain only ASCII characters.
-    static QString SafeAndShortFSName(const QString& fsName, bool isFileName);
+    /// If transformUnicode is true, the output will contain only ASCII characters.
+    static QString SafeAndShortFSName(const QString& fsName, bool isFileName, bool transformUnicode);
 
     static QString PercentEncodeQChar(const QChar& c);
     static QString PercentEncodeFSChars(const QString& input);
