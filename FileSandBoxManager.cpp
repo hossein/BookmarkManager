@@ -7,10 +7,10 @@
 #include <QFile>
 #include <QFileInfo>
 
-FileSandBoxManager::FileSandBoxManager(QWidget* dialogParent, Config* conf,
+FileSandBoxManager::FileSandBoxManager(QWidget* dialogParent, DatabaseManager* dbm,
                                        const QString& archiveName, const QString& archiveRoot,
                                        TransactionalFileOperator* filesTransaction)
-    : IArchiveManager(dialogParent, conf, archiveName, archiveRoot, -1, filesTransaction)
+    : IArchiveManager(dialogParent, dbm, archiveName, archiveRoot, -1, filesTransaction)
 {
 
 }

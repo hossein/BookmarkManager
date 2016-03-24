@@ -3,13 +3,19 @@
 
 #include <QString>
 
+class DatabaseManager;
 class TransactionalFileOperator;
 
 /// This interface is also known as IAM.
 /// The classes that derive from this interface are known as ArchiveMans.
+/// This class and DatabaseManager are the two main managers of the program, and this class needs
+///   to keep a pointer to DatabaseManager, mainly for accessing application settings; because,
+///   surprisingly!!, program configurations are saved in SettingsManager only and not in the
+///   so-called `Config` class!
 class IArchiveManager : public IManager
 {
 protected:
+    DatabaseManager* dbm;
     /// My archive name with ':' colons at beginning and end.
     QString m_archiveName;
     QString m_archiveRoot;
@@ -17,7 +23,7 @@ protected:
     TransactionalFileOperator* filesTransaction;
 
 public:
-    IArchiveManager(QWidget* dialogParent, Config* conf,
+    IArchiveManager(QWidget* dialogParent, DatabaseManager* dbm,
                     const QString& archiveName, const QString& archiveRoot,
                     int fileLayout, TransactionalFileOperator* filesTransaction);
 
@@ -69,11 +75,11 @@ class ArchiveManagerFactory
 {
 private:
     QWidget* m_dialogParent;
-    Config* m_conf;
+    DatabaseManager* dbm;
     TransactionalFileOperator* m_filesTransaction;
 
 public:
-    ArchiveManagerFactory(QWidget* dialogParent, Config* conf,
+    ArchiveManagerFactory(QWidget* dialogParent, DatabaseManager* dbm,
                           TransactionalFileOperator* filesTransaction);
 
     IArchiveManager* CreateArchiveManager(IArchiveManager::ArchiveType type,

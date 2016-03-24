@@ -88,7 +88,7 @@ MainWindow::MainWindow(QWidget *parent) :
             this,   SLOT(tfRequestMoveBookmarksToFolder(QList<long long>,long long)));
 
     // Additional sub-parts initialization.
-    if (!dbm.files.InitializeFileArchives())
+    if (!dbm.files.InitializeFileArchives(&dbm))
     {
         m_shouldExit = true;
         return;

@@ -9,7 +9,7 @@
 class FileArchiveManager : public IArchiveManager
 {
 public:
-    FileArchiveManager(QWidget* dialogParent, Config* conf,
+    FileArchiveManager(QWidget* dialogParent, DatabaseManager* dbm,
                        const QString& archiveName, const QString& archiveRoot,
                        int fileLayout, TransactionalFileOperator* filesTransaction);
     ~FileArchiveManager();

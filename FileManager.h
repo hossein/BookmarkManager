@@ -67,7 +67,7 @@ public:
     FileManager(QWidget* dialogParent, Config* conf);
     ~FileManager();
 
-    bool InitializeFileArchives();
+    bool InitializeFileArchives(DatabaseManager* dbm);
 
     /// Get a path that only contains the Archive name and the file name, e.g for a file
     /// with ArchiveURL of ":arch0:/F/FA/FA3D4FBE.html" and OriginalName of "Index.html",
@@ -199,7 +199,7 @@ public:
 
 private:
     //Initialization
-    bool PopulateAndRegisterFileArchives();
+    bool PopulateAndRegisterFileArchives(DatabaseManager* dbm);
     bool DoFileArchiveInitializations();
 
 protected:

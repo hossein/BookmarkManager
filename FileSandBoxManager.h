@@ -4,7 +4,7 @@
 class FileSandBoxManager : public IArchiveManager
 {
 public:
-    FileSandBoxManager(QWidget* dialogParent, Config* conf,
+    FileSandBoxManager(QWidget* dialogParent, DatabaseManager* dbm,
                        const QString& archiveName, const QString& archiveRoot,
                        TransactionalFileOperator* filesTransaction);
     ~FileSandBoxManager();

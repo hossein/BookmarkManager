@@ -1,17 +1,19 @@
 #include "IArchiveManager.h"
 
-#include <QDir>
-#include <QFileInfo>
+#include "DatabaseManager.h"
 
 //Include our own archive managers for the ArchiveManagerFactory.
 #include "FileArchiveManager.h"
 #include "FileSandBoxManager.h"
 
-IArchiveManager::IArchiveManager(QWidget* dialogParent, Config* conf,
+#include <QDir>
+#include <QFileInfo>
+
+IArchiveManager::IArchiveManager(QWidget* dialogParent, DatabaseManager* dbm,
                                  const QString& archiveName, const QString& archiveRoot,
                                  int fileLayout, TransactionalFileOperator* filesTransaction)
-    : IManager(dialogParent, conf), m_archiveName(archiveName), m_archiveRoot(archiveRoot)
-    , m_fileLayout(fileLayout), filesTransaction(filesTransaction)
+    : IManager(dialogParent, dbm->conf), dbm(dbm), m_archiveName(archiveName)
+    , m_archiveRoot(archiveRoot), m_fileLayout(fileLayout), filesTransaction(filesTransaction)
 {
     m_archiveRoot = QDir(m_archiveRoot).absolutePath(); //Mainly to remove '/' from the end.
 }
@@ -49,9 +51,9 @@ bool IArchiveManager::CreateLocalFileDirectory(const QString& faDirPath)
 
 
 
-ArchiveManagerFactory::ArchiveManagerFactory(QWidget* dialogParent, Config* conf,
+ArchiveManagerFactory::ArchiveManagerFactory(QWidget* dialogParent, DatabaseManager* dbm,
                                              TransactionalFileOperator* filesTransaction)
-    : m_dialogParent(dialogParent), m_conf(conf), m_filesTransaction(filesTransaction)
+    : m_dialogParent(dialogParent), dbm(dbm), m_filesTransaction(filesTransaction)
 {
 
 }
@@ -65,10 +67,10 @@ IArchiveManager* ArchiveManagerFactory::CreateArchiveManager(IArchiveManager::Ar
     switch (type)
     {
     case IArchiveManager::AT_FileArchive:
-        iam = new FileArchiveManager(m_dialogParent,m_conf,archiveName,archiveRoot,fileLayout,m_filesTransaction);
+        iam = new FileArchiveManager(m_dialogParent,dbm,archiveName,archiveRoot,fileLayout,m_filesTransaction);
         break;
     case IArchiveManager::AT_SandBox:
-        iam = new FileSandBoxManager(m_dialogParent,m_conf,archiveName,archiveRoot,m_filesTransaction);
+        iam = new FileSandBoxManager(m_dialogParent,dbm,archiveName,archiveRoot,m_filesTransaction);
         break;
     }
     return iam;

@@ -24,10 +24,11 @@ FileManager::~FileManager()
         delete iam;
 }
 
-bool FileManager::InitializeFileArchives()
+bool FileManager::InitializeFileArchives(DatabaseManager* dbm)
 {
+    //Note: Receiving dbm as an argument in an ISubManager is bad practice. Happens at fview too.
     bool success = true;
-    success &= PopulateAndRegisterFileArchives();
+    success &= PopulateAndRegisterFileArchives(dbm);
     success &= DoFileArchiveInitializations();
     return success;
 }
@@ -572,7 +573,7 @@ bool FileManager::GetUserFileArchivesAndPaths(QMap<QString, QString>& faPaths)
     return true;
 }
 
-bool FileManager::PopulateAndRegisterFileArchives()
+bool FileManager::PopulateAndRegisterFileArchives(DatabaseManager* dbm)
 {
     QString retrieveError = "Could not get file archives information from the database.";
 
@@ -587,7 +588,7 @@ bool FileManager::PopulateAndRegisterFileArchives()
     int faidx_Path = record.indexOf("Path");
     int faidx_Layout = record.indexOf("FileLayout");
 
-    ArchiveManagerFactory archiveManFactory(dialogParent, conf, &filesTransaction);
+    ArchiveManagerFactory archiveManFactory(dialogParent, dbm, &filesTransaction);
     while (query.next())
     {
         IArchiveManager::ArchiveType aType =
