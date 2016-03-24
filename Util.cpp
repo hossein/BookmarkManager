@@ -207,6 +207,56 @@ QByteArray Util::EncodeQuotedPrintable(const QByteArray& byteArray, bool binaryD
     return encoded;
 }
 
+QString Util::SafeAndShortFSName(const QString& fsName, bool isFileName)
+{
+    //Important: If FsTransformUnicode setting is true, this function must return only ASCII
+    //           characters for the file name.
+
+    QString safeFileName = fsName;
+
+    //First remove consecutive dots; this prevents Qt from being able to copy files on Windows.
+    int sfOldLength;
+    do
+    {
+        sfOldLength = safeFileName.length();
+        safeFileName.replace("..", ".");
+    } while (sfOldLength != safeFileName.length());
+
+    //Percent encode invalid and unicode characters.
+    if (isFileName) //We know it is a valid file name then
+        safeFileName = PercentEncodeUnicodeChars(safeFileName);
+    else //Arbitrary name
+        safeFileName = PercentEncodeUnicodeAndFSChars(safeFileName);
+
+    if (safeFileName.length() > 64) //For WINDOWS!
+    {
+        if (isFileName)
+        {
+            //Shorten the file name
+            //Using 'complete' base name but 'short' suffix to resist long file names with
+            //  accidental dots in them.
+            const QFileInfo safeFileNameInfo(safeFileName);
+            const QString suffix = safeFileNameInfo.suffix();
+            if (suffix.isEmpty() || suffix.length() > 20) //Too long suffixes can be just file names.
+            {
+                safeFileName = safeFileNameInfo.fileName().left(qMin(64, safeFileName.length()));
+            }
+            else
+            {
+                const QString cbaseName = safeFileNameInfo.completeBaseName();
+                safeFileName = cbaseName.left(qMin(64, cbaseName.length()));
+                safeFileName += "." + safeFileNameInfo.suffix();
+            }
+        }
+        else
+        {
+            //Is e.g an arbitrary name or a folder name
+            safeFileName = safeFileName.left(qMin(64, safeFileName.length()));
+        }
+    }
+    return safeFileName.trimmed();
+}
+
 QString Util::PercentEncodeQChar(const QChar& c)
 {
     QString output;
@@ -216,6 +266,28 @@ QString Util::PercentEncodeQChar(const QChar& c)
         //Without `uchar` we'd get '%FFFFFFD8'.
         output += QString("%%1").arg((uchar)(utf8.at(i)), 2, 16, QChar('0')).toUpper();
     }
+    return output;
+}
+
+QString Util::PercentEncodeFSChars(const QString& input)
+{
+    QList<ushort> invalidWinFSChars = QList<ushort>()
+            << '<' << '>' << ':' << '"' << '/' << '\\' << '|' << '?' << '*';
+
+    QString output;
+    foreach (QChar c, input)
+    {
+        if (invalidWinFSChars.contains(c.unicode()))
+            output += PercentEncodeQChar(c);
+        else
+            output += c;
+    }
+
+    //Now at this point we check for valid file name. If this fails, it is because the file name is
+    //  e.g 'COM1' or '..', so we just PREPEND something to it (to avoid changing the extension).
+    if (!IsValidFileName(output))
+        output = "@Name_" + output;
+
     return output;
 }
 
@@ -234,7 +306,7 @@ QString Util::PercentEncodeUnicodeChars(const QString& input)
 
 QString Util::PercentEncodeUnicodeAndFSChars(const QString& input)
 {
-    //Like `Util::PercentEncodeUnicodeChars`, but first we encode these chars too:
+    //Mix of `PercentEncodeFSChars` and `PercentEncodeUnicodeChars`.
     QList<ushort> invalidWinFSChars = QList<ushort>()
             << '<' << '>' << ':' << '"' << '/' << '\\' << '|' << '?' << '*';
 

@@ -185,7 +185,8 @@ void ImportedBookmarkProcessor::PageRetrieved(const QByteArray& data, const MHTS
 
     //Save the page
     //The file is NOT always an mhtml; MHTSaver does not wrap e.g images and pdfs in this format.
-    m_ib->ExPr_attachedFileName = Util::PercentEncodeUnicodeAndFSChars(status.mainResourceTitle);
+    //ExPr_attachedFileName Will be 'Safe and Short'ed later, but we remove filesystem-unsafe chars.
+    m_ib->ExPr_attachedFileName = Util::PercentEncodeFSChars(status.mainResourceTitle);
     if (!status.fileSuffix.isEmpty())
         m_ib->ExPr_attachedFileName += "." + status.fileSuffix;
     m_ib->ExPr_attachedFileData = data;
