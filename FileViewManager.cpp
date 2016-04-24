@@ -255,8 +255,10 @@ void FileViewManager::DirectOpenFile(const QString& filePathName, long long prog
     bool success;
     if (programSAID == -1)
     {
-        //This QUrl override is tolerant and changes URLs to `file://` type.
-        success = QDesktopServices::openUrl(QUrl(filePathName));
+        //WRONG: This QUrl override is in TolerantMode and changes URLs to `file://` type.
+        //RIGHT: But QUrl must not transform percent characters or anything in the file name.
+        //`QUrl(filePathName, QUrl::DecodedMode)` didn't work. We have to use `QUrl::fromLocalFile`.
+        success = QDesktopServices::openUrl(QUrl::fromLocalFile(filePathName));
     }
     else
     {
