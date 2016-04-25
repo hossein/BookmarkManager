@@ -151,7 +151,7 @@ private:
     //// Utility Functions ////////////////////////////////////////////////////
     int findResourceWithURL(const QUrl& url);
 
-    QString unEscapeAttributeValue(const QString& value);
+    QString unEscapeHTMLEntities(const QString& value);
 
     QString getRawContentType(const QString& contentType);
     bool isMimeTypeTextFile(const QString& mimeType);

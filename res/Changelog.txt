@@ -71,5 +71,15 @@
 2015-10-02  16  MHTSaver bugfixes
 2015-10-03  16  Bookmark importer and preview dlg bugfixes
 2015-10-04  15  Import bookmarks together with processing
-2015-10-07  14  Begin using the program finally. From now on project structure changes, and release
-                archives and descriptions will be less frequently made and updated.
+2015-10-07  14  [1.0] Begin using the program finally. From now on project structure changes, and
+                release archives and descriptions will be less frequently made and updated.
+2016-03-24  17  [Unreleased] Implemented bookmark folders, New file archive layout.
+                Other changes include:
+                + DB Migrations
+                + Allow saving files with Unicode names in a new Options dialog; FAM refactoring.
+                + Open Link In New Window in (M)HTML files views opens links in default browser
+                + Add Bookmark From URL directly
+                ! Correct filter refreshing on bookmark add/delete
+                ! Fixed status labels counting and updates
+                ! Fixed viewing files with percent-encoded chars in their names
+                ! Fixed HTML character entities in saved MHT titles

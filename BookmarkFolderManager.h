@@ -42,6 +42,7 @@ class DatabaseManager;
 ///   The mentioned problems will not happen then. However there is the problem that the user
 ///   can specify the same filesystem folder for two or more file archives but that's another story
 ///   and will be prevented in FileArchiveManager.
+//TODO: Do we currently prevent creating folders having the same archive as Unsorted thingie?
 class BookmarkFolderManager : public ISubManager
 {
     friend class DatabaseManager;

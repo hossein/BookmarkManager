@@ -364,7 +364,7 @@ void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
             {
                 QRegularExpressionMatch match = matches.next();
                 QString linkedUrl = match.captured("url");
-                DecideAndLoadURL(url, unEscapeAttributeValue(linkedUrl));
+                DecideAndLoadURL(url, unEscapeHTMLEntities(linkedUrl));
             }
         }
         else
@@ -375,7 +375,7 @@ void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
                 QString rel = match.captured("rel");
                 QString linkedUrl = match.captured("url");
                 if (m_loadLinkRelTypes.contains(rel, Qt::CaseInsensitive))
-                    DecideAndLoadURL(url, unEscapeAttributeValue(linkedUrl));
+                    DecideAndLoadURL(url, unEscapeHTMLEntities(linkedUrl));
             }
         }
     }
@@ -393,7 +393,7 @@ void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
         QRegularExpression titleRegexp(titlePattern, QRegularExpression::CaseInsensitiveOption);
         QRegularExpressionMatch match = titleRegexp.match(str);
         if (match.isValid())
-            m_status.mainResourceTitle = match.captured("title").toUtf8();
+            m_status.mainResourceTitle = unEscapeHTMLEntities(match.captured("title"));
     }
 }
 
@@ -665,7 +665,7 @@ int MHTSaver::findResourceWithURL(const QUrl& url)
     return -1;
 }
 
-QString MHTSaver::unEscapeAttributeValue(const QString& value)
+QString MHTSaver::unEscapeHTMLEntities(const QString& value)
 {
     //http://stackoverflow.com/questions/7696159/how-can-i-convert-entity-characterescape-character-to-html-in-qt
     QTextDocument text;

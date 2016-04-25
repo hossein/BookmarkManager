@@ -800,7 +800,7 @@ public slots:
         Q_UNUSED(status);
         qDebug() << "MHTDataReady";
 
-        QFile mhtfile("C:\\Users\\Hossein\\Desktop\\LastMHT.mht");
+        QFile mhtfile("C:\\Users\\Hossein\\Desktop\\" + status.mainResourceTitle + ".mht");
         mhtfile.open(QIODevice::WriteOnly);
         mhtfile.write(data);
         mhtfile.close();
@@ -814,7 +814,7 @@ public slots:
 void MainWindow::on_actionGetMHT_triggered()
 {
     MHTSaver* saver = new MHTSaver(this);
-    saver->GetMHTData("https://www.mozilla.org/en-US/firefox/new/");
+    saver->GetMHTData("https://docs.python.org/2/howto/unicode.html");
     MHTDataReceiver* datarecv = new MHTDataReceiver(this);
     connect(saver, SIGNAL(MHTDataReady(QByteArray,MHTSaver::Status)), datarecv, SLOT(MHTDataReady(QByteArray,MHTSaver::Status)));
 }
