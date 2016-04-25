@@ -159,7 +159,8 @@ void ImportedBookmarksPreviewDialog::accept()
     //Show import statistics to user and confirm.
     if (importedCount == 0)
     {
-        QMessageBox::information(this, "Nothing To Import", "No bookmark is selected for import! Select bookmarks or folders first.");
+        QMessageBox::information(this, "Nothing To Import",
+                                 "No bookmark is selected or eligible for import! Select bookmarks or folders first.");
         return;
     }
     else
@@ -394,8 +395,9 @@ void ImportedBookmarksPreviewDialog::AddItems()
         folderItems[ibf.intId] = twi;
         index++;
 
-        //On firefox, don't add or show the root folder which has the ID 1.
-        if (ibf.intId == rootFolderIntId && elist->importSource == ImportedEntityList::Source_Firefox)
+        //On Firefox and Urls, don't add or show the root folder.
+        if (ibf.intId == rootFolderIntId && (elist->importSource == ImportedEntityList::Source_Firefox ||
+                                             elist->importSource == ImportedEntityList::Source_Urls))
             continue;
 
         if (ibf.parentId <= rootFolderIntId)

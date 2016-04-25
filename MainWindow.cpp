@@ -16,6 +16,7 @@
 #include <QDir>
 #include <QDesktopWidget>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QResizeEvent>
@@ -45,16 +46,29 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->splitterFT->setSizes(vsizes);
 
     // Add additional UI controls
-    QMenu* myMenu = new QMenu("&Menu");
-    myMenu->addActions(this->findChildren<QAction*>(QString(), Qt::FindDirectChildrenOnly));
+    ui->action_importFirefoxBookmarks->setEnabled(false); //Not implemented yet.
+    QMenu* menuFile = new QMenu("    &File    ");
+    menuFile->addAction(ui->actionImportUrlsAsBookmarks);
+    menuFile->addSeparator();
+    menuFile->addAction(ui->action_importFirefoxBookmarks);
+    menuFile->addAction(ui->actionImportFirefoxBookmarksJSONfile);
+    menuFile->addSeparator();
+    menuFile->addAction(ui->actionSettings);
 
-    QToolButton* btn = new QToolButton();
-    btn->setText("    &Menu    ");
-    btn->setMenu(myMenu);
-    btn->setPopupMode(QToolButton::InstantPopup);
-    //btn->setArrowType(Qt::LeftArrow);
-    btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    ui->mainToolBar->addWidget(btn);
+    QMenu* menuDebug = new QMenu("    &Debug    ");
+    menuDebug->addAction(ui->actionGetMHT);
+
+    QList<QMenu*> menus = QList<QMenu*>() << menuFile << menuDebug;
+    foreach (QMenu* menu, menus)
+    {
+        QToolButton* btn = new QToolButton();
+        btn->setText(menu->title());
+        btn->setMenu(menu);
+        btn->setPopupMode(QToolButton::InstantPopup);
+        //btn->setArrowType(Qt::LeftArrow);
+        btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
+        ui->mainToolBar->addWidget(btn);
+    }
 
     // Load database
     QString databaseFilePath = QDir::currentPath() + "/" + conf.programDatabasetFileName;
@@ -214,6 +228,17 @@ void MainWindow::on_actionImportFirefoxBookmarksJSONfile_triggered()
         return;
 
     ImportFirefoxJSONFile(jsonFilePath);
+}
+
+void MainWindow::on_actionImportUrlsAsBookmarks_triggered()
+{
+    bool okay;
+    QString urls = QInputDialog::getMultiLineText(
+                this, "Add URL(s) as Bookmark", "Enter the URLs to process, each one in a single line:", QString(), &okay);
+    if (!okay)
+        return;
+
+    ImportURLs(urls.split('\n', QString::KeepEmptyParts));
 }
 
 void MainWindow::on_actionSettings_triggered()
@@ -635,17 +660,51 @@ void MainWindow::RestoreCheckedTIDs(const QList<long long>& checkedTIDs,
     UpdateAllTagsCheckBoxCheck();
 }
 
+void MainWindow::ImportURLs(const QStringList& urls)
+{
+    ImportedEntityList elist;
+    elist.importSource = ImportedEntityList::Source_Urls;
+
+    ImportedBookmarkFolder ibf;
+    ibf.title = "Imported URLs";
+    ibf.intId = 0;
+    ibf.parentId = -1;
+    elist.ibflist.append(ibf);
+
+    int intId = 0;
+    foreach (const QString& surl, urls)
+    {
+        QString url = surl.trimmed();
+        if (url.isEmpty())
+            continue;
+
+        ImportedBookmark ib;
+        ib.title = QString();
+        ib.intId = intId++;
+        ib.parentId = 0;
+        ib.uri = url;
+        elist.iblist.append(ib);
+    }
+
+    ImportBookmarks(elist);
+}
+
 void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
 {
-    bool success;
     ImportedEntityList elist;
     elist.importSource = ImportedEntityList::Source_Firefox;
     elist.importSourceFileName = QFileInfo(jsonFilePath).fileName();
 
     FirefoxBookmarkJSONFileParser ffParser(this, &conf);
-    success = ffParser.ParseFile(jsonFilePath, elist);
-    if (!success)
+    if (!ffParser.ParseFile(jsonFilePath, elist))
         return;
+
+    ImportBookmarks(elist);
+}
+
+void MainWindow::ImportBookmarks(ImportedEntityList& elist)
+{
+    bool success;
 
     BookmarkImporter bmim(&dbm, this);
     success = bmim.Initialize();
@@ -720,7 +779,6 @@ void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
         ptxErrors->setPlainText(errorMessages);
         ptxErrors->resize(this->size() * 0.75);
         ptxErrors->show();
-
 
         /*QRect geom = geometry();
         geom.moveCenter(QApplication::desktop()->availableGeometry().center());

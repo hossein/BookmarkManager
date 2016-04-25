@@ -84,7 +84,14 @@ void ImportedBookmarkProcessor::AddMetaData()
     if (m_elist == NULL)
         return; //Caller should have set it.
 
-    if (m_elist->importSource == ImportedEntityList::Source_Firefox)
+    if (m_elist->importSource == ImportedEntityList::Source_Urls)
+    {
+        exInfo.Name = "bm: imported from";
+        exInfo.Type = ExInfoData::Type_Text;
+        exInfo.Value = "url";
+        m_ib->ExPr_ExtraInfosList.append(exInfo);
+    }
+    else if (m_elist->importSource == ImportedEntityList::Source_Firefox)
     {
         exInfo.Name = "bm: imported from";
         exInfo.Type = ExInfoData::Type_Text;

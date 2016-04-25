@@ -95,7 +95,7 @@ struct ImportedBookmarkFolder
 
 struct ImportedEntityList
 {
-    enum ImportSource { Source_Firefox };
+    enum ImportSource { Source_Urls, Source_Firefox };
     ImportSource importSource;
     QString importSourceProfile;
     QString importSourceFileName;

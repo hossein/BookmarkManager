@@ -208,6 +208,17 @@
     <string>Settings...</string>
    </property>
   </action>
+  <action name="actionImportUrlsAsBookmarks">
+   <property name="text">
+    <string>Import URL(s) as Bookmarks...</string>
+   </property>
+   <property name="toolTip">
+    <string>Import one or more URLs as Bookmarks</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+N</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

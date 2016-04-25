@@ -7,6 +7,7 @@
 
 #include <QHash>
 
+struct ImportedEntityList;
 class QListWidgetItem;
 namespace Ui { class MainWindow; }
 
@@ -41,6 +42,7 @@ private slots:
 
     void on_action_importFirefoxBookmarks_triggered();
     void on_actionImportFirefoxBookmarksJSONfile_triggered();
+    void on_actionImportUrlsAsBookmarks_triggered();
     void on_actionGetMHT_triggered();
     void on_actionSettings_triggered();
 
@@ -97,5 +99,7 @@ private:
                             const QList<long long>& newTIDsToCheck);
 
     //// Bookmark importing ///////////////////////////////////////////////////////////////////////
+    void ImportURLs(const QStringList& urls);
     void ImportFirefoxJSONFile(const QString& jsonFilePath);
+    void ImportBookmarks(ImportedEntityList& elist);
 };

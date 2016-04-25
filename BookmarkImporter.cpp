@@ -428,7 +428,8 @@ QString BookmarkImporter::bookmarkTagAccordingToParentFolders(ImportedEntityList
     int parentId = ib.parentId;
 
     QString tag = QString();
-    while (elist.ibflist[folderItemsIndexInArray[parentId]].root.isEmpty())
+    while (folderItemsIndexInArray.contains(parentId) &&
+           elist.ibflist[folderItemsIndexInArray[parentId]].root.isEmpty()) //This `root` checking is for Source_Firefox.
     {
         tag = elist.ibflist[folderItemsIndexInArray[parentId]].title + (tag.isEmpty() ? "" : "/") + tag;
         parentId = elist.ibflist[folderItemsIndexInArray[parentId]].parentId;
