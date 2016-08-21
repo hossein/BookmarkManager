@@ -7,10 +7,6 @@
 
 #include "BookmarksSortFilterProxyModel.h"
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-#   define setSectionResizeMode setResizeMode
-#endif
-
 BookmarksView::BookmarksView(QWidget *parent)
     : QWidget(parent)
     , dialogParent(parent), tvBookmarks(NULL), dbm(NULL), filteredBookmarksModel(NULL)

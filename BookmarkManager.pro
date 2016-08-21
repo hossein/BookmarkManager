@@ -4,9 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql network webkit
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets webkitwidgets winextras
+QT       += core gui sql network widgets webengine webenginewidgets winextras
 
 TARGET = BookmarkManager
 TEMPLATE = app

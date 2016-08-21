@@ -13,10 +13,6 @@
 #include <QUrl>
 #include <QDesktopServices>
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-#   define setSectionResizeMode setResizeMode
-#endif
-
 BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkViewDialog),
     dbm(dbm), canShowTheDialog(false)
@@ -434,13 +430,11 @@ void BookmarkViewDialog::PopulateExtraInfos()
     {
         //We escape html tags, etc (instead of maybe directly inserting html and text fragments or
         //  dealing with QTextDocumentFragment to do it)
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+
+        //Qt4: Qt::escape(string);
         QString name = exInfo.Name.toHtmlEscaped();
         QString value = exInfo.Value.toHtmlEscaped();
-#else
-        QString name = Qt::escape(exInfo.Name);
-        QString value = Qt::escape(exInfo.Value);
-#endif
+
         QString cellStyle = paddingStyle + (i++ % 2 ? alternateBackColorStyle : QString());
         propertiesHTML += rowText.arg(cellStyle, name, value);
     }

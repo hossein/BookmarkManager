@@ -31,10 +31,6 @@
 //      This can be used when trashing to detect whether any file exists or not, and whether we can
 //      find the FID of it.
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-#   define setSectionResizeMode setResizeMode
-#endif
-
 BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId, long long addFOID,
                                        OutParams* outParams, QWidget *parent) :
     QDialog(parent), ui(new Ui::BookmarkEditDialog), dbm(dbm),

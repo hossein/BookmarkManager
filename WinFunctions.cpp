@@ -1,9 +1,7 @@
 #include "WinFunctions.h"
 
 #include <QFileInfo>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-#   include <QtWinExtras/QtWin>
-#endif
+#include <QtWinExtras/QtWin>
 
 #include <Windows.h>
 
@@ -139,9 +137,6 @@ QPixmap WinFunctions::GetProgramLargeIcon(const QString& exePathName)
 
 QPixmap WinFunctions::GetPixmapFromWindowsHIcon(HICON icon)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    //Qt4: return QPixmap::fromWinHICON(icon);
     return QtWin::fromHICON(icon);
-#else
-    return QPixmap::fromWinHICON(icon);
-#endif
 }

@@ -4,13 +4,10 @@
 #include "AppListItemDelegate.h"
 #include "WinFunctions.h"
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-#   include <QStandardPaths>
-#else
-#   include <QDesktopServices>
-#endif
 #include <QDir>
 #include <QFileInfo>
+#include <QStandardPaths>
+
 #include <QFileDialog>
 #include <QFontMetrics>
 #include <QInputDialog>
@@ -426,11 +423,10 @@ void OpenWithDialog::pact_browse()
     //      forget them. Maybe in the future we do a full custom command-line Open With.
     //Note: We don't need to set the *.lnk extension as the filter for the open dialog below, Qt
     //      handles them. (Start Menu programs (the default directory) are all shortcuts.)
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+
+    //Qt4: QString programsDir = QDesktopServices::storageLocation(QDesktopServices::ApplicationsLocation);
     QString programsDir = QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation);
-#else
-    QString programsDir = QDesktopServices::storageLocation(QDesktopServices::ApplicationsLocation);
-#endif
+
     QString exeFileName = QFileDialog::getOpenFileName(this, "Select Program", programsDir,
                                                        "Executables (*.exe *.com)");
     if (exeFileName.length() > 0)
