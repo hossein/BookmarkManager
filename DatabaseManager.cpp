@@ -308,7 +308,7 @@ bool DatabaseManager::UpgradeDatabase(int dbVersion)
 
         query.prepare("INSERT INTO BookmarkFolder(FOID, ParentFOID, Name, Desc, DefFileArchive) VALUES (?, ?, ?, ?, ?);");
         query.addBindValue(0); //Force first PK to be 0.
-        query.addBindValue(-1);
+        query.addBindValue(QVariant()); //Not -1, it will cause a foreign key violation error
         query.addBindValue("Unsorted Bookmarks");
         query.addBindValue("Bookmarks that still aren't in a folder.");
         query.addBindValue(":arch0:");
