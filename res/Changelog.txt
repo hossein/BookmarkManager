@@ -60,7 +60,7 @@
 2015-03-22  57  MHT Saving done.
 2015-09-16  68  Prepare for new dev streak, added to-dos from vt.
 2015-09-21  68  File layouts for file archives, the new file layout with hints.
-2015-09-21  55  TODO Smashing
+2015-09-22  55  TODO Smashing
 2015-09-23  41  TODO Smashing
 2015-09-24  32  TODO Smashing
 2015-09-26  19  TODO Smashing
@@ -73,7 +73,7 @@
 2015-10-04  15  Import bookmarks together with processing
 2015-10-07  14  [1.0] Begin using the program finally. From now on project structure changes, and
                 release archives and descriptions will be less frequently made and updated.
-2016-03-24  17  [Unreleased] Implemented bookmark folders, New file archive layout.
+2016-08-21  18  [1.1] Implemented bookmark folders, New file archive layout.
                 Other changes include:
                 + DB Migrations
                 + Allow saving files with Unicode names in a new Options dialog; FAM refactoring.
