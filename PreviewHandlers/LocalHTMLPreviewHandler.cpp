@@ -87,7 +87,7 @@ QWidget* LocalHTMLPreviewHandler::CreateAndFreeWidget(QWidget* parent)
     BMWebView* webViewWidget = new BMWebView(webViewFrame);
     frameLayout->addWidget(webViewWidget, 1);
 
-    //Loading and rendering webkit contents os a long asynchronous operation, so we manage cursors.
+    //Loading and rendering webengine contents os a long asynchronous operation, so we manage cursors.
     //Loading of a page may take forever, so we also added a toolbar, which turned to be a nice thing.
     webViewWidget->connect(webViewWidget, SIGNAL(loadStarted()), m_cursorChanger, SLOT(SetBusyLoadingCursor()));
     webViewWidget->connect(webViewWidget, SIGNAL(loadFinished(bool)), m_cursorChanger, SLOT(RestoreCursor()));
@@ -120,45 +120,18 @@ bool LocalHTMLPreviewHandler::ClearAndSetDataToWidget(const QString& filePathNam
     if (webViewWidget == NULL)
         return false;
 
-    //None of these were solutions:
-    //  Reading from file and setting content with custom mime type "multipart/related".
-    //  Setting the URL in `webViewWidget->page()->mainFrame()->load` which is a QWebFrame.
-    /*
-    QFileInfo fi(filePathName);
-    QString lowerSuffix = fi.suffix().toLower();
-    if (lowerSuffix == "mht" || lowerSuffix == "mhtml")
-    {
-        //We don't do file error handling here, we're lazy!
-        QFile f(filePathName);
-        f.open(QIODevice::ReadOnly);
-        QByteArray fileData = f.readAll();
-        f.close();
+    //QtWebKit had serious problems with displaying files; not only in 4.8 we had to compile the
+    //  'unofficial QtWebKit 2.3' to enable MHT support; regardless of "multipart/related" content-
+    //  type it had problems with loading files. We had to use `setUrl` rather than load and give it
+    //  the url with `QUrl::fromLocalFile(...)` for MHT files and with just `QUrl(...)` for other
+    //  files, otherwise files did not load!
+    //And then again it in QtWebKit 5 it sometimes didn't load all the files in the MHT file.
+    //We migrated to Qt 5.7 and QtWebEngine, which solves all of the stated problems. Previous tries
+    //  and comments are now removed from here.
 
-        //QWebPage p;
-        //QMessageBox::information(NULL, "hi", p.supportedContentTypes().join("\n"));
-        webViewWidget->page()->mainFrame()->load(QUrl::fromLocalFile(filePathName));
-        //webViewWidget->setContent(fileData, "multipart/x-mixed-replace");
-    }
-    else //HTML, etc
-    {
-        webViewWidget->setUrl(QUrl(filePathName));
-    }
-    */
-
-    //The solution is finally this. This is how it works anyway; so I enclose it in Qt version checks.
-    //qDebug() << filePathName << QUrl(filePathName).toString() << QUrl::fromLocalFile(filePathName).toString();
-
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    QFileInfo fi(filePathName);
-    QString lowerSuffix = fi.suffix().toLower();
-    if (lowerSuffix == "mht" || lowerSuffix == "mhtml")
-        webViewWidget->setUrl(QUrl::fromLocalFile(filePathName));
-    else
-        webViewWidget->setUrl(QUrl(filePathName));
-#else
-    //In Qt5 this works decently.
+    //setUrl seems to be a it faster; and according to docs maybe better as it clears the view when called.
     webViewWidget->setUrl(QUrl::fromLocalFile(filePathName));
-#endif
+    //webViewWidget->load(QUrl::fromLocalFile(filePathName));
 
     return true;
 }

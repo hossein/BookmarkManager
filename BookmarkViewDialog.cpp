@@ -448,7 +448,7 @@ void BookmarkViewDialog::PreviewFile(int index)
 {
     if (dbm->fview.HasPreviewHandler(viewBData.Ex_FilesList[index].OriginalName))
     {
-        //If any preview handler does asynchronous loading or long operations (e.g webkit), it must do
+        //If any preview handler does asynchronous loading or long operations (e.g webengine), it must do
         //  another level of override cursor management itself. It doesn't cause problems because qApp
         //  keeps a stack of cursors.
         QApplication::setOverrideCursor(Qt::BusyCursor);

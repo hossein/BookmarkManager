@@ -1,9 +1,9 @@
 #pragma once
-#include <QWebView>
+#include <QtWebEngineWidgets/QWebEngineView>
 
 #include <QUrl>
 
-class BMWebView : public QWebView
+class BMWebView : public QWebEngineView
 {
     Q_OBJECT
 
@@ -16,8 +16,8 @@ public:
 
     //From http://stackoverflow.com/questions/14804326/qt-pyqt-how-do-i-act-on-qwebview-qwebpages-open-in-new-window-action
 protected:
-    virtual void contextMenuEvent(QContextMenuEvent* event);
+    //virtual void contextMenuEvent(QContextMenuEvent* event);
 protected:
-    virtual QWebView*createWindow(QWebPage::WebWindowType type);
+    virtual QWebEngineView* createWindow(QWebEnginePage::WebWindowType type);
 
 };
