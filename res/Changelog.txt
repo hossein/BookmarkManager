@@ -83,3 +83,4 @@
                 ! Fixed status labels counting and updates
                 ! Fixed viewing files with percent-encoded chars in their names
                 ! Fixed HTML character entities in saved MHT titles
+2016-08-22  19  [Unreleased] Migrate to Qt 5.7, VS2015, and to QtWebEngine instead of QtWebKit.

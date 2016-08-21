@@ -331,7 +331,7 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib)
         bdata.Desc = ib.description;
         bdata.DefBFID = -1; //[KeepDefaultFile-1] We always set this to -1.
                             //bbLogic will set the correct defbfid later.
-        bdata.Rating = 50; //For all.
+        bdata.Rating = 0; //For all.
 
         long long addedBID = -1; //Must set to -1 to show adding.
         QList<long long> associatedTIDs;

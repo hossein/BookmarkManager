@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
     BMApplication app("uniqueid.BookmarkManager", argc, argv);
 
     //Collect all Qt plugins in a 'plugins/' subdir.
+    //TODO: Doesn't seem to work though: https://bugreports.qt.io/browse/QTBUG-19841 ('it just simply does nothing !')
     app.addLibraryPath(app.applicationDirPath() + "/plugins");
 
     //QtSingleApplication
