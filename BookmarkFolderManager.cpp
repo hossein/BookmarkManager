@@ -212,7 +212,7 @@ void BookmarkFolderManager::CreateTables()
     //Insert the first Folder.
     query.prepare("INSERT INTO BookmarkFolder(FOID, ParentFOID, Name, Desc, DefFileArchive) VALUES (?, ?, ?, ?, ?);");
     query.addBindValue(0); //Force first PK to be 0.
-    query.addBindValue(-1);
+    query.addBindValue(QVariant()); //Not -1, it will cause a foreign key violation error
     query.addBindValue("Unsorted Bookmarks");
     query.addBindValue("Bookmarks that still aren't in a folder.");
     query.addBindValue(":arch0:");
@@ -240,13 +240,14 @@ void BookmarkFolderManager::PopulateModelsAndInternalTables()
     foidx.DefFileArchive = record.indexOf("DefFileArchive");
 
     //Populate internal tables
+    //Special care with ParentFOID because parent of '0, Unsorted' is NULL.
     bookmarkFolders.clear();
     BookmarkFolderData fodata;
     while (query.next())
     {
         const QSqlRecord record = query.record();
         fodata.FOID           = record.value("FOID"          ).toLongLong();
-        fodata.ParentFOID     = record.value("ParentFOID"    ).toLongLong();
+        fodata.ParentFOID     =(record.value("ParentFOID"    ).isNull() ? -1 : record.value("ParentFOID").toLongLong());
         fodata.Name           = record.value("Name"          ).toString();
         fodata.Desc           = record.value("Desc"          ).toString();
         fodata.DefFileArchive = record.value("DefFileArchive").toString();
