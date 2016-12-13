@@ -225,13 +225,13 @@
   <customwidget>
    <class>BookmarksView</class>
    <extends>QWidget</extends>
-   <header>BookmarksView.h</header>
+   <header>Bookmarks/BookmarksView.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>BookmarkFoldersView</class>
    <extends>QWidget</extends>
-   <header>BookmarkFoldersView.h</header>
+   <header>BookmarkFolders/BookmarkFoldersView.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -2,8 +2,8 @@
 #include <QMainWindow>
 
 #include "Config.h"
-#include "DatabaseManager.h"
-#include "FileManager.h"
+#include "Database/DatabaseManager.h"
+#include "Files/FileManager.h"
 
 #include <QHash>
 

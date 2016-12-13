@@ -1,16 +1,16 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-#include "BookmarkFilter.h"
-#include "BookmarkEditDialog.h"
-#include "BookmarkViewDialog.h"
+#include "Bookmarks/BookmarkFilter.h"
+#include "Bookmarks/BookmarkEditDialog.h"
+#include "Bookmarks/BookmarkViewDialog.h"
 #include "BookmarksBusinessLogic.h"
 
-#include "BookmarkImporter.h"
-#include "ImportedBookmarksPreviewDialog.h"
-#include "BookmarkImporters/FirefoxBookmarkJSONFileParser.h"
+#include "BookmarkImporter/BookmarkImporter.h"
+#include "BookmarkImporter/ImportedBookmarksPreviewDialog.h"
+#include "BookmarkImporter/FirefoxBookmarkJSONFileParser.h"
 
-#include "SettingsDialog.h"
+#include "Settings/SettingsDialog.h"
 
 #include <QDebug>
 #include <QDir>
@@ -786,7 +786,7 @@ void MainWindow::ImportBookmarks(ImportedEntityList& elist)
     }
 }
 
-#include "MHTSaver.h"
+#include "BookmarkImporter/MHTSaver.h"
 
 class MHTDataReceiver : public QObject
 {

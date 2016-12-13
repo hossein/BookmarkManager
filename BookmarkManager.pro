@@ -18,124 +18,132 @@ QMAKE_LFLAGS_RELEASE += $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
 #To generate header file dependency:
 #https://qt-project.org/forums/viewreply/82432/
 LOCAL_INCLUDE_DIRS = $$_PRO_FILE_PWD_ \
-    $$_PRO_FILE_PWD_/BookmarkImporters \
+    $$_PRO_FILE_PWD_/BookmarkFolders \
+    $$_PRO_FILE_PWD_/BookmarkImporter \
+    $$_PRO_FILE_PWD_/Bookmarks \
+    $$_PRO_FILE_PWD_/Database \
+    $$_PRO_FILE_PWD_/Files \
+    $$_PRO_FILE_PWD_/FileViewer \
     $$_PRO_FILE_PWD_/PreviewHandlers \
-    $$_PRO_FILE_PWD_/qtsingleapplication
+    $$_PRO_FILE_PWD_/qtsingleapplication \
+    $$_PRO_FILE_PWD_/Settings \
+    $$_PRO_FILE_PWD_/Tags \
+    $$_PRO_FILE_PWD_/Util
 DEPENDPATH *= $$(LOCAL_INCLUDE_DIRS)
 
 #Without this on Qt5 files inside the subfolders can't access the higher-level files directly.
 #  Dangerous, but we set it so. Obviously not good for big projects. And we have to use <> then.
 INCLUDEPATH += $$_PRO_FILE_PWD_
 
-SOURCES += main.cpp\
-        MainWindow.cpp \
-    DatabaseManager.cpp \
-    BookmarkEditDialog.cpp \
-    TagLineEdit.cpp \
-    WinFunctions.cpp \
-    BookmarkManager.cpp \
-    FileManager.cpp \
-    TagManager.cpp \
-    Util.cpp \
-    TransactionalFileOperator.cpp \
-    FileViewManager.cpp \
-    FiveStarRatingWidget.cpp \
-    BookmarkViewDialog.cpp \
-    FilePreviewerWidget.cpp \
-    PreviewHandlers/LocalHTMLPreviewHandler.cpp \
+SOURCES += BMApplication.cpp \
+    BookmarksBusinessLogic.cpp \
+    main.cpp \
+    MainWindow.cpp \
+    BookmarkFolders/BookmarkFolderEditDialog.cpp \
+    BookmarkFolders/BookmarkFolderManager.cpp \
+    BookmarkFolders/BookmarkFoldersTreeWidget.cpp \
+    BookmarkFolders/BookmarkFoldersView.cpp \
+    BookmarkImporter/BookmarkImporter.cpp \
+    BookmarkImporter/FirefoxBookmarkJSONFileParser.cpp \
+    BookmarkImporter/ImportedBookmarkProcessor.cpp \
+    BookmarkImporter/ImportedBookmarksPreviewDialog.cpp \
+    BookmarkImporter/ImportedBookmarksProcessor.cpp \
+    BookmarkImporter/MHTSaver.cpp \
+    Bookmarks/BookmarkEditDialog.cpp \
+    Bookmarks/BookmarkExtraInfoAddEditDialog.cpp \
+    Bookmarks/BookmarkManager.cpp \
+    Bookmarks/BookmarksSortFilterProxyModel.cpp \
+    Bookmarks/BookmarksView.cpp \
+    Bookmarks/BookmarkViewDialog.cpp \
+    Bookmarks/FiveStarRatingWidget.cpp \
+    Bookmarks/QuickBookmarkSelectDialog.cpp \
+    Database/DatabaseManager.cpp \
+    Files/FileArchiveManager.cpp \
+    Files/FileManager.cpp \
+    Files/FileSandBoxManager.cpp \
+    Files/IArchiveManager.cpp \
+    FileViewer/AppListItemDelegate.cpp \
+    FileViewer/FilePreviewerWidget.cpp \
+    FileViewer/FileViewManager.cpp \
+    FileViewer/OpenWithDialog.cpp \
+    PreviewHandlers/BMWebView.cpp \
     PreviewHandlers/FilePreviewHandler.cpp \
     PreviewHandlers/ImagePreviewHandler.cpp \
+    PreviewHandlers/LocalHTMLPreviewHandler.cpp \
     PreviewHandlers/TextPreviewHandler.cpp \
-    OpenWithDialog.cpp \
-    AppListItemDelegate.cpp \
-    FileArchiveManager.cpp \
-    FileSandBoxManager.cpp \
-    IArchiveManager.cpp \
-    BookmarksView.cpp \
-    QuickBookmarkSelectDialog.cpp \
-    BookmarkExtraInfoAddEditDialog.cpp \
-    BookmarksBusinessLogic.cpp \
-    BookmarkImporters/FirefoxBookmarkJSONFileParser.cpp \
-    ImportedBookmarksPreviewDialog.cpp \
-    BookmarkImporter.cpp \
-    ImportedBookmarkProcessor.cpp \
-    ImportedBookmarksProcessor.cpp \
-    MHTSaver.cpp \
-    SettingsManager.cpp \
-    CtLogger.cpp \
-    BMApplication.cpp \
     qtsingleapplication/qtlocalpeer.cpp \
     qtsingleapplication/qtsingleapplication.cpp \
-    BookmarksSortFilterProxyModel.cpp \
-    PreviewHandlers/BMWebView.cpp \
-    BookmarkFolderManager.cpp \
-    BookmarkFoldersView.cpp \
-    BookmarkFolderEditDialog.cpp \
-    BookmarkFoldersTreeWidget.cpp \
-    SettingsDialog.cpp
+    Settings/SettingsDialog.cpp \
+    Settings/SettingsManager.cpp \
+    Tags/TagLineEdit.cpp \
+    Tags/TagManager.cpp \
+    Util/CtLogger.cpp \
+    Util/TransactionalFileOperator.cpp \
+    Util/Util.cpp \
+    Util/WinFunctions.cpp
 
-HEADERS  += MainWindow.h \
-    DatabaseManager.h \
-    Config.h \
-    BookmarkEditDialog.h \
-    TagLineEdit.h \
-    WinFunctions.h \
-    BookmarkManager.h \
-    IManager.h \
-    FileManager.h \
-    TagManager.h \
-    ISubManager.h \
-    Util.h \
-    TransactionalFileOperator.h \
-    FileViewManager.h \
-    FiveStarRatingWidget.h \
-    BookmarkViewDialog.h \
-    FilePreviewerWidget.h \
-    PreviewHandlers/FilePreviewHandler.h \
-    PreviewHandlers/LocalHTMLPreviewHandler.h \
-    PreviewHandlers/ImagePreviewHandler.h \
-    PreviewHandlers/TextPreviewHandler.h \
-    OpenWithDialog.h \
-    AppListItemDelegate.h \
-    FileArchiveManager.h \
-    IArchiveManager.h \
-    FileSandBoxManager.h \
-    BookmarksView.h \
-    QuickBookmarkSelectDialog.h \
-    BookmarkExtraInfoAddEditDialog.h \
-    BookmarkExtraInfoTypeChooser.h \
+HEADERS += BMApplication.h \
     BookmarksBusinessLogic.h \
-    BookmarkImporters/FirefoxBookmarkJSONFileParser.h \
-    BookmarkImporters/ImportedEntity.h \
-    ImportedBookmarksPreviewDialog.h \
-    BookmarkImporter.h \
-    ImportedBookmarkProcessor.h \
-    ImportedBookmarksProcessor.h \
-    MHTSaver.h \
-    SettingsManager.h \
-    ListWidgetWithEmptyPlaceholder.h \
-    CtLogger.h \
-    BMApplication.h \
+    Config.h \
+    MainWindow.h \
+    BookmarkFolders/BookmarkFolderEditDialog.h \
+    BookmarkFolders/BookmarkFolderManager.h \
+    BookmarkFolders/BookmarkFoldersTreeWidget.h \
+    BookmarkFolders/BookmarkFoldersView.h \
+    BookmarkImporter/BookmarkImporter.h \
+    BookmarkImporter/FirefoxBookmarkJSONFileParser.h \
+    BookmarkImporter/ImportedBookmarkProcessor.h \
+    BookmarkImporter/ImportedBookmarksPreviewDialog.h \
+    BookmarkImporter/ImportedBookmarksProcessor.h \
+    BookmarkImporter/ImportedEntity.h \
+    BookmarkImporter/MHTSaver.h \
+    Bookmarks/BookmarkEditDialog.h \
+    Bookmarks/BookmarkExtraInfoAddEditDialog.h \
+    Bookmarks/BookmarkExtraInfoTypeChooser.h \
+    Bookmarks/BookmarkFilter.h \
+    Bookmarks/BookmarkManager.h \
+    Bookmarks/BookmarksSortFilterProxyModel.h \
+    Bookmarks/BookmarksView.h \
+    Bookmarks/BookmarkViewDialog.h \
+    Bookmarks/FiveStarRatingWidget.h \
+    Bookmarks/QuickBookmarkSelectDialog.h \
+    Database/DatabaseManager.h \
+    Database/IManager.h \
+    Database/ISubManager.h \
+    Files/FileArchiveManager.h \
+    Files/FileManager.h \
+    Files/FileSandBoxManager.h \
+    Files/IArchiveManager.h \
+    FileViewer/AppListItemDelegate.h \
+    FileViewer/FilePreviewerWidget.h \
+    FileViewer/FileViewManager.h \
+    FileViewer/OpenWithDialog.h \
+    PreviewHandlers/BMWebView.h \
+    PreviewHandlers/FilePreviewHandler.h \
+    PreviewHandlers/ImagePreviewHandler.h \
+    PreviewHandlers/LocalHTMLPreviewHandler.h \
+    PreviewHandlers/TextPreviewHandler.h \
     qtsingleapplication/qtlocalpeer.h \
     qtsingleapplication/qtsingleapplication.h \
-    BookmarksSortFilterProxyModel.h \
-    BookmarkFilter.h \
-    PreviewHandlers/BMWebView.h \
-    BookmarkFolderManager.h \
-    BookmarkFoldersView.h \
-    BookmarkFolderEditDialog.h \
-    BookmarkFoldersTreeWidget.h \
-    SettingsDialog.h
+    Settings/SettingsDialog.h \
+    Settings/SettingsManager.h \
+    Tags/TagLineEdit.h \
+    Tags/TagManager.h \
+    Util/CtLogger.h \
+    Util/ListWidgetWithEmptyPlaceholder.h \
+    Util/TransactionalFileOperator.h \
+    Util/Util.h \
+    Util/WinFunctions.h
 
-FORMS    += MainWindow.ui \
-    BookmarkEditDialog.ui \
-    BookmarkViewDialog.ui \
-    OpenWithDialog.ui \
-    QuickBookmarkSelectDialog.ui \
-    BookmarkExtraInfoAddEditDialog.ui \
-    ImportedBookmarksPreviewDialog.ui \
-    BookmarkFolderEditDialog.ui \
-    SettingsDialog.ui
+FORMS += MainWindow.ui \
+    BookmarkFolders/BookmarkFolderEditDialog.ui \
+    BookmarkImporter/ImportedBookmarksPreviewDialog.ui \
+    Bookmarks/BookmarkEditDialog.ui \
+    Bookmarks/BookmarkExtraInfoAddEditDialog.ui \
+    Bookmarks/BookmarkViewDialog.ui \
+    Bookmarks/QuickBookmarkSelectDialog.ui \
+    FileViewer/OpenWithDialog.ui \
+    Settings/SettingsDialog.ui
 
 RESOURCES += \
     BookmarkManager.qrc

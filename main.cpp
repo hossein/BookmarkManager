@@ -1,8 +1,8 @@
 #include "BMApplication.h"
 #include "MainWindow.h"
 
-#include "CtLogger.h"
-#include "Util.h"
+#include "Util/CtLogger.h"
+#include "Util/Util.h"
 
 int main(int argc, char *argv[])
 {

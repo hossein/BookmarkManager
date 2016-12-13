@@ -1,6 +1,6 @@
 #pragma once
 #include <QString>
-#include "BookmarkManager.h"
+#include "Bookmarks/BookmarkManager.h"
 
 class DatabaseManager;
 

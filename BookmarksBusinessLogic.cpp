@@ -1,7 +1,7 @@
 #include "BookmarksBusinessLogic.h"
 
 #include "Config.h"
-#include "DatabaseManager.h"
+#include "Database/DatabaseManager.h"
 
 #include <QJsonDocument>
 #include <QJsonArray>

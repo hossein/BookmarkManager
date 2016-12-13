@@ -1,6 +1,6 @@
 #include "FilePreviewHandler.h"
 
-#include "FileViewManager.h"
+#include "FileViewer/FileViewManager.h"
 
 #include "PreviewHandlers/LocalHTMLPreviewHandler.h"
 #include "PreviewHandlers/ImagePreviewHandler.h"
