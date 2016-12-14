@@ -1,15 +1,19 @@
 #pragma once
 #include <QWidget>
 
+#include "Config.h"
+
 class QModelIndex;
 class QAbstractItemModel;
 class QItemSelectionModel;
 class QScrollBar;
 class QTableView;
 
-class DatabaseManager;
 struct BookmarkFilter;
 class BookmarksSortFilterProxyModel;
+class BookmarkFoldersView;
+class DatabaseManager;
+class TagsView;
 
 /// To make this class work, caller needs to create an instance AND call `Initialize`.
 class BookmarksView : public QWidget
@@ -54,33 +58,28 @@ protected:
 
     //Action and Information Functions
 public:
+    void RefreshUIDataDisplay(bool rePopulateModels, const BookmarkFilter& bfilter,
+                              UIDDRefreshAction refreshAction = RA_None, long long selectBID = -1);
+
     QString GetSelectedBookmarkName() const;
     long long GetSelectedBookmarkID() const;
     void SelectBookmarkWithID(long long bookmarkId);
 
     //Passes to BookmarksSortFilterProxyModel
     bool SetFilter(const BookmarkFilter& filter, bool forceReset);
+    //This replaces `ResetHeadersAndSort()`. It just adjusts column widths.
+    void RefreshView();
 
     int GetTotalBookmarksCount() const;
     int GetDisplayedBookmarksCount() const;
 
-    //Imitate QTableView behaviour, but (Old) Note: probably can be changed.
-    //                                  (Update): I don't know what it refered to.
-public:
-    QItemSelectionModel* selectionModel() const;
-    void setCurrentIndex(const QModelIndex& index);
-    QScrollBar* horizontalScrollBar() const;
-    QScrollBar* verticalScrollBar() const;
+    void ScrollToBottom();
 
     //ShrinkHeight property
 public:
     bool shrinkHeight() const        { return m_shrinkHeight;  }
 public slots:
     void setShrinkHeight(bool value) { m_shrinkHeight = value; }
-
-public slots:
-    //This replaces `ResetHeadersAndSort()`. It just adjusts column widths.
-    void RefreshView();
 
     //Private slots to make things work.
 private slots:

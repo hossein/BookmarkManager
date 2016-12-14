@@ -4,12 +4,14 @@
 #include <QtSql/QSqlQueryModel>
 
 class DatabaseManager;
+class TagsView;
 
 /// Tag management is case-insensitive. The first time you use a tag, it defines its name's
 /// case style.
 class TagManager : public ISubManager
 {
     friend class DatabaseManager;
+    friend class TagsView;
 
 public:
     QSqlQueryModel model;

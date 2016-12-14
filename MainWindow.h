@@ -7,6 +7,7 @@
 
 #include <QHash>
 
+struct BookmarkFilter;
 struct ImportedEntityList;
 class QListWidgetItem;
 namespace Ui { class MainWindow; }
@@ -19,7 +20,6 @@ private:
     Ui::MainWindow *ui;
     Config conf;
     DatabaseManager dbm;
-    QHash<long long, QListWidgetItem*> tagItems;
     bool m_shouldExit;
 
 public:
@@ -38,7 +38,7 @@ private slots:
     void bvCurrentRowChanged(long long currentBID, long long previousBID);
     void tfCurrentFolderChanged(long long FOID);
     void tfRequestMoveBookmarksToFolder(const QList<long long>& BIDs, long long FOID);
-    void lwTagsItemChanged(QListWidgetItem* item);
+    void tvTagSelectionChanged();
 
     void on_action_importFirefoxBookmarks_triggered();
     void on_actionImportFirefoxBookmarksJSONfile_triggered();
@@ -48,55 +48,17 @@ private slots:
 
 private:
     /// Master functions for data refresh and display /////////////////////////////////////////////
-    enum RefreshAction
-    {
-        RA_None = 0x00,
-        RA_SaveSel = 0x01,
-        RA_SaveScrollPos = 0x02,
-        RA_SaveSelAndScroll = RA_SaveSel | RA_SaveScrollPos,
-        RA_CustomSelect = 0x04,
-        RA_Focus = 0x08, //Make the selection vivid blue! Instead of gray.
-        RA_SaveSelAndFocus = RA_SaveSel | RA_Focus,
-        RA_SaveScrollPosAndFocus = RA_SaveScrollPos | RA_Focus,
-        RA_SaveSelAndScrollAndFocus = RA_SaveSel | RA_SaveScrollPosAndFocus,
-        RA_CustomSelAndSaveScrollAndFocus = RA_CustomSelect | RA_SaveScrollPosAndFocus,
-        RA_CustomSelectAndFocus = RA_CustomSelect | RA_Focus,
-        RA_SaveCheckState = 0x10, //Only for Tags
-        RA_SaveSelAndScrollAndCheck = RA_SaveSelAndScroll | RA_SaveCheckState,
-        RA_NoRefreshView = 0x20
-    };
     void RefreshUIDataDisplay(bool rePopulateModels,
-                              RefreshAction bookmarksAction = RA_None, long long selectBID = -1,
-                              RefreshAction tagsAction = RA_None, long long selectTID = -1,
+                              UIDDRefreshAction bookmarksAction = RA_None, long long selectBID = -1,
+                              UIDDRefreshAction tagsAction = RA_None, long long selectTID = -1,
                               const QList<long long>& newTIDsToCheck = QList<long long>());
+    void GetBookmarkFilter(BookmarkFilter& bfilter);
     void RefreshStatusLabels();
 
-    void RefreshTVBookmarksModelView(bool forceResetFilter);
     void NewBookmark();
     void ViewSelectedBookmark();
     void EditSelectedBookmark();
     void DeleteSelectedBookmark();
-
-    void RefreshTagsDisplay();
-    long long GetSelectedTagID();
-    void SelectTagWithID(long long tagId);
-
-    enum TagCheckStateResult
-    {
-        TCSR_NoneChecked = 0,
-        TCSR_SomeChecked = 1,
-        TCSR_AllChecked = 2,
-    };
-    TagCheckStateResult m_allTagsChecked;
-    void QueryAllTagsChecked();
-    void UpdateAllTagsCheckBoxCheck();
-
-    //The following function automatically Queries and updates checkbox, too.
-    void CheckAllTags(Qt::CheckState checkState);
-
-    QList<long long> GetCheckedTIDs();
-    void RestoreCheckedTIDs(const QList<long long>& checkedTIDs,
-                            const QList<long long>& newTIDsToCheck);
 
     //// Bookmark importing ///////////////////////////////////////////////////////////////////////
     void ImportURLs(const QStringList& urls);

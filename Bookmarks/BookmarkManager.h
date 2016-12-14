@@ -7,10 +7,12 @@
 #include <QtSql/QSqlTableModel>
 
 class DatabaseManager;
+class BookmarksView;
 
 class BookmarkManager : public ISubManager
 {
     friend class DatabaseManager;
+    friend class BookmarksView;
 
 public:
     QSqlQueryModel model;

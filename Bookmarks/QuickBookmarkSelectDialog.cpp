@@ -25,7 +25,7 @@ QuickBookmarkSelectDialog::QuickBookmarkSelectDialog(
 
     //Scroll to bottom if user likes. E.g good for linking bookmarks.
     if (scrollToBottom)
-        ui->bvBookmarks->verticalScrollBar()->setValue(ui->bvBookmarks->verticalScrollBar()->maximum());
+        ui->bvBookmarks->ScrollToBottom();
 }
 
 QuickBookmarkSelectDialog::~QuickBookmarkSelectDialog()

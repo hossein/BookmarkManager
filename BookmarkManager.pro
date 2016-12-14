@@ -77,6 +77,7 @@ SOURCES += BMApplication.cpp \
     Settings/SettingsManager.cpp \
     Tags/TagLineEdit.cpp \
     Tags/TagManager.cpp \
+    Tags/TagsView.cpp \
     Util/CtLogger.cpp \
     Util/TransactionalFileOperator.cpp \
     Util/Util.cpp \
@@ -129,6 +130,7 @@ HEADERS += BMApplication.h \
     Settings/SettingsManager.h \
     Tags/TagLineEdit.h \
     Tags/TagManager.h \
+    Tags/TagsView.h \
     Util/CtLogger.h \
     Util/ListWidgetWithEmptyPlaceholder.h \
     Util/TransactionalFileOperator.h \

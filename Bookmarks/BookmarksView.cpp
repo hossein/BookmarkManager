@@ -1,11 +1,14 @@
 #include "BookmarksView.h"
 
-#include <QDebug>
+#include "BookmarksSortFilterProxyModel.h"
+#include "BookmarkFolders/BookmarkFoldersView.h"
+#include "Database/DatabaseManager.h"
+#include "Tags/TagsView.h"
+
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QScrollBar>
 #include <QTableView>
-
-#include "BookmarksSortFilterProxyModel.h"
 
 BookmarksView::BookmarksView(QWidget *parent)
     : QWidget(parent)
@@ -84,7 +87,7 @@ void BookmarksView::Initialize(DatabaseManager* dbm, ListMode listMode, QAbstrac
     ///int sortColumn = hh->sortIndicatorSection();
     ///filteredBookmarksModel->sort(sortColumn, sortOrder);
     //Wrong ways to sort:
-    //ui->tvBookmarks->sortByColumn(sortColumn);
+    //tvBookmarks->sortByColumn(sortColumn);
     //hh->setSortIndicator(sortColumn, sortOrder);
 
     vh->setSectionResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
@@ -98,6 +101,72 @@ void BookmarksView::focusInEvent(QFocusEvent* event)
 {
     QWidget::focusInEvent(event);
     tvBookmarks->setFocus();
+}
+
+void BookmarksView::RefreshUIDataDisplay(bool rePopulateModels, const BookmarkFilter& bfilter,
+                                         UIDDRefreshAction refreshAction, long long selectBID)
+{
+    int hBScrollPos = 0, vBScrollPos = 0;
+
+    //Save required things.
+    //This is required to be a persistent model for saving selections after filtering.
+    QPersistentModelIndex selectedBRowIndex;
+    if (refreshAction & RA_SaveSel) //[SavingSelectedBookmarkAndTag]
+        if (tvBookmarks->selectionModel()->selectedIndexes().size() > 0)
+            //!selectedBRow = tvBookmarks->selectionModel()->selectedIndexes()[0].row();
+            selectedBRowIndex = tvBookmarks->selectionModel()->selectedIndexes()[0];
+    if (refreshAction & RA_SaveScrollPos)
+    {
+        if (tvBookmarks->horizontalScrollBar() != NULL)
+            hBScrollPos = tvBookmarks->horizontalScrollBar()->value();
+        if (tvBookmarks->verticalScrollBar() != NULL)
+            vBScrollPos = tvBookmarks->verticalScrollBar()->value();
+    }
+
+    if (rePopulateModels)
+        dbm->bms.PopulateModelsAndInternalTables();
+
+    //Technically we only need to forceResetFilter only when adding and deleting a bookmark, so we
+    //  could have e.g a new action called `RA_ForceResetFilter`; but for simplicity we force
+    //  resetting the filter on every change, including the unneeded startup and editing actions.
+    if (!(refreshAction & RA_NoRefreshView))
+    {
+        SetFilter(bfilter, rePopulateModels);
+        RefreshView();
+    }
+
+    //Pour out saved selections, scrolls, etc.
+    //Note on 20141009:
+    //  To make selection compatible with sorting, we couldn't just select rows. We use ModelIndexes.
+    //  With the new Bookmark selection saving method, when filtering by tags, instead of selecting
+    //  something ourselves, we could not select anything and let the TableView do it itself!
+    //  But if a bookmark is selected and then its tag is deselected, the bookmark disappears.
+    //  If TableWidget manages selections, it just selects the nearest bookmark, but with our custom
+    //  selecting, selection is cleared and we prefer it.
+    //Important: This selecting is only useful for filtering, as all other actions manage the
+    //  selections themselves, but Edit must manually select now, too; as model indices (even
+    //  persistent ones) are invalid after a model reset.
+    if (refreshAction & RA_SaveSel)
+        tvBookmarks->setCurrentIndex(selectedBRowIndex);
+        //if (selectedBRow != -1)
+            //!tvBookmarks->setCurrentIndex(filteredBookmarksModel.index(selectedBRow, 0));
+
+    if (refreshAction & RA_SaveScrollPos)
+    {
+        if (tvBookmarks->horizontalScrollBar() != NULL)
+            tvBookmarks->horizontalScrollBar()->setValue(hBScrollPos);
+        if (tvBookmarks->verticalScrollBar() != NULL)
+            tvBookmarks->verticalScrollBar()->setValue(vBScrollPos);
+    }
+
+    //[RestoringScrollPositionProceedsCustomSelection]
+    if (refreshAction & RA_CustomSelect)
+        if (selectBID != -1)
+            SelectBookmarkWithID(selectBID);
+
+    //Focusing comes last anyway
+    if (refreshAction & RA_Focus)
+        tvBookmarks->setFocus();
 }
 
 QString BookmarksView::GetSelectedBookmarkName() const
@@ -152,6 +221,11 @@ bool BookmarksView::SetFilter(const BookmarkFilter& filter, bool forceReset)
     return filteredBookmarksModel->SetFilter(filter, forceReset);
 }
 
+void BookmarksView::RefreshView()
+{
+    //Currently this does nothing. Maybe the point is to remove it because things are automatic?
+}
+
 int BookmarksView::GetTotalBookmarksCount() const
 {
     if (!filteredBookmarksModel)
@@ -166,29 +240,9 @@ int BookmarksView::GetDisplayedBookmarksCount() const
     return filteredBookmarksModel->rowCount();
 }
 
-QItemSelectionModel* BookmarksView::selectionModel() const
+void BookmarksView::ScrollToBottom()
 {
-    return tvBookmarks->selectionModel();
-}
-
-void BookmarksView::setCurrentIndex(const QModelIndex& index)
-{
-    tvBookmarks->setCurrentIndex(index);
-}
-
-QScrollBar*BookmarksView::horizontalScrollBar() const
-{
-    return tvBookmarks->horizontalScrollBar();
-}
-
-QScrollBar*BookmarksView::verticalScrollBar() const
-{
-    return tvBookmarks->verticalScrollBar();
-}
-
-void BookmarksView::RefreshView()
-{
-    //Currently this does nothing. Maybe the point is to remove it because things are automatic?
+    tvBookmarks->verticalScrollBar()->setValue(tvBookmarks->verticalScrollBar()->maximum());
 }
 
 void BookmarksView::modelLayoutChanged()
