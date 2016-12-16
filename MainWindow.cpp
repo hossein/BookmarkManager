@@ -167,7 +167,8 @@ void MainWindow::bvCurrentRowChanged(long long currentBID, long long previousBID
 void MainWindow::tfCurrentFolderChanged(long long FOID)
 {
     Q_UNUSED(FOID);
-    RefreshUIDataDisplay(false, RA_Focus);
+    RefreshUIDataDisplay(false, RA_Focus, -1,
+                         (UIDDRefreshAction)(RA_SaveSelAndScroll | RA_NoRefreshView));
 }
 
 void MainWindow::tfRequestMoveBookmarksToFolder(const QList<long long>& BIDs, long long FOID)

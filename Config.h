@@ -48,7 +48,7 @@
 ///     right-click)
 ///   x Filter by tags
 ///   x "Delete" moves the bookmarks or archivefiles to a "Trash", never deletes them!
-///   - Search
+///   x Search
 ///   x Bookmark extra info table.
 ///   - Import Firefox bookmarks (by both browsing the json file and selecting profile!)
 ///   x Linking Bookmarks to each other.
@@ -56,7 +56,6 @@
 ///     the system default Open dialog, because we want to be system-independent and not use
 ///     Windows' registry CLASSES, etc) and let user (only!) Remove the apps he needs. Also a
 ///     dialog for the global programs that are used for every extension. Done in OpenWithDialog.
-///   - Filtering, and top label should show what are we filtering by.
 ///
 /// LATER:
 ///   - Show %'ed urls, e.g Persian wikipedia urls in their decoded forms everywhere, including
@@ -65,8 +64,6 @@
 ///   - Make the add/edit dialog non-modal, and allow editing/viewing more than one bookmark at once
 ///     (but do NOT allow opening the edit/view dialog for the same bookmark twice!)
 ///   - Full-text index for the words inside the saved web pages!
-///   - When a bookmark is edited and we know that no other bookmark is pointing to a file in
-///     filearchive, move the unused file to our own "Trash" from the file archive!
 ///   - Saving FileArchive as zip files, and dynamic number of files per separate-directories.
 ///   - "Trash" viewer and manager. (Implemented for files, should implement for tags and bms
 ///     (for bms only the trash table is created, trash handling is NOT implemented). IMPORTANT:
@@ -85,6 +82,8 @@
 ///     keywords for file sharing between multiple bookmarks.
 ///     Also if user edits a shared file, he should be shown a warning and given the options to 'fork'
 ///     and edit the file only for the specific bookmark he is working on, or for all bookmarks.
+///   - About shared files: When a bookmark is edited and we know that no other bookmark is pointing
+///     to a file in filearchive, move the unused file to our own "Trash" from the file archive!
 ///   - Zoom in/out, real size, fit size, rotate cw/ccw buttons for image viewer, support dragging
 ///     and wheel zooming.
 ///   - Encoding and word-wrap selector for text viewer. Font selection option and wheel zooming.
@@ -115,6 +114,7 @@
 ///     correctly!
 ///   - Prevent sleep while importing.
 ///   - Option to download MHT on bookmark creation.
+///   - Option to enter a url, download and create its bookmark and then open its edit dialog!
 ///   - The current way of managing models and 'repopulating' them on each change is very wrong.
 ///     They don't need to be refreshed everytime we change the database. Eliminate them if we
 ///     really can't handle their complexity. However Qt is better with them, e.g drag and drop
@@ -126,6 +126,9 @@
 ///     their location on file system. See the end of BookmarkFolderManager::AddOrEditBookmarkFolder.
 ///     In this case BookmarkFolderEdit and FileArchiveEdit dialogs must tell user that their
 ///     changes will not be applied on the filesystem until they select the mentioned option.
+///   - More advanced search using operators, match all or any of words, etc.
+///   - Filtering like "tags:whatever folder:whatever contains-this-text", and top label should show
+///     what are we filtering by.
 
 class Config
 {
