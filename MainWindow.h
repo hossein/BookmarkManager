@@ -39,6 +39,8 @@ private slots:
     void tfCurrentFolderChanged(long long FOID);
     void tfRequestMoveBookmarksToFolder(const QList<long long>& BIDs, long long FOID);
     void tvTagSelectionChanged();
+    void leSearchTextChanged(const QString& text);
+    void chkSearchRegExpToggled(bool checked);
 
     void on_action_importFirefoxBookmarks_triggered();
     void on_actionImportFirefoxBookmarksJSONfile_triggered();

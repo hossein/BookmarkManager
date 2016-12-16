@@ -22,6 +22,7 @@
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QToolButton>
+#include <QtSql/QSqlRecord>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow), conf(), dbm(this, &conf), m_shouldExit(false)
@@ -102,6 +103,9 @@ MainWindow::MainWindow(QWidget *parent) :
             this,   SLOT(tfRequestMoveBookmarksToFolder(QList<long long>,long long)));
     //The first time no tags are checked, everything is okay; we don't care about missing signals.
     connect(ui->tv, SIGNAL(tagSelectionChanged()), this,  SLOT(tvTagSelectionChanged()));
+    //Search area
+    connect(ui->leSearch, SIGNAL(textChanged(QString)), this, SLOT(leSearchTextChanged(QString)));
+    connect(ui->chkSearchRegExp, SIGNAL(toggled(bool)), this, SLOT(chkSearchRegExpToggled(bool)));
 
     // Additional sub-parts initialization.
     if (!dbm.files.InitializeFileArchives(&dbm))
@@ -187,6 +191,21 @@ void MainWindow::tvTagSelectionChanged()
                          (UIDDRefreshAction)(RA_SaveSelAndScroll | RA_NoRefreshView));
 }
 
+void MainWindow::leSearchTextChanged(const QString& text)
+{
+    Q_UNUSED(text);
+    RefreshUIDataDisplay(false, RA_SaveSel, -1, //Do not use RA_Focus here, user continues to type
+                         (UIDDRefreshAction)(RA_SaveSelAndScroll | RA_NoRefreshView));
+}
+
+void MainWindow::chkSearchRegExpToggled(bool checked)
+{
+    Q_UNUSED(checked);
+    if (!ui->leSearch->text().isEmpty()) //Only refresh if there is something to search
+        RefreshUIDataDisplay(false, RA_SaveSelAndFocus, -1,
+                             (UIDDRefreshAction)(RA_SaveSelAndScroll | RA_NoRefreshView));
+}
+
 void MainWindow::on_action_importFirefoxBookmarks_triggered()
 {
     //TODO [IMPORT]
@@ -270,6 +289,49 @@ void MainWindow::GetBookmarkFilter(BookmarkFilter& bfilter)
         //  condition, as we have already checked `ui->tv->areAllTagsChecked()`.
         bfilter.FilterSpecificTagIDs(QSet<long long>::fromList(ui->tv->GetCheckedTIDs()));
     }
+
+    //The search box
+    if (!ui->leSearch->text().isEmpty())
+    {
+        QList<long long> foundBIDs;
+        QString searchTerm = ui->leSearch->text();
+        bool useRegExp = ui->chkSearchRegExp->isChecked();
+        QRegularExpression re;
+        if (useRegExp)
+        {
+            re = QRegularExpression(searchTerm, QRegularExpression::CaseInsensitiveOption | QRegularExpression::UseUnicodePropertiesOption);
+            re.optimize();
+        }
+
+        const auto& model = dbm.bms.model;
+        int bidIdx = dbm.bms.bidx.BID,
+            nameIdx = dbm.bms.bidx.Name,
+            urlIdx = dbm.bms.bidx.URL,
+            descIdx = dbm.bms.bidx.Desc;
+
+        //`model.match(...)` couldn't be used here because it can't search multiple columns,
+        //although it had other options such as RegExp and string-in-the-middle matching.
+        for (int i = 0; i < model.rowCount(); i++)
+        {
+            const QSqlRecord& record = model.record(i);
+            if (useRegExp)
+            {
+                if (re.match(record.value(nameIdx).toString(), 0).hasMatch() ||
+                    re.match(record.value(urlIdx).toString(), 0).hasMatch() ||
+                    re.match(record.value(descIdx).toString(), 0).hasMatch())
+                    foundBIDs.append(record.value(bidIdx).toLongLong());
+            }
+            else
+            {
+                if (record.value(nameIdx).toString().contains(searchTerm, Qt::CaseInsensitive) ||
+                    record.value(urlIdx).toString().contains(searchTerm, Qt::CaseInsensitive) ||
+                    record.value(descIdx).toString().contains(searchTerm, Qt::CaseInsensitive))
+                    foundBIDs.append(record.value(bidIdx).toLongLong());
+            }
+        }
+
+        bfilter.FilterSpecificBookmarkIDs(foundBIDs);
+    }
 }
 
 void MainWindow::RefreshStatusLabels()
@@ -282,6 +344,14 @@ void MainWindow::RefreshStatusLabels()
     {
         ui->lblFilter->setText("Showing bookmarks tagged <span style=\"color:green;\">"
                                + ui->tv->GetCheckedTagsNames() + "</span>");
+    }
+
+    if (!ui->leSearch->text().isEmpty())
+    {
+        QString searchCriteria = QString(" matching %1 <span style=\"color:fuchsia;\">%2</span>")
+                .arg(ui->chkSearchRegExp->isChecked() ? "regular expression" : "text")
+                .arg(ui->leSearch->text().toHtmlEscaped());
+        ui->lblFilter->setText(ui->lblFilter->text() + searchCriteria);
     }
 
     QString currentFolder = dbm.bfs.bookmarkFolders[ui->tf->GetCurrentFOID()].Ex_AbsolutePath;
