@@ -338,33 +338,47 @@ void MainWindow::GetBookmarkFilter(BookmarkFilter& bfilter)
 
 void MainWindow::RefreshStatusLabels()
 {
-    if (ui->tv->areAllTagsChecked())
-    {
-        ui->lblFilter->setText("Showing bookmarks");
-    }
+    //Filter criteria label
+    QStringList twoFolderNameLocations;
+    QString tagFilterString;
+    QString searchCriteria;
+
+    long long currentFOID = ui->tf->GetCurrentFOID();
+    QString currentFolderName = dbm.bfs.bookmarkFolders[currentFOID].Ex_AbsolutePath;
+    if (currentFolderName.isEmpty()) //For the '0, Unsorted' and '-1, All Bookmarks' folders the path is empty.
+        currentFolderName =  dbm.bfs.bookmarkFolders[currentFOID].Name; //But no more relevant, because now we use more natural sentences.
+    if (currentFOID == -1) //'-1, All Bookmarks' folder
+        twoFolderNameLocations << "" << " <span style=\"color:blue;\">in every folder</span>";
+    else if (currentFOID == 0) //'0, Unsorted' folder
+        twoFolderNameLocations << "<span style=\"color:blue;\">unsorted</span> " << "";
     else
-    {
-        ui->lblFilter->setText("Showing bookmarks tagged <span style=\"color:green;\">"
-                               + ui->tv->GetCheckedTagsNames() + "</span>");
-    }
+        twoFolderNameLocations << "" << " in folder <span style=\"color:blue;\">" + currentFolderName.toHtmlEscaped() + "</span>";
+
+    if (!ui->tv->areAllTagsChecked())
+        tagFilterString = " tagged <span style=\"color:green;\">" + ui->tv->GetCheckedTagsNames().toHtmlEscaped() + "</span>";
 
     if (!ui->leSearch->text().isEmpty())
-    {
-        QString searchCriteria = QString(" matching %1 <span style=\"color:fuchsia;\">%2</span>")
+        searchCriteria = QString(" matching %1 <span style=\"color:fuchsia;\">%2</span>")
                 .arg(ui->chkSearchRegExp->isChecked() ? "regular expression" : "text")
                 .arg(ui->leSearch->text().toHtmlEscaped());
-        ui->lblFilter->setText(ui->lblFilter->text() + searchCriteria);
-    }
 
-    QString currentFolder = dbm.bfs.bookmarkFolders[ui->tf->GetCurrentFOID()].Ex_AbsolutePath;
-    if (currentFolder.isEmpty()) //For the '0, Unsorted' and '-1, All Bookmarks' folders the path is empty.
-        currentFolder =  dbm.bfs.bookmarkFolders[ui->tf->GetCurrentFOID()].Name;
-    currentFolder = " in folder <span style=\"color:blue;\">" + currentFolder + "</span>";
-    ui->lblFilter->setText(ui->lblFilter->text() + currentFolder);
+    ui->lblFilter->setText(QString("Showing %1bookmarks%2%3%4")
+        .arg(twoFolderNameLocations[0], twoFolderNameLocations[1], tagFilterString, searchCriteria));
 
-    ui->lblBMCount->setText(QString("%1/%2 Bookmarks")
-                            .arg(ui->bv->GetDisplayedBookmarksCount())
-                            .arg(ui->bv->GetTotalBookmarksCount()));
+    //Bookmark count label
+    int displayedBookmarksCount = ui->bv->GetDisplayedBookmarksCount();
+    int bookmarksInFolderCount;
+    dbm.bms.CountBookmarksInFolder(bookmarksInFolderCount, currentFOID);
+
+    int totalBookmarksCount = ui->bv->GetTotalBookmarksCount();
+    if (currentFOID == -1) //In '-1, All Bookmarks' mode, bookmarksInFolderCount will be 0.
+        bookmarksInFolderCount = totalBookmarksCount;
+
+    ui->lblBMCount->setText(QString("Showing %1%2%3 bookmarks%4")
+        .arg(displayedBookmarksCount == bookmarksInFolderCount && displayedBookmarksCount > 0 ? "all " : "")
+        .arg(displayedBookmarksCount)
+        .arg(displayedBookmarksCount != bookmarksInFolderCount ? " of " + QString::number(bookmarksInFolderCount) : 0)
+        .arg(currentFOID != -1 ? " in folder" : ""));
 }
 
 void MainWindow::NewBookmark()
