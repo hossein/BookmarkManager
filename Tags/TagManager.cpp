@@ -108,9 +108,7 @@ bool TagManager::GetBookmarkIDsForTags(const QSet<long long>& TIDs, QSet<long lo
     QString commaSeparatedTIDs;
     foreach (long long TID, TIDs)
         commaSeparatedTIDs += QString::number(TID) + ",";
-    //Remove the last comma.
-    if (commaSeparatedTIDs.length() > 0) //Empty-check
-        commaSeparatedTIDs.chop(1);
+    commaSeparatedTIDs.chop(1); //Remove the last comma.
 
     //Note: Ordering by BID or anything here is useless. We use this info to filter the data later.
     //  Also empty commaSeparatedTIDs string is fine.

@@ -115,6 +115,47 @@ bool BookmarkManager::RemoveBookmark(long long BID)
     return true;
 }
 
+bool BookmarkManager::CountBookmarksInFolder(int& count, const long long FOID)
+{
+    QString retrieveError = "Could not retrieve folders' bookmarks count from database.";
+    QSqlQuery query(db);
+    query.prepare("SELECT COUNT(*) FROM Bookmark WHERE FOID = ?");
+    query.addBindValue(FOID);
+
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    //Unlikely that this returns no results, but we have to call `query.first()` anyway.
+    if (!query.first()) //Simply no results where returned.
+        return Error(retrieveError + "\Count was not found.");
+    count = query.record().value(0).toInt();
+
+    return true;
+}
+
+bool BookmarkManager::CountBookmarksInFolders(int& count, const QSet<long long>& FOIDs)
+{
+    QString retrieveError = "Could not retrieve folders' bookmarks count from database.";
+    QSqlQuery query(db);
+
+    QString commaSeparatedFOIDs;
+    foreach (long long FOID, FOIDs)
+        commaSeparatedFOIDs += QString::number(FOID) + ",";
+    commaSeparatedFOIDs.chop(1); //Remove the last comma.
+
+    //Empty commaSeparatedFOIDs string is fine.
+    query.prepare("SELECT COUNT(*) FROM Bookmark WHERE FOID IN (" + commaSeparatedFOIDs + ")");
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    //Unlikely that this returns no results, but we have to call `query.first()` anyway.
+    if (!query.first()) //Simply no results where returned.
+        return Error(retrieveError + "\Count was not found.");
+    count = query.record().value(0).toInt();
+
+    return true;
+}
+
 bool BookmarkManager::RetrieveBookmarksInFolder(QList<long long>& BIDs, const long long FOID)
 {
     QString retrieveError = "Could not retrieve folder's bookmarks list from database.";
@@ -142,9 +183,7 @@ bool BookmarkManager::RetrieveBookmarksInFolders(QSet<long long>& BIDs, const QS
     QString commaSeparatedFOIDs;
     foreach (long long FOID, FOIDs)
         commaSeparatedFOIDs += QString::number(FOID) + ",";
-    //Remove the last comma.
-    if (commaSeparatedFOIDs.length() > 0) //Empty-check
-        commaSeparatedFOIDs.chop(1);
+    commaSeparatedFOIDs.chop(1); //Remove the last comma.
 
     //Note: Ordering by BID or anything here is useless. We use this info to filter the data later.
     //  Also empty commaSeparatedFOIDs string is fine.

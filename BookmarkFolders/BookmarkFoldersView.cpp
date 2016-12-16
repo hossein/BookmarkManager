@@ -257,13 +257,13 @@ void BookmarkFoldersView::btnDeleteFolderClicked()
         QMessageBox::warning(this, "Cannot delete folder", cantDeleteError.arg("sub-folders"));
         return;
     }
-    QList<long long> BIDs;
-    if (!dbm->bms.RetrieveBookmarksInFolder(BIDs, currentFOID))
+    int bookmarksCount = -1;
+    if (!dbm->bms.CountBookmarksInFolder(bookmarksCount, currentFOID))
     {
         //Message already shown
         return;
     }
-    if (!BIDs.empty())
+    if (bookmarksCount != 0)
     {
         QMessageBox::warning(this, "Cannot delete folder", cantDeleteError.arg("bookmarks"));
         return;

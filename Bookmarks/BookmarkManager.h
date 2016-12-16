@@ -104,6 +104,8 @@ public:
     bool SetBookmarkDefBFID(long long BID, long long BFID);
     bool RemoveBookmark(long long BID);
 
+    bool CountBookmarksInFolder(int& count, const long long FOID);
+    bool CountBookmarksInFolders(int& count, const QSet<long long>& FOIDs);
     bool RetrieveBookmarksInFolder(QList<long long>& BIDs, const long long FOID);
     bool RetrieveBookmarksInFolders(QSet<long long>& BIDs, const QSet<long long>& FOIDs);
 
