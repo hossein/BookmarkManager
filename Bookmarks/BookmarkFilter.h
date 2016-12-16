@@ -16,9 +16,23 @@ private:
     QSet<long long> filterBIDs;
     QSet<long long> filterTIDs;
 
+    //For Folder or Tag filtering, the filterer just checks if there are entries or not.
+    //However if the list of BIDs to filter is empty, it's not clear whether user has not set a
+    //  filter, or the list of bookmarks to filter is empty. E.g when a search returns no bookmark
+    //  results, or when the list of linked (related) bookmarks for a bookmark is empty, previously
+    //  the filterer showed all bookmarks because filterBIDs was empty. Therefore, instead of
+    //  checking if filterBIDs is empty, the following variable has to be used instead.
+    bool hasFilterBIDs;
+
 public:
+    BookmarkFilter()
+    {
+        hasFilterBIDs = false;
+    }
+
     void ClearFilters()
     {
+        hasFilterBIDs = false;
         filterFOIDs.clear();
         filterBIDs.clear();
         filterTIDs.clear();
@@ -31,6 +45,7 @@ public:
 
     void FilterSpecificBookmarkIDs(const QList<long long>& BIDs)
     {
+        hasFilterBIDs = true;
         filterBIDs = QSet<long long>::fromList(BIDs);
     }
 
@@ -42,7 +57,8 @@ public:
 private:
     bool FilterEquals(const BookmarkFilter& another)
     {
-        return (filterFOIDs== another.filterFOIDs)
+        return (hasFilterBIDs == another.hasFilterBIDs)
+            && (filterFOIDs== another.filterFOIDs)
             && (filterBIDs == another.filterBIDs)
             && (filterTIDs == another.filterTIDs);
     }

@@ -100,7 +100,7 @@ bool BookmarksSortFilterProxyModel::populateFilteredBookmarkIDs()
         first = false;
     }
 
-    if (!m_filter.filterBIDs.empty())
+    if (m_filter.hasFilterBIDs)
     {
         allowAllBookmarks = false;
         if (first)
