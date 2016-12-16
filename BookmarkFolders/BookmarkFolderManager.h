@@ -8,6 +8,10 @@ class DatabaseManager;
 
 /// Manages bookmark folders.
 /// The special folder '0, Unsorted Bookmarks' is the parent of all other folders. Its parent is -1.
+/// We do have a '-1, All Bookmarks' folder, but we decided not to touch the DB too much so as not to
+///   have to create migrations. It was more intuitive that we set parent of all other folders to
+///   this -1 folder and also save it in the database however. But it didn't reduce code complexity
+///   too much. So it's just a fake folder inside the program, not in the DB. It's parent is also -1.
 ///
 /// Relationship with FileArchives:
 ///   Each BookmarkFolder can specify its FileArchive so that the bookmarks in that folder store

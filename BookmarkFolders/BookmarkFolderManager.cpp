@@ -166,7 +166,8 @@ bool BookmarkFolderManager::CalculateAbsolutePaths()
     //We can't assume all parents come before their children; either do it recursively or this way.
     int count = 0;
     QQueue<long long> foldersQueue;
-    foldersQueue.enqueue(0); //The '0, Unsorted' is the parent of all others.
+    foldersQueue.enqueue(-1); //The fake '-1, All Bookmarks' folder. It's also the parent of the
+                              //'0, Unsorted', which is itself the parent of all others.
     while (!foldersQueue.isEmpty())
     {
         //Get a folder from queue
@@ -174,9 +175,9 @@ bool BookmarkFolderManager::CalculateAbsolutePaths()
         count += 1;
 
         //Calculate absolute path of this folder
-        if (FOID == 0)
+        if (FOID <= 0)
         {
-             //Don't care about the '0, Unsorted' folder.
+             //Don't care about the '0, Unsorted' or '-1, All Bookmarks' folders.
             bookmarkFolders[FOID].Ex_AbsolutePath = "";
         }
         else
@@ -189,7 +190,7 @@ bool BookmarkFolderManager::CalculateAbsolutePaths()
 
         //Put children on queue
         foreach (const BookmarkFolderData& fodata, bookmarkFolders)
-            if (fodata.ParentFOID == FOID)
+            if (fodata.ParentFOID == FOID && fodata.FOID != -1) //Parent of '-1, All Bookmarks' folder is also -1.
                 foldersQueue.enqueue(fodata.FOID);
     }
 
@@ -240,9 +241,18 @@ void BookmarkFolderManager::PopulateModelsAndInternalTables()
     foidx.DefFileArchive = record.indexOf("DefFileArchive");
 
     //Populate internal tables
-    //Special care with ParentFOID because parent of '0, Unsorted' is NULL.
     bookmarkFolders.clear();
     BookmarkFolderData fodata;
+
+    //Add a fake '-1, All Bookmarks' item.
+    fodata.FOID = -1;
+    fodata.ParentFOID = -1;
+    fodata.Name = "All Bookmarks";
+    fodata.Desc = "Show all bookmarks in every folder (read-only).";
+    fodata.DefFileArchive = -1; //Invalid value
+    bookmarkFolders.insert(fodata.FOID, fodata);
+
+    //Special care with ParentFOID because parent of '0, Unsorted' is NULL.
     while (query.next())
     {
         const QSqlRecord record = query.record();

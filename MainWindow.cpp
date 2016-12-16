@@ -276,7 +276,8 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
 
 void MainWindow::GetBookmarkFilter(BookmarkFilter& bfilter)
 {
-    bfilter.FilterSpecificFolderIDs(QSet<long long>() << ui->tf->GetCurrentFOID());
+    if (ui->tf->GetCurrentFOID() != -1) //'-1, All Bookmarks' shows we don't need filtering.
+        bfilter.FilterSpecificFolderIDs(QSet<long long>() << ui->tf->GetCurrentFOID());
 
     //First we check if "All Items" is checked or not. If it's fully checked or fully unchecked,
     //  we don't filter by tags.
@@ -356,7 +357,7 @@ void MainWindow::RefreshStatusLabels()
     }
 
     QString currentFolder = dbm.bfs.bookmarkFolders[ui->tf->GetCurrentFOID()].Ex_AbsolutePath;
-    if (currentFolder.isEmpty()) //For the '0, Unsorted' folder the path is empty.
+    if (currentFolder.isEmpty()) //For the '0, Unsorted' and '-1, All Bookmarks' folders the path is empty.
         currentFolder =  dbm.bfs.bookmarkFolders[ui->tf->GetCurrentFOID()].Name;
     currentFolder = " in folder <span style=\"color:blue;\">" + currentFolder + "</span>";
     ui->lblFilter->setText(ui->lblFilter->text() + currentFolder);

@@ -79,6 +79,7 @@ void BookmarksView::Initialize(DatabaseManager* dbm, ListMode listMode, QAbstrac
 
         hh->resizeSection(bidx.URL, 200);
         //TODO [handle]: How to show tags? hh->resizeSection(dbm.bidx.Tags, 100);
+        //TODO: We also need to show folders, e.g in 'Linked Bookmarks' or 'All Bookmarks' views.
         hh->resizeSection(bidx.Rating, 50);
     }
 

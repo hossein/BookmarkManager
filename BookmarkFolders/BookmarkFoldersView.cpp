@@ -65,7 +65,7 @@ void BookmarkFoldersView::Initialize(DatabaseManager* dbm)
     connect(twFolders, SIGNAL(RequestMoveBookmarksToFolder(QList<long long>,long long)),
             this,      SIGNAL(RequestMoveBookmarksToFolder(QList<long long>,long long)));
 
-    //Select first folder ('0, Unsorted') and expand all items.
+    //Select the '0, Unsorted' folder and expand all items.
     twFolders->setCurrentItem(m_itemForFOID[0]); //Must be done AFTER CONNECTION to disable delete button.
     twFolders->expandAll();
 }
@@ -104,7 +104,8 @@ void BookmarkFoldersView::AddItems(bool rememberExpands)
     //We can't assume all parents come before their children, so we do it using a queue to make sure
     //  all parents can be created before their children.in a nested for loop.
     QQueue<long long> foldersQueue;
-    foldersQueue.enqueue(0); //The '0, Unsorted' is the parent of all others.
+    foldersQueue.enqueue(-1); //The fake '-1, All Bookmarks' folder. It's also the parent of the
+                              //'0, Unsorted', which is itself the parent of all others.
     while (!foldersQueue.isEmpty())
     {
         long long ParentFOID = foldersQueue.dequeue();
@@ -113,7 +114,8 @@ void BookmarkFoldersView::AddItems(bool rememberExpands)
         //We use a map of Name->FOID to sort the children by its keys, i.e folder names.
         QMap<QString, long long> childrenMap;
         foreach (long long FOID, bookmarkFolderKeys)
-            if (dbm->bfs.bookmarkFolders[FOID].ParentFOID == ParentFOID)
+            if (dbm->bfs.bookmarkFolders[FOID].ParentFOID == ParentFOID &&
+                dbm->bfs.bookmarkFolders[FOID].FOID != -1) //Parent of '-1, All Bookmarks' folder is also -1.
                 childrenMap.insert(dbm->bfs.bookmarkFolders[FOID].Name, FOID);
 
         //Now children are sorted by their names
@@ -131,7 +133,15 @@ void BookmarkFoldersView::AddItems(bool rememberExpands)
         item->setData(0, Qt::UserRole+0, FOID);
         m_itemForFOID[FOID] = item;
 
-        if (FOID == 0)
+        //Show '0, Unsorted' and '-1, All Bookmarks' folders in bold font.
+        if (FOID <= 0)
+        {
+            QFont boldFont = item->font(0);
+            boldFont.setBold(true);
+            item->setFont(0, boldFont);
+        }
+
+        if (FOID <= 0) //'0, Unsorted' and '-1, All Bookmarks' folders are always top-level items.
             twFolders->addTopLevelItem(item);
         else if (dbm->bfs.bookmarkFolders[FOID].ParentFOID == 0)
             //SPECIAL CASE: Although technically every folder is the child of the '0, Unsorted'
@@ -163,8 +173,9 @@ void BookmarkFoldersView::RestoreExpands()
 void BookmarkFoldersView::twFoldersCurrentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)
 {
     Q_UNUSED(previous);
+    //Don't enable for '0, Unsorted' and '-1, All Bookmarks' folders.
     //`current` becomes NULL when clearing items.
-    bool enabled = (current != NULL && current->data(0, Qt::UserRole+0).toLongLong() != 0);
+    bool enabled = (current != NULL && current->data(0, Qt::UserRole+0).toLongLong() > 0);
     m_editAction->setEnabled(enabled);
     m_deleteAction->setEnabled(enabled);
 

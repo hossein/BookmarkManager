@@ -11,6 +11,14 @@ BookmarkFolderEditDialog::BookmarkFolderEditDialog(DatabaseManager* dbm,
 {
     ui->setupUi(this);
 
+    //Parent of all top-level folders must be '0, Unsorted' folder, but caller can pass special
+    //folders like '-1, All Bookmarks' as the `addParentFOID` if e.g it is selected in the UI.
+    //We fix this by making special FOIDs 0.
+    if (addParentFOID < 0)
+    {
+        addParentFOID = 0;
+        this->addParentFOID = 0;
+    }
     BookmarkFolderManager::BookmarkFolderData parentfodata;
 
     //Get File Archives

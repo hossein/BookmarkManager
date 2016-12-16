@@ -48,6 +48,15 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId, 
     {
         setWindowTitle("Add Bookmark");
 
+        //Bookmarks can't be added to special, fake folders like '-1, All Bookmarks'
+        canShowTheDialog = (addFOID >= 0);
+        if (!canShowTheDialog)
+        {
+            QMessageBox::warning(this->parentWidget(), "Can't add bookmark here",
+                                 "Bookmarks cannot be added to special folders.");
+            return;
+        }
+
         //ExtraInfos management using models stay in editOriginalBData's model, not bdata's.
         canShowTheDialog = dbm->bms.GetEmptyExtraInfosModel(editOriginalBData.Ex_ExtraInfosModel);
         if (!canShowTheDialog)
