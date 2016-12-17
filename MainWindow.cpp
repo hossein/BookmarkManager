@@ -344,9 +344,8 @@ void MainWindow::RefreshStatusLabels()
     QString searchCriteria;
 
     long long currentFOID = ui->tf->GetCurrentFOID();
-    QString currentFolderName = dbm.bfs.bookmarkFolders[currentFOID].Ex_AbsolutePath;
-    if (currentFolderName.isEmpty()) //For the '0, Unsorted' and '-1, All Bookmarks' folders the path is empty.
-        currentFolderName =  dbm.bfs.bookmarkFolders[currentFOID].Name; //But no more relevant, because now we use more natural sentences.
+    QString currentFolderName = dbm.bfs.GetPathOrName(currentFOID);
+    //For the '0, Unsorted' and '-1, All Bookmarks' folders we use more natural sentences.
     if (currentFOID == -1) //'-1, All Bookmarks' folder
         twoFolderNameLocations << "" << " <span style=\"color:blue;\">in every folder</span>";
     else if (currentFOID == 0) //'0, Unsorted' folder

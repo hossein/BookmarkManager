@@ -161,6 +161,15 @@ QStringList BookmarkFolderManager::GetChildrenNames(long long FOID)
     return childrenNames;
 }
 
+QString BookmarkFolderManager::GetPathOrName(long long FOID)
+{
+    QString folderName = bookmarkFolders[FOID].Ex_AbsolutePath;
+    //For the '0, Unsorted' and '-1, All Bookmarks' folders the path is empty.
+    if (folderName.isEmpty())
+        folderName =  bookmarkFolders[FOID].Name;
+    return folderName;
+}
+
 bool BookmarkFolderManager::CalculateAbsolutePaths()
 {
     //We can't assume all parents come before their children; either do it recursively or this way.

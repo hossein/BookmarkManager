@@ -80,6 +80,9 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
 
     //Show in the UI.
     setWindowTitle("View Bookmark: " + viewBData.Name);
+    ui->lblFolderLocation->setText(ui->lblFolderLocation->text()
+                                   .arg(dbm->bfs.GetPathOrName(viewBData.FOID).toHtmlEscaped()));
+
     ui->lblName   ->setText(viewBData.Name);
     ui->lblName   ->setToolTip(viewBData.Name);
     ui->fvsRating ->setValue(viewBData.Rating);

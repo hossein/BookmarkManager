@@ -100,6 +100,9 @@ public:
     QList<long long> GetChildrenIDs(long long FOID);
     QStringList GetChildrenNames(long long FOID);
 
+    /// Returns the absolute path for normal folders, or folder name for special folders.
+    QString GetPathOrName(long long FOID);
+
 private:
     bool CalculateAbsolutePaths();
 

@@ -93,6 +93,13 @@
           </layout>
          </item>
          <item>
+          <widget class="QLabel" name="lblFolderLocation">
+           <property name="text">
+            <string>In folder &lt;span style=&quot;color:blue;&quot;&gt;%1&lt;/span&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QTextEdit" name="txtDesc">
            <property name="readOnly">
             <bool>true</bool>
@@ -126,7 +133,7 @@
               <string>Go</string>
              </property>
              <property name="icon">
-              <iconset resource="BookmarkManager.qrc">
+              <iconset resource="../BookmarkManager.qrc">
                <normaloff>:/res/go.png</normaloff>:/res/go.png</iconset>
              </property>
              <property name="toolButtonStyle">
@@ -323,7 +330,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="BookmarkManager.qrc"/>
+  <include location="../BookmarkManager.qrc"/>
  </resources>
  <connections/>
 </ui>

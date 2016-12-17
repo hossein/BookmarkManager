@@ -47,6 +47,8 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId, 
     if (editBId == -1)
     {
         setWindowTitle("Add Bookmark");
+        ui->lblFolderLocation->setText(ui->lblFolderLocation->text()
+                                       .arg(dbm->bfs.GetPathOrName(addFOID).toHtmlEscaped()));
 
         //Bookmarks can't be added to special, fake folders like '-1, All Bookmarks'
         canShowTheDialog = (addFOID >= 0);
@@ -76,6 +78,8 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId, 
             return;
 
         //Additional variable settings and set-up.
+        ui->lblFolderLocation->setText(ui->lblFolderLocation->text()
+                                       .arg(dbm->bfs.GetPathOrName(editOriginalBData.FOID).toHtmlEscaped()));
         editedLinkedBookmarks = editOriginalBData.Ex_LinkedBookmarksList;
         //editedExtraInfos = editOriginalBData.Ex_ExtraInfosList; We're using models instead
         //  ExtraInfos management using models stay in editOriginalBData's model, not bdata's.
