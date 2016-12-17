@@ -63,7 +63,7 @@ private:
     void DeleteSelectedBookmark();
 
     //// Bookmark importing ///////////////////////////////////////////////////////////////////////
-    void ImportURLs(const QStringList& urls);
+    void ImportURLs(const QStringList& urls, long long importFOID);
     void ImportFirefoxJSONFile(const QString& jsonFilePath);
     void ImportBookmarks(ImportedEntityList& elist);
 };

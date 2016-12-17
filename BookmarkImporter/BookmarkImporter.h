@@ -50,7 +50,7 @@ public:
     //Note: Marking an import as failed does not mean the bookmark was not imported. Maybe only its
     //  file saving was not successful. Calling MarkAsFailed twice on the same bookmark is safe.
     bool InitializeImport();
-    bool ImportOne(const ImportedBookmark& ib);
+    bool ImportOne(const ImportedBookmark& ib, long long importFOID);
     void MarkAsFailed(ImportedBookmark* ib);
     void FinalizeImport(QList<long long>& addedBIDs, QSet<long long>& allAssociatedTIDs,
                         QList<ImportedBookmark*>& failedProcessOrImports);

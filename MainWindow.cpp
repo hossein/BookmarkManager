@@ -226,13 +226,26 @@ void MainWindow::on_actionImportFirefoxBookmarksJSONfile_triggered()
 
 void MainWindow::on_actionImportUrlsAsBookmarks_triggered()
 {
+    long long importFOID = ui->tf->GetCurrentFOID();
+    if (importFOID < 0) //Don't allow importing into '-1, All Bookmarks' and other special folders.
+        importFOID = 0;
+    QString importFolderName = dbm.bfs.GetPathOrName(importFOID).toHtmlEscaped();
+
     bool okay;
-    QString urls = QInputDialog::getMultiLineText(
-                this, "Add URL(s) as Bookmark", "Enter the URLs to process, each one in a single line:", QString(), &okay);
+    QString message = "Enter the URLs to process, each one in a single line.<br/>"
+            "Bookmarks will be imported into the folder <span style=\"color:blue;\">" + importFolderName + "</span>.";
+    QString urls = QInputDialog::getMultiLineText(this, "Add URL(s) as Bookmark", message, QString(), &okay);
     if (!okay)
         return;
 
-    ImportURLs(urls.split('\n', QString::KeepEmptyParts));
+    QStringList urlsList = urls.split('\n', QString::KeepEmptyParts);
+    if (urlsList.isEmpty())
+    {
+        QMessageBox::warning(this, "No URLs given", "Please enter at least one URL to import.");
+        return;
+    }
+
+    ImportURLs(urlsList, importFOID);
 }
 
 void MainWindow::on_actionSettings_triggered()
@@ -450,9 +463,10 @@ void MainWindow::DeleteSelectedBookmark()
     RefreshUIDataDisplay(true, RA_SaveScrollPosAndFocus, -1, RA_SaveSelAndScrollAndCheck);
 }
 
-void MainWindow::ImportURLs(const QStringList& urls)
+void MainWindow::ImportURLs(const QStringList& urls, long long importFOID)
 {
     ImportedEntityList elist;
+    elist.importFOID = importFOID;
     elist.importSource = ImportedEntityList::Source_Urls;
 
     ImportedBookmarkFolder ibf;
@@ -482,6 +496,7 @@ void MainWindow::ImportURLs(const QStringList& urls)
 void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
 {
     ImportedEntityList elist;
+    elist.importFOID = 0; //Always import into the '0, Unsorted bookmarks' folder
     elist.importSource = ImportedEntityList::Source_Firefox;
     elist.importSourceFileName = QFileInfo(jsonFilePath).fileName();
 
@@ -541,8 +556,8 @@ void MainWindow::ImportBookmarks(ImportedEntityList& elist)
     //Refresh UI
     if (!addedBIDs.isEmpty())
     {
-        //Show '0, Unsorted' into which the bookmarks are imported.
-        ui->tf->SetCurrentFOIDSilently(0);
+        //Show the folder into which the bookmarks are imported.
+        ui->tf->SetCurrentFOIDSilently(elist.importFOID);
         //Note [MULTI-BM-SELECT]: Select the whole list later.
         RefreshUIDataDisplay(true, RA_CustomSelectAndFocus, addedBIDs[0],
                 RA_SaveSelAndScrollAndCheck, -1, allAssociatedTIDs.toList());
