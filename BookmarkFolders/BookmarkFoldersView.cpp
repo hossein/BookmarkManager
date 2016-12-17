@@ -79,6 +79,8 @@ long long BookmarkFoldersView::GetCurrentFOID()
 
 void BookmarkFoldersView::SetCurrentFOIDSilently(long long FOID)
 {
+    if (FOID == GetCurrentFOID())
+        return; //Otherwise setting `m_onceNoEmitChangeFOID = true` will cause problems.
     m_onceNoEmitChangeFOID = true; //Prevent emiting CurrentFolderChanged.
     twFolders->setCurrentItem(m_itemForFOID[FOID]);
 }
@@ -185,9 +187,11 @@ void BookmarkFoldersView::twFoldersCurrentItemChanged(QTreeWidgetItem* current, 
         if (m_lastEmittedChangeFOID != currentFOID)
         {
             if (!m_onceNoEmitChangeFOID)
+            {
                 emit CurrentFolderChanged(currentFOID);
+                m_lastEmittedChangeFOID = currentFOID;
+            }
             m_onceNoEmitChangeFOID = false;
-            m_lastEmittedChangeFOID = currentFOID;
         }
     }
 }
