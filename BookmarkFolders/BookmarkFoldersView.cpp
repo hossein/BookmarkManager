@@ -80,7 +80,7 @@ long long BookmarkFoldersView::GetCurrentFOID()
 void BookmarkFoldersView::SetCurrentFOIDSilently(long long FOID)
 {
     if (FOID == GetCurrentFOID())
-        return; //Otherwise setting `m_onceNoEmitChangeFOID = true` will cause problems.
+        return; //Otherwise setting `m_onceNoEmitChangeFOID = true` may cause problems.
     m_onceNoEmitChangeFOID = true; //Prevent emiting CurrentFolderChanged.
     twFolders->setCurrentItem(m_itemForFOID[FOID]);
 }
@@ -181,17 +181,18 @@ void BookmarkFoldersView::twFoldersCurrentItemChanged(QTreeWidgetItem* current, 
     m_editAction->setEnabled(enabled);
     m_deleteAction->setEnabled(enabled);
 
+    //Turn `m_onceNoEmitChangeFOID` off as soon as possible.
+    bool noEmit = m_onceNoEmitChangeFOID;
+    m_onceNoEmitChangeFOID = false;
+
     if (current != NULL)
     {
         long long currentFOID = current->data(0, Qt::UserRole+0).toLongLong();
         if (m_lastEmittedChangeFOID != currentFOID)
         {
-            if (!m_onceNoEmitChangeFOID)
-            {
+            if (!noEmit)
                 emit CurrentFolderChanged(currentFOID);
-                m_lastEmittedChangeFOID = currentFOID;
-            }
-            m_onceNoEmitChangeFOID = false;
+            m_lastEmittedChangeFOID = currentFOID;
         }
     }
 }
