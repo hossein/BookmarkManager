@@ -349,6 +349,26 @@ QString Util::FullyPercentDecodedUrl(const QString& url)
     return QUrl::fromPercentEncoding(QUrl(url).toDisplayString(QUrl::FullyDecoded).toUtf8());
 }
 
+QString Util::RemoveEmptyLinesAndTrim(const QString& text)
+{
+    QString result = "";
+    QStringList lines = text.split('\n');
+    for (int i = 0; i < lines.count(); i++)
+    {
+        QString line = lines[i].trimmed();
+        if (line.length() == 0)
+            continue;
+        //Don't use this after adding line to result; maybe next line is empty.
+        //  if (i < urls.length() - 1)
+        //      result += '\n';
+        //Instead use this before adding line to result:
+        if (result.length() > 0)
+            result += '\n';
+        result += line.trimmed();
+    }
+    return result;
+}
+
 void Util::CaseInsensitiveStringListEliminateDuplicates(QStringList& list)
 {
     QStringList temp(list);

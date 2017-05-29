@@ -13,72 +13,73 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,1,0,0">
+  <layout class="QVBoxLayout" name="verticalLayout_9" stretch="0,0,1,0">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="0,1">
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
-      <widget class="QLabel" name="lblName">
-       <property name="styleSheet">
-        <string notr="true">QLabel { font-weight: bold; }</string>
-       </property>
-       <property name="text">
-        <string>&amp;Name:</string>
-       </property>
-       <property name="buddy">
-        <cstring>leName</cstring>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="lblFolderLocation">
+         <property name="text">
+          <string>Bookmark folder &lt;span style=&quot;color:blue;&quot;&gt;%1&lt;/span&gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblName">
+         <property name="styleSheet">
+          <string notr="true">QLabel { font-weight: bold; }</string>
+         </property>
+         <property name="text">
+          <string>&amp;Name:</string>
+         </property>
+         <property name="buddy">
+          <cstring>leName</cstring>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="leName"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblTags">
+         <property name="styleSheet">
+          <string notr="true">QLabel { font-weight: bold; }</string>
+         </property>
+         <property name="text">
+          <string>&amp;Tags (space separated):</string>
+         </property>
+         <property name="buddy">
+          <cstring>leTags</cstring>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="TagLineEdit" name="leTags"/>
+       </item>
+      </layout>
      </item>
      <item>
-      <widget class="QLabel" name="lblFolderLocation">
-       <property name="text">
-        <string>In folder &lt;span style=&quot;color:blue;&quot;&gt;%1&lt;/span&gt;</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <item>
+        <widget class="QLabel" name="lblURL">
+         <property name="styleSheet">
+          <string notr="true">QLabel { font-weight: bold; }</string>
+         </property>
+         <property name="text">
+          <string>&amp;URLs (one per line):</string>
+         </property>
+         <property name="buddy">
+          <cstring>ptxURLs</cstring>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPlainTextEdit" name="ptxURLs"/>
+       </item>
+      </layout>
      </item>
     </layout>
-   </item>
-   <item>
-    <widget class="QLineEdit" name="leName"/>
-   </item>
-   <item>
-    <widget class="QLabel" name="lblURL">
-     <property name="styleSheet">
-      <string notr="true">QLabel { font-weight: bold; }</string>
-     </property>
-     <property name="text">
-      <string>Location (&amp;URL):</string>
-     </property>
-     <property name="buddy">
-      <cstring>leURL</cstring>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLineEdit" name="leURL">
-     <property name="text">
-      <string>http://</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="lblTags">
-     <property name="styleSheet">
-      <string notr="true">QLabel { font-weight: bold; }</string>
-     </property>
-     <property name="text">
-      <string>&amp;Tags (space separated):</string>
-     </property>
-     <property name="buddy">
-      <cstring>leTags</cstring>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="TagLineEdit" name="leTags"/>
    </item>
    <item>
     <widget class="QWidget" name="widget" native="true">
@@ -520,25 +521,37 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>TagLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>Tags/TagLineEdit.h</header>
-  </customwidget>
-  <customwidget>
    <class>BookmarksView</class>
    <extends>QWidget</extends>
    <header>Bookmarks/BookmarksView.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>TagLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>Tags/TagLineEdit.h</header>
+  </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>leName</tabstop>
-  <tabstop>leURL</tabstop>
-  <tabstop>leFileName</tabstop>
-  <tabstop>btnBrowse</tabstop>
-  <tabstop>btnAttach</tabstop>
+  <tabstop>ptxURLs</tabstop>
+  <tabstop>leTags</tabstop>
   <tabstop>ptxDesc</tabstop>
   <tabstop>dialRating</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>twAttachedFiles</tabstop>
+  <tabstop>btnShowAttachUI</tabstop>
+  <tabstop>btnSetFileAsDefault</tabstop>
+  <tabstop>btnBrowse</tabstop>
+  <tabstop>btnAttach</tabstop>
+  <tabstop>leFileName</tabstop>
+  <tabstop>btnCancelAttach</tabstop>
+  <tabstop>chkRemoveOriginalFile</tabstop>
+  <tabstop>btnLinkBookmark</tabstop>
+  <tabstop>btnRemoveLink</tabstop>
+  <tabstop>tvExtraInfos</tabstop>
+  <tabstop>btnAddExtraInfo</tabstop>
+  <tabstop>btnRemoveExtraInfo</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>

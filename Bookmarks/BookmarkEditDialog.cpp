@@ -89,7 +89,7 @@ BookmarkEditDialog::BookmarkEditDialog(DatabaseManager* dbm, long long editBId, 
 
         //Show in the UI.
         ui->leName    ->setText(editOriginalBData.Name);
-        ui->leURL     ->setText(editOriginalBData.URL);
+        ui->ptxURLs   ->setPlainText(editOriginalBData.URL);
         ui->ptxDesc   ->setPlainText(editOriginalBData.Desc);
         ui->dialRating->setValue(editOriginalBData.Rating);
         PopulateUITags();
@@ -145,7 +145,7 @@ void BookmarkEditDialog::accept()
     bdata.BID = editBId; //Not important.
     bdata.FOID = (editBId == -1 ? addFOID : editOriginalBData.FOID);
     bdata.Name = ui->leName->text().trimmed();
-    bdata.URL = ui->leURL->text().trimmed();
+    bdata.URL = Util::RemoveEmptyLinesAndTrim(ui->ptxURLs->toPlainText());
     bdata.Desc = ui->ptxDesc->toPlainText();
     bdata.DefBFID = -1; //[KeepDefaultFile-1] We always set this to -1.
                         //bbLogic will set the correct defbfid later.

@@ -34,7 +34,7 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
     //Note: On Qt 5.2+ maybe we can use the sizeAdjustPolicy property.
     //Update: As of using 5.4, I don't get what this line actually does, nor can I reproduce any
     //  bug in its absence.
-    ui->scrlFileData->setMinimumSize(ui->scrlFileDataWidgetContents->minimumSizeHint());
+    ui->scrlBookmarkData->setMinimumSize(ui->scrlBookmarkDataWidgetContents->minimumSizeHint());
 
     InitializeFilesUI();
     InitializeLinkedBookmarksUI();
@@ -70,11 +70,6 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
         ui->grpRelatedBookmarks->close();
     }
 
-    if (viewBData.Ex_FilesList.size() == 0 && viewBData.Ex_LinkedBookmarksList.size() == 0)
-    {
-        ui->scrlFileData->close();
-    }
-
     //Additional bookmark variables.
     SetDefaultBFID(viewBData.DefBFID); //Needed; retrieving functions don't set this.
 
@@ -88,8 +83,8 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
     ui->fvsRating ->setValue(viewBData.Rating);
     ui->fvsRating ->setToolTip(QString::number(viewBData.Rating / (double)10.0));
     ui->txtDesc   ->insertPlainText(viewBData.Desc); //Resists existense of HTML tags!
-    ui->leURL     ->setText(viewBData.URL);
     PopulateUITags();
+    PopulateURLs();
     PopulateUIFiles(false);
     PopulateLinkedBookmarks();
     PopulateExtraInfos();
@@ -103,7 +98,8 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
         //The above line causes: PreviewFile(defFileIndex);
     }
 
-    //Needed to make sure if the file list needs a horizontal scrollbar it will have its room.
+    //Needed to make sure if the URLs text browser or the file list need a horizontal scrollbar,
+    //they will have its room.
     qApp->postEvent(this, new QResizeEvent(this->size(), this->size()));
 }
 
@@ -117,13 +113,14 @@ void BookmarkViewDialog::resizeEvent(QResizeEvent* event)
     //Do BEFORE anything.
     QDialog::resizeEvent(event);
 
-    //But there is still a 1px error! Maybe should calculate column width ourselves or catch tw's resize event?
-    //Update: I don't get what that was about.
-    /** int widthForAllColumns = 0;
-    for (int i = 0; i < ui->twAttachedFiles->columnCount(); i++)
-        widthForAllColumns += ui->twAttachedFiles->columnWidth(i);
-    qDebug() << widthForAllColumns << ui->twAttachedFiles->frameSize() << ui->twAttachedFiles->sizeHint() << ui->twAttachedFiles->size();**/
+    //If horizontal scrollbar appears for txbURLs, expand its vertical size, and vice versa.
+    int txbURLsHeight = txbURLsRequiredHeight;
+    if (ui->txbURLs->horizontalScrollBar()->isVisible())
+        //NOT += ui->txbURLs->horizontalScrollBar()->height(). It's 30!
+        txbURLsHeight += ui->txbURLs->horizontalScrollBar()->sizeHint().height();
+    ui->txbURLs->setFixedHeight(txbURLsHeight);
 
+    //If horizontal scrollbar appears for twAttachedFiles, expand its vertical size, and vice versa.
     //Don't use `ui->twAttachedFiles->isVisible()` as condition, maybe it's destroyed.
     if (viewBData.Ex_FilesList.size() > 0)
     {
@@ -134,6 +131,13 @@ void BookmarkViewDialog::resizeEvent(QResizeEvent* event)
             twAttachedFilesHeight += ui->twAttachedFiles->horizontalScrollBar()->sizeHint().height();
         ui->twAttachedFiles->setFixedHeight(twAttachedFilesHeight);
     }
+
+    //But there is still a 1px error! Maybe should calculate column width ourselves or catch tw's resize event?
+    //Update: I don't get what that was about.
+    /** int widthForAllColumns = 0;
+    for (int i = 0; i < ui->twAttachedFiles->columnCount(); i++)
+        widthForAllColumns += ui->twAttachedFiles->columnWidth(i);
+    qDebug() << widthForAllColumns << ui->twAttachedFiles->frameSize() << ui->twAttachedFiles->sizeHint() << ui->twAttachedFiles->size();**/
 }
 
 void BookmarkViewDialog::showEvent(QShowEvent* event)
@@ -203,14 +207,41 @@ void BookmarkViewDialog::on_twAttachedFiles_customContextMenuRequested(const QPo
     afMenu.exec(menuPos);
 }
 
-void BookmarkViewDialog::on_btnOpenUrl_clicked()
-{
-    QDesktopServices::openUrl(QUrl(viewBData.URL));
-}
-
 void BookmarkViewDialog::PopulateUITags()
 {
     ui->leTags->setText(viewBData.Ex_TagsList.join(" "));
+}
+
+void BookmarkViewDialog::PopulateURLs()
+{
+    QStringList urls = Util::RemoveEmptyLinesAndTrim(viewBData.URL).split('\n');
+    for (int i = 0; i < urls.length(); i++)
+    {
+        const QString url = urls[i].trimmed();
+        ui->txbURLs->insertHtml("<a href=\"" + url + "\">" + Util::FullyPercentDecodedUrl(url).toHtmlEscaped() + "</a>");
+        if (i < urls.length() - 1) //This is fine because we know next url will not be an empty url.
+            ui->txbURLs->insertHtml("\n<br>");
+    }
+
+    //We use the same resizing policy as twAttachedFiles, here and in resizeEvent.
+    //ui->txbURLs->document()->size() didn't work.
+    QSize textSize = ui->txbURLs->fontMetrics().size(0, viewBData.URL);
+    int hackedSuitableHeightForTxbURLs =
+            textSize.height() +
+            ui->txbURLs->frameWidth() * 2 +
+            ui->txbURLs->document()->documentMargin() * 2 +
+            ui->txbURLs->contentsMargins().top() + ui->txbURLs->contentsMargins().bottom();
+
+    txbURLsRequiredHeight = hackedSuitableHeightForTxbURLs;
+    ui->txbURLs->setFixedHeight(txbURLsRequiredHeight);
+
+    //The horizontal slider remains at end for long URLs.
+    //None of these work here; probably because layout and size is not known.
+    //ui->txbURLs->horizontalScrollBar()->setValue(0);
+    //ui->txbURLs->horizontalScrollBar()->triggerAction(QScrollBar::SliderToMinimum);
+    //Worked:
+    ui->txbURLs->moveCursor(QTextCursor::Start);
+    ui->txbURLs->ensureCursorVisible(); //Optional
 }
 
 void BookmarkViewDialog::InitializeFilesUI()

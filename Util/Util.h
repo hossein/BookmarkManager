@@ -44,6 +44,9 @@ private:
 public:
     static QString FullyPercentDecodedUrl(const QString& url);
 
+    //String utility functions ////////////////////////////////////////////////////////////////////
+    static QString RemoveEmptyLinesAndTrim(const QString& text);
+
     // StringList Handling ////////////////////////////////////////////////////////////////////////
     static void CaseInsensitiveStringListEliminateDuplicates(QStringList& list);
     static QStringList CaseInsensitiveStringListEliminateDuplicatesCopy(const QStringList& list);

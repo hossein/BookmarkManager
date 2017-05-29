@@ -14,6 +14,7 @@ private:
     Ui::BookmarkViewDialog *ui;
     DatabaseManager* dbm;
     bool canShowTheDialog;
+    int txbURLsRequiredHeight;
     int twAttachedFilesRequiredHeight;
 
     BookmarkManager::BookmarkData viewBData;
@@ -35,12 +36,12 @@ private slots:
     void on_twAttachedFiles_itemSelectionChanged();
     void on_twAttachedFiles_customContextMenuRequested(const QPoint& pos);
 
-    /// File Properties section
-    void on_btnOpenUrl_clicked();
-
     //The following functions were copied from BookmarkEditDialog. Maybe common-ize them?
     /// Tags Section //////////////////////////////////////////////////////////////////////////////
     void PopulateUITags();
+
+    /// URLs Section //////////////////////////////////////////////////////////////////////////////
+    void PopulateURLs();
 
     /// File Attachments Section //////////////////////////////////////////////////////////////////
     void InitializeFilesUI();
