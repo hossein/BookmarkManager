@@ -214,7 +214,7 @@ void BookmarkViewDialog::PopulateUITags()
 
 void BookmarkViewDialog::PopulateURLs()
 {
-    QStringList urls = Util::RemoveEmptyLinesAndTrim(viewBData.URL).split('\n');
+    QStringList urls = Util::RemoveEmptyLinesAndTrim(viewBData.URLs).split('\n');
     for (int i = 0; i < urls.length(); i++)
     {
         const QString url = urls[i].trimmed();
@@ -225,7 +225,7 @@ void BookmarkViewDialog::PopulateURLs()
 
     //We use the same resizing policy as twAttachedFiles, here and in resizeEvent.
     //ui->txbURLs->document()->size() didn't work.
-    QSize textSize = ui->txbURLs->fontMetrics().size(0, viewBData.URL);
+    QSize textSize = ui->txbURLs->fontMetrics().size(0, viewBData.URLs);
     int hackedSuitableHeightForTxbURLs =
             textSize.height() +
             ui->txbURLs->frameWidth() * 2 +

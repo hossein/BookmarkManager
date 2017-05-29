@@ -322,7 +322,7 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
 
     //Move the information to BookmarkTrash table
     success = dbm->bms.InsertBookmarkIntoTrash(
-                folderPath, bdata.Name, bdata.URL, bdata.Desc, tagNames,
+                folderPath, bdata.Name, bdata.URLs, bdata.Desc, tagNames,
                 attachedFIDsStr, defaultFID, bdata.Rating, bdata.AddDate, extraInfoJSonText);
     if (!success)
         return false;

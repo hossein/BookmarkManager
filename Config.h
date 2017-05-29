@@ -141,7 +141,7 @@ public:
         //// CONSTANTS
         concurrentBookmarkProcessings = 10;
 
-        programDatabaseVersion = 2;
+        programDatabaseVersion = 3;
         programDatabasetFileName = "bmmgr.sqlite";
 
         nominalFileArchiveDirName = "FileArchive";

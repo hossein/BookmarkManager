@@ -29,7 +29,7 @@ bool BookmarkManager::RetrieveBookmark(long long BID, BookmarkManager::BookmarkD
     bdata.BID      = record.value("BID"     ).toLongLong();
     bdata.FOID     = record.value("FOID"    ).toLongLong();
     bdata.Name     = record.value("Name"    ).toString();
-    bdata.URL      = record.value("URL"     ).toString();
+    bdata.URLs     = record.value("URLs"    ).toString();
     bdata.Desc     = record.value("Desc"    ).toString();
     bdata.DefBFID  = record.value("DefBFID" ).toLongLong();
     bdata.Rating   = record.value("Rating"  ).toInt();
@@ -48,14 +48,14 @@ bool BookmarkManager::AddOrEditBookmark(long long& BID, BookmarkManager::Bookmar
     if (BID == -1)
     {
         querystr =
-                "INSERT INTO Bookmark (FOID, Name, URL, Desc, DefBFID, Rating, AddDate) "
+                "INSERT INTO Bookmark (FOID, Name, URLs, Desc, DefBFID, Rating, AddDate) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
     }
     else
     {
         querystr =
                 "UPDATE Bookmark "
-                "SET FOID = ?, Name = ?, URL = ?, Desc = ?, DefBFID = ?, Rating = ? "
+                "SET FOID = ?, Name = ?, URLs = ?, Desc = ?, DefBFID = ?, Rating = ? "
                 "WHERE BID = ?";
     }
 
@@ -64,7 +64,7 @@ bool BookmarkManager::AddOrEditBookmark(long long& BID, BookmarkManager::Bookmar
 
     query.addBindValue(bdata.FOID);
     query.addBindValue(bdata.Name);
-    query.addBindValue(bdata.URL);
+    query.addBindValue(bdata.URLs);
     query.addBindValue(bdata.Desc);
     query.addBindValue(bdata.DefBFID);
     query.addBindValue(bdata.Rating);
@@ -206,17 +206,16 @@ bool BookmarkManager::RetrieveBookmarksInFolders(QSet<long long>& BIDs, const QS
     return true;
 }
 
-bool BookmarkManager::InsertBookmarkIntoTrash(
-        const QString& Folder, const QString& Name, const QString& URL, const QString& Description,
+bool BookmarkManager::InsertBookmarkIntoTrash(const QString& Folder, const QString& Name, const QString& URLs, const QString& Description,
         const QString& Tags, const QString& AttachedFIDs, const long long DefFID, const int Rating,
         long long AddDate, const QString& ExtraInfos)
 {
     QSqlQuery query(db);
-    query.prepare("INSERT INTO BookmarkTrash(Folder, Name, URL, Desc, AttachedFIDs, DefFID, Rating, Tags, "
+    query.prepare("INSERT INTO BookmarkTrash(Folder, Name, URLs, Desc, AttachedFIDs, DefFID, Rating, Tags, "
                   "                          ExtraInfos, DeleteDate, AddDate) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
     query.addBindValue(Folder);
     query.addBindValue(Name);
-    query.addBindValue(URL);
+    query.addBindValue(URLs);
     query.addBindValue(Description);
     query.addBindValue(AttachedFIDs);
     query.addBindValue(DefFID);
@@ -565,11 +564,11 @@ bool BookmarkManager::RetrieveBookmarkNames(const QList<long long>& BIDs, QStrin
     return true;
 }
 
-bool BookmarkManager::RetrieveAllFullURLs(QHash<long long, QString>& bookmarkURLs)
+bool BookmarkManager::RetrieveAllFullURLs(QMultiHash<long long, QString>& bookmarkURLs)
 {
     QString retrieveError = "Could not get bookmarks information from database.";
     QSqlQuery query(db);
-    query.prepare("SELECT BID, URL FROM Bookmark");
+    query.prepare("SELECT BID, URLs FROM Bookmark");
 
     if (!query.exec())
         return Error(retrieveError, query.lastError());
@@ -578,8 +577,12 @@ bool BookmarkManager::RetrieveAllFullURLs(QHash<long long, QString>& bookmarkURL
     bookmarkURLs.clear();
 
     while (query.next())
+    {
         //We indexed explicitly in our select statement; indexes are constant.
-        bookmarkURLs.insert(query.value(0).toLongLong(), query.value(1).toString());
+        QStringList urls = Util::RemoveEmptyLinesAndTrim(query.value(1).toString()).split('\n');
+        foreach (const QString& url, urls)
+            bookmarkURLs.insertMulti(query.value(0).toLongLong(), url);
+    }
 
     return true;
 }
@@ -638,12 +641,12 @@ void BookmarkManager::CreateTables()
 
     //Don't allow deleting a folder that has bookmarks in it: ON DELETE RESTRICT.
     query.exec("CREATE TABLE Bookmark"
-               "( BID INTEGER PRIMARY KEY AUTOINCREMENT, FOID INTEGER, Name TEXT, URL TEXT, "
+               "( BID INTEGER PRIMARY KEY AUTOINCREMENT, FOID INTEGER, Name TEXT, URLs TEXT, "
                "  Desc TEXT, DefBFID INTEGER, Rating INTEGER, AddDate INTEGER, "
                "  FOREIGN KEY(FOID) REFERENCES BookmarkFolder(FOID) ON DELETE RESTRICT )");
 
     query.exec("CREATE TABLE BookmarkTrash"
-               "( BID INTEGER PRIMARY KEY AUTOINCREMENT, Folder TEXT, Name TEXT, URL TEXT, "
+               "( BID INTEGER PRIMARY KEY AUTOINCREMENT, Folder TEXT, Name TEXT, URLs TEXT, "
                "  Desc TEXT, AttachedFIDs TEXT, DefFID INTEGER, Rating INTEGER, "
                "  Tags TEXT, ExtraInfos TEXT, DeleteDate INTEGER, AddDate INTEGER )");
 
@@ -675,7 +678,7 @@ void BookmarkManager::PopulateModelsAndInternalTables()
     bidx.BID      = model.record().indexOf("BID"     );
     bidx.FOID     = model.record().indexOf("FOID"    );
     bidx.Name     = model.record().indexOf("Name"    );
-    bidx.URL      = model.record().indexOf("URL"     );
+    bidx.URLs     = model.record().indexOf("URLs"    );
     bidx.Desc     = model.record().indexOf("Desc"    );
     bidx.DefBFID  = model.record().indexOf("DefBFID" );
     bidx.Rating   = model.record().indexOf("Rating"  );
@@ -684,7 +687,7 @@ void BookmarkManager::PopulateModelsAndInternalTables()
     model.setHeaderData(bidx.BID     , Qt::Horizontal, "BID"         );
     model.setHeaderData(bidx.FOID    , Qt::Horizontal, "FOID"        );
     model.setHeaderData(bidx.Name    , Qt::Horizontal, "Name"        );
-    model.setHeaderData(bidx.URL     , Qt::Horizontal, "URL"         );
+    model.setHeaderData(bidx.URLs    , Qt::Horizontal, "URLs"        );
     model.setHeaderData(bidx.Desc    , Qt::Horizontal, "Description" );
     model.setHeaderData(bidx.DefBFID , Qt::Horizontal, "Default File");
     model.setHeaderData(bidx.Rating  , Qt::Horizontal, "Rating"      );

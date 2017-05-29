@@ -20,7 +20,7 @@ BookmarkImporter::BookmarkImporter(DatabaseManager* dbm, QWidget* dialogParent)
 bool BookmarkImporter::Initialize()
 {
     //Query bookmark urls
-    QHash<long long, QString> bookmarkURLs;
+    QMultiHash<long long, QString> bookmarkURLs;
     bool success = dbm->bms.RetrieveAllFullURLs(bookmarkURLs);
     if (!success)
         return false;
@@ -327,7 +327,7 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib, long long importFOI
         bdata.BID = -1; //Not important.
         bdata.FOID = importFOID;
         bdata.Name = ib.title.trimmed(); //[title-less bookmarks] are not possible after processing.
-        bdata.URL = ib.uri;
+        bdata.URLs = ib.uri;
         bdata.Desc = ib.description;
         bdata.DefBFID = -1; //[KeepDefaultFile-1] We always set this to -1.
                             //bbLogic will set the correct defbfid later.
@@ -499,11 +499,19 @@ bool BookmarkImporter::FindDuplicate(const ImportedBookmark& ib, const QList<lon
         if (!retrieveSuccess)
             return false;
 
+        bool detailsMatch = false;
+        QStringList urls = Util::RemoveEmptyLinesAndTrim(bdata.URLs).split('\n');
         QString newAlmostExactDuplCheckURL = GetURLForAlmostExactComparison(ib.uri);
-        QString existentAlmostExactDuplCheckURL = GetURLForAlmostExactComparison(bdata.URL);
-
-        if (newAlmostExactDuplCheckURL == existentAlmostExactDuplCheckURL)
+        foreach (const QString& existingURL, urls)
         {
+            detailsMatch = false; //If we get out of the inner loop without result, don't exit the outer loop.
+            QString existentAlmostExactDuplCheckURL = GetURLForAlmostExactComparison(existingURL);
+            if (newAlmostExactDuplCheckURL != existentAlmostExactDuplCheckURL)
+                continue; //Not even close, check the next URL.
+
+            //Otherwise test for exactness:
+            detailsMatch = true;
+
             //Til now we have found a similar duplicate. Set the BID to the FIRST FOUND similar BID.
             foundSimilar = true;
             if (duplicateBID == -1)
@@ -514,7 +522,6 @@ bool BookmarkImporter::FindDuplicate(const ImportedBookmark& ib, const QList<lon
             //  clashing with the existent bookmark where an automatic (or user-selected) title was
             //  assigned.
             //`.trimmed()` is necesessary, at least for `ib`.
-            bool detailsMatch = true;
             if (!ib.title.trimmed().isEmpty())
                 detailsMatch = detailsMatch && (ib.title.trimmed() == bdata.Name.trimmed());
 
@@ -533,7 +540,7 @@ bool BookmarkImporter::FindDuplicate(const ImportedBookmark& ib, const QList<lon
             if (!ib.description.trimmed().isEmpty())
                 detailsMatch = detailsMatch && (ib.description.trimmed() == bdata.Desc.trimmed());
 
-            detailsMatch = detailsMatch && (ib.uri == bdata.URL);
+            detailsMatch = detailsMatch && (ib.uri == existingURL);
 
             if (detailsMatch)
             {
@@ -544,6 +551,8 @@ bool BookmarkImporter::FindDuplicate(const ImportedBookmark& ib, const QList<lon
                 break;
             }
         }
+        if (detailsMatch)
+            break;
     }
 
     return true;

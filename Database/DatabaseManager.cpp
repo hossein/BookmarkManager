@@ -378,7 +378,46 @@ bool DatabaseManager::UpgradeDatabase(int dbVersion)
             return Error("Migration Error: v1, Updating FileLayout", query.lastError());
     }
 
-    //if (dbVersion <= 2)
+    if (dbVersion <= 2)
+    {
+        /// Bookmark.URL has been renamed to Bookmark.URLs
+        if (!query.exec("CREATE TABLE Bookmark2 "
+                        "( BID INTEGER PRIMARY KEY AUTOINCREMENT, FOID INTEGER, Name TEXT, URLs TEXT, "
+                        "  Desc TEXT, DefBFID INTEGER, Rating INTEGER, AddDate INTEGER, "
+                        "  FOREIGN KEY(FOID) REFERENCES BookmarkFolder(FOID) ON DELETE RESTRICT )"))
+            return Error("Migration Error: v2, Creating Bookmark", query.lastError());
+
+        if (!query.exec("INSERT INTO Bookmark2 (BID, FOID, Name, URLs, Desc, DefBFID, Rating, AddDate) "
+                        "SELECT BID, FOID, Name, URL, Desc, DefBFID, Rating, AddDate FROM Bookmark"))
+            return Error("Migration Error: v2, Copying Bookmark", query.lastError());
+
+        if (!query.exec("DROP TABLE Bookmark"))
+            return Error("Migration Error: v2, Dropping Bookmark", query.lastError());
+
+        if (!query.exec("ALTER TABLE Bookmark2 RENAME TO Bookmark"))
+            return Error("Migration Error: v2, Renaming Bookmark", query.lastError());
+
+        /// BookmarkTrash.URL should be renamed to BookmarkTrash.URLs, too.
+        if (!query.exec("CREATE TABLE BookmarkTrash2"
+                        "( BID INTEGER PRIMARY KEY AUTOINCREMENT, Folder TEXT, Name TEXT, URLs TEXT, "
+                        "  Desc TEXT, AttachedFIDs TEXT, DefFID INTEGER, Rating INTEGER, "
+                        "  Tags TEXT, ExtraInfos TEXT, DeleteDate INTEGER, AddDate INTEGER )"))
+            return Error("Migration Error: v2, Creating BookmarkTrash", query.lastError());
+
+        if (!query.exec("INSERT INTO BookmarkTrash2 (BID, Folder, Name, URLs, Desc, AttachedFIDs, "
+                        "  DefFID, Rating, Tags, ExtraInfos, DeleteDate, AddDate) "
+                        "SELECT BID, Folder, Name, URL, Desc, AttachedFIDs, "
+                        "  DefFID, Rating, Tags, ExtraInfos, DeleteDate, AddDate FROM BookmarkTrash"))
+            return Error("Migration Error: v2, Copying BookmarkTrash", query.lastError());
+
+        if (!query.exec("DROP TABLE BookmarkTrash"))
+            return Error("Migration Error: v2, Dropping BookmarkTrash", query.lastError());
+
+        if (!query.exec("ALTER TABLE BookmarkTrash2 RENAME TO BookmarkTrash"))
+            return Error("Migration Error: v2, Renaming BookmarkTrash", query.lastError());
+    }
+
+    //if (dbVersion <= 3)
 
     if (!query.exec("UPDATE Info SET Version = " + QString::number(conf->programDatabaseVersion)))
         return Error("Migration Error: Updating database version", query.lastError());

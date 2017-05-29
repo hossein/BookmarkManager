@@ -331,7 +331,7 @@ void MainWindow::GetBookmarkFilter(BookmarkFilter& bfilter)
         const auto& model = dbm.bms.model;
         int bidIdx = dbm.bms.bidx.BID,
             nameIdx = dbm.bms.bidx.Name,
-            urlIdx = dbm.bms.bidx.URL,
+            urlsIdx = dbm.bms.bidx.URLs,
             descIdx = dbm.bms.bidx.Desc;
 
         //`model.match(...)` couldn't be used here because it can't search multiple columns,
@@ -342,14 +342,14 @@ void MainWindow::GetBookmarkFilter(BookmarkFilter& bfilter)
             if (useRegExp)
             {
                 if (re.match(record.value(nameIdx).toString(), 0).hasMatch() ||
-                    re.match(record.value(urlIdx).toString(), 0).hasMatch() ||
+                    re.match(record.value(urlsIdx).toString(), 0).hasMatch() ||
                     re.match(record.value(descIdx).toString(), 0).hasMatch())
                     foundBIDs.append(record.value(bidIdx).toLongLong());
             }
             else
             {
                 if (record.value(nameIdx).toString().contains(searchTerm, Qt::CaseInsensitive) ||
-                    record.value(urlIdx).toString().contains(searchTerm, Qt::CaseInsensitive) ||
+                    record.value(urlsIdx).toString().contains(searchTerm, Qt::CaseInsensitive) ||
                     record.value(descIdx).toString().contains(searchTerm, Qt::CaseInsensitive))
                     foundBIDs.append(record.value(bidIdx).toLongLong());
             }

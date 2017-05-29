@@ -73,11 +73,11 @@ void BookmarksView::Initialize(DatabaseManager* dbm, ListMode listMode, QAbstrac
             hh->hideSection(bidx.Rating);
 
         if (m_listMode <= LM_NameOnlyDisplayWithoutHeaders)
-            hh->hideSection(bidx.URL);
+            hh->hideSection(bidx.URLs);
 
         hh->setSectionResizeMode(bidx.Name, QHeaderView::Stretch);
 
-        hh->resizeSection(bidx.URL, 200);
+        hh->resizeSection(bidx.URLs, 200);
         //TODO [handle]: How to show tags? hh->resizeSection(dbm.bidx.Tags, 100);
         //TODO: We also need to show folders, e.g in 'Linked Bookmarks' or 'All Bookmarks' views.
         hh->resizeSection(bidx.Rating, 50);

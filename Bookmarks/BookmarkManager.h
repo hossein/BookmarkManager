@@ -64,7 +64,7 @@ public:
         int BID;
         int FOID;
         int Name;
-        int URL;
+        int URLs;
         int Desc;
         int DefBFID;
         int Rating;
@@ -76,7 +76,7 @@ public:
         long long BID;
         long long FOID;
         QString Name;
-        QString URL;
+        QString URLs;
         QString Desc;
         long long DefBFID;
         int Rating;
@@ -110,7 +110,7 @@ public:
     bool RetrieveBookmarksInFolders(QSet<long long>& BIDs, const QSet<long long>& FOIDs);
 
     bool InsertBookmarkIntoTrash(
-            const QString& Folder, const QString& Name, const QString& URL, const QString& Description,
+            const QString& Folder, const QString& Name, const QString& URLs, const QString& Description,
             const QString& Tags, const QString& AttachedFIDs, const long long DefFID, const int Rating,
             long long AddDate, const QString& ExtraInfos);
 
@@ -141,7 +141,7 @@ public:
     /// Convenience function mainly to get linked bookmarks' names. Preserves the order.
     bool RetrieveBookmarkNames(const QList<long long>& BIDs, QStringList& names);
     /// Convenience functions used during importing.
-    bool RetrieveAllFullURLs(QHash<long long, QString>& bookmarkURLs);
+    bool RetrieveAllFullURLs(QMultiHash<long long, QString>& bookmarkURLs);
     /// Works case-sensitively.
     bool RetrieveSpecificExtraInfoForAllBookmarks(const QString& extraInfoName, QList<BookmarkExtraInfoData>& extraInfos);
 
