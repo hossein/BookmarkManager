@@ -35,7 +35,7 @@ private slots:
     void on_btnEdit_clicked();
     void on_btnDelete_clicked();
     void bvActivated(long long BID);
-    void bvCurrentRowChanged(long long currentBID, long long previousBID);
+    void bvSelectionChanged(const QList<long long>& selectedBIDs);
     void tfCurrentFolderChanged(long long FOID);
     void tfRequestMoveBookmarksToFolder(const QList<long long>& BIDs, long long FOID);
     void tvTagSelectionChanged();
@@ -51,7 +51,7 @@ private slots:
 private:
     /// Master functions for data refresh and display /////////////////////////////////////////////
     void RefreshUIDataDisplay(bool rePopulateModels,
-                              UIDDRefreshAction bookmarksAction = RA_None, long long selectBID = -1,
+                              UIDDRefreshAction bookmarksAction = RA_None, const QList<long long>& selectBIDs = QList<long long>(),
                               UIDDRefreshAction tagsAction = RA_None, long long selectTID = -1,
                               const QList<long long>& newTIDsToCheck = QList<long long>());
     void GetBookmarkFilter(BookmarkFilter& bfilter);
@@ -60,7 +60,7 @@ private:
     void NewBookmark();
     void ViewSelectedBookmark();
     void EditSelectedBookmark();
-    void DeleteSelectedBookmark();
+    void DeleteSelectedBookmarks();
 
     //// Bookmark importing ///////////////////////////////////////////////////////////////////////
     void ImportURLs(const QStringList& urls, long long importFOID);

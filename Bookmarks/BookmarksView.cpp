@@ -19,7 +19,7 @@ BookmarksView::BookmarksView(QWidget *parent)
     tvBookmarks->setDragEnabled(true); // < v Either one was enough
     tvBookmarks->setDragDropMode(QAbstractItemView::DragOnly);
     tvBookmarks->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    tvBookmarks->setSelectionMode(QAbstractItemView::SingleSelection);
+    tvBookmarks->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tvBookmarks->setSelectionBehavior(QAbstractItemView::SelectRows);
     tvBookmarks->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     tvBookmarks->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -94,8 +94,8 @@ void BookmarksView::Initialize(DatabaseManager* dbm, ListMode listMode, QAbstrac
     vh->setSectionResizeMode(QHeaderView::ResizeToContents); //Disable changing row height.
 
     //Need to connect everytime we change the model.
-    connect(tvBookmarks->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-            this, SLOT(tvBookmarksCurrentRowChanged(QModelIndex,QModelIndex)));
+    connect(tvBookmarks->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+            this, SLOT(tvBookmarksSelectionChanged(QItemSelection,QItemSelection)));
 }
 
 void BookmarksView::focusInEvent(QFocusEvent* event)
@@ -105,7 +105,7 @@ void BookmarksView::focusInEvent(QFocusEvent* event)
 }
 
 void BookmarksView::RefreshUIDataDisplay(bool rePopulateModels, const BookmarkFilter& bfilter,
-                                         UIDDRefreshAction refreshAction, long long selectBID)
+                                         UIDDRefreshAction refreshAction, const QList<long long>& selectedBIDs)
 {
     int hBScrollPos = 0, vBScrollPos = 0;
 
@@ -162,57 +162,63 @@ void BookmarksView::RefreshUIDataDisplay(bool rePopulateModels, const BookmarkFi
 
     //[RestoringScrollPositionProceedsCustomSelection]
     if (refreshAction & RA_CustomSelect)
-        if (selectBID != -1)
-            SelectBookmarkWithID(selectBID);
+        if (!selectedBIDs.empty())
+            SelectBookmarksWithIDs(selectedBIDs);
 
     //Focusing comes last anyway
     if (refreshAction & RA_Focus)
         tvBookmarks->setFocus();
 }
 
-QString BookmarksView::GetSelectedBookmarkName() const
+QStringList BookmarksView::GetSelectedBookmarkNames() const
 {
     if (!filteredBookmarksModel)
-        return QString();
+        return QStringList();
 
-    if (!tvBookmarks->currentIndex().isValid())
-        return QString();
-
-    int selRow = tvBookmarks->currentIndex().row();
-    return filteredBookmarksModel->data(filteredBookmarksModel->index(selRow, dbm->bms.bidx.Name))
-            .toString();
+    QStringList selectedNames;
+    QModelIndexList selectedIndices = tvBookmarks->selectionModel()->selectedRows(dbm->bms.bidx.Name);
+    foreach (const QModelIndex& index, selectedIndices)
+        selectedNames.append(index.data().toString()); //See [BV Accessing Data]
+    return selectedNames;
 }
 
-long long BookmarksView::GetSelectedBookmarkID() const
+QList<long long> BookmarksView::GetSelectedBookmarkIDs() const
 {
     if (!filteredBookmarksModel)
-        return -1;
+        return QList<long long>();
 
-    if (!tvBookmarks->currentIndex().isValid())
-        return -1;
-
-    int selRow = tvBookmarks->currentIndex().row();
-    long long selectedBId =
-            filteredBookmarksModel->data(filteredBookmarksModel->index(selRow, dbm->bms.bidx.BID))
-                                   .toLongLong();
-    return selectedBId;
+    QList<long long> selectedBIds;
+    QModelIndexList selectedIndices = tvBookmarks->selectionModel()->selectedRows(dbm->bms.bidx.BID);
+    foreach (const QModelIndex& index, selectedIndices)
+        selectedBIds.append(index.data().toLongLong()); //See [BV Accessing Data]
+    return selectedBIds;
 }
 
-void BookmarksView::SelectBookmarkWithID(long long bookmarkId)
+void BookmarksView::SelectBookmarksWithIDs(const QList<long long>& bookmarkIds)
 {
     if (!filteredBookmarksModel)
         return;
 
-    QModelIndexList matches = filteredBookmarksModel->match(
-                filteredBookmarksModel->index(0, dbm->bms.bidx.BID), Qt::DisplayRole,
-                bookmarkId, 1, Qt::MatchExactly);
+    QModelIndexList bookmarkMatches;
+    foreach (long long BID, bookmarkIds)
+    {
+        QModelIndexList matches = filteredBookmarksModel->match(
+                    filteredBookmarksModel->index(0, dbm->bms.bidx.BID), Qt::DisplayRole,
+                    BID, 1, Qt::MatchExactly);
+        if (matches.length() == 1) //May not be found for some reason, e.g filtered out.
+            bookmarkMatches.append(matches[0]);
+    }
 
-    if (matches.length() != 1)
-        return; //Not found for some reason, e.g filtered out.
+    QItemSelection itemSelection;
+    QItemSelectionModel* selModel = tvBookmarks->selectionModel();
+    //selModel->clear();
+    foreach (const QModelIndex& index, bookmarkMatches)
+        itemSelection.select(index, index);
+    selModel->select(itemSelection, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 
-    //TODO: This does not ensure visible on bookmark adding and dragging bms onto folders.
-    tvBookmarks->setCurrentIndex(matches[0]);
-    tvBookmarks->scrollTo(matches[0], QAbstractItemView::EnsureVisible);
+    //TODO: This does not ensure visible on bookmark adding and dragging bms onto folders and on import.
+    if (!bookmarkMatches.empty())
+        tvBookmarks->scrollTo(bookmarkMatches[0], QAbstractItemView::EnsureVisible);
 }
 
 bool BookmarksView::SetFilter(const BookmarkFilter& filter, bool forceReset)
@@ -279,33 +285,24 @@ void BookmarksView::tvBookmarksActivated(const QModelIndex& index)
     emit activated(BID);
 }
 
-void BookmarksView::tvBookmarksCurrentRowChanged(const QModelIndex& current, const QModelIndex& previous)
+void BookmarksView::tvBookmarksSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
-    long long previousBID, currentBID;
+    Q_UNUSED(selected);
+    Q_UNUSED(deselected);
+    QList<long long> selectedBIDs;
 
-    if (current.isValid())
+    //QModelIndexList selectedIndices = selected.indexes(); <-- This returned every single cell
+    QModelIndexList selectedIndices = tvBookmarks->selectionModel()->selectedRows(dbm->bms.bidx.BID);
+    foreach (const QModelIndex& index, selectedIndices)
     {
-        int row = current.row();
-        QModelIndex indexOfBID = filteredBookmarksModel->index(row, dbm->bms.bidx.BID);
-        currentBID = filteredBookmarksModel->data(indexOfBID).toLongLong();
-    }
-    else
-    {
-        currentBID = -1;
-    }
-
-    if (previous.isValid())
-    {
-        int row = previous.row();
-        QModelIndex indexOfBID = filteredBookmarksModel->index(row, dbm->bms.bidx.BID);
-        previousBID = filteredBookmarksModel->data(indexOfBID).toLongLong();
-    }
-    else
-    {
-        previousBID = -1;
+        //[BV Accessing Data]:
+        //  The following two seem to be equivalent here. So some places in this class that use the second form seem to
+        //  be redundant and unnecessarily verbose.
+        selectedBIDs.append(index.data().toLongLong());
+        //selectedBIDs.append(filteredBookmarksModel->index(index.row(), dbm->bms.bidx.BID).data().toLongLong());
     }
 
-    emit currentRowChanged(currentBID, previousBID);
+    emit selectionChanged(selectedBIDs);
 }
 
 void BookmarksView::tvBookmarksHeaderPressed(int logicalIndex)

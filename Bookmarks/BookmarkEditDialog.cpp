@@ -656,8 +656,8 @@ QString BookmarkEditDialog::GetAttachedFileFullPathName(int filesListIdx)
 void BookmarkEditDialog::InitializeLinkedBookmarksUI()
 {
     ui->bvLinkedBookmarks->Initialize(dbm, BookmarksView::LM_LimitedDisplayWithoutHeaders, &dbm->bms.model);
-    connect(ui->bvLinkedBookmarks, SIGNAL(currentRowChanged(long long,long long)),
-            this, SLOT(bvLinkedBookmarksCurrentRowChanged(long long,long long)));
+    connect(ui->bvLinkedBookmarks, SIGNAL(selectionChanged(QList<long long>)),
+            this, SLOT(bvLinkedBookmarksSelectionChanged(QList<long long>)));
 }
 
 void BookmarkEditDialog::PopulateLinkedBookmarks()
@@ -668,10 +668,9 @@ void BookmarkEditDialog::PopulateLinkedBookmarks()
     ui->bvLinkedBookmarks->RefreshView();
 }
 
-void BookmarkEditDialog::bvLinkedBookmarksCurrentRowChanged(long long currentBID, long long previousBID)
+void BookmarkEditDialog::bvLinkedBookmarksSelectionChanged(const QList<long long>& selectedBIDs)
 {
-    Q_UNUSED(previousBID);
-    ui->btnRemoveLink->setEnabled(currentBID != -1);
+    ui->btnRemoveLink->setEnabled(!selectedBIDs.empty());
 }
 
 void BookmarkEditDialog::on_btnLinkBookmark_clicked()
@@ -686,28 +685,29 @@ void BookmarkEditDialog::on_btnLinkBookmark_clicked()
     //QuickBookmarkSelectDialog will not return -1.
 
     //Can't link a bookmark with itself; message the user!
-    if (editBId == bsOutParams.selectedBId)
+    if (bsOutParams.selectedBIds.contains(editBId))
     {
         QMessageBox::information(this, "Did Not Link", "Can't link a bookmark to itself!");
         return;
     }
 
     //Can't select the same bookmark twice; silently accept and select it in the list!
-    if (!editedLinkedBookmarks.contains(bsOutParams.selectedBId))
-        editedLinkedBookmarks.append(bsOutParams.selectedBId);
+    foreach (long long linkBId, bsOutParams.selectedBIds)
+        if (!editedLinkedBookmarks.contains(linkBId))
+            editedLinkedBookmarks.append(linkBId);
 
     PopulateLinkedBookmarks();
 
     //Select the new linked bookmark, whether new or re-selected.
     ui->bvLinkedBookmarks->setFocus();
-    ui->bvLinkedBookmarks->SelectBookmarkWithID(bsOutParams.selectedBId);
+    ui->bvLinkedBookmarks->SelectBookmarksWithIDs(bsOutParams.selectedBIds);
 }
 
 void BookmarkEditDialog::on_btnRemoveLink_clicked()
 {
-    QString removeConfirmText = QString(
-                "Remove related bookmark \"%1\"? This action will also affect the other bookmark.")
-                .arg(ui->bvLinkedBookmarks->GetSelectedBookmarkName());
+    QString removeConfirmText =
+            QString("Remove the following related bookmark(s)? This action will also affect the other bookmark(s).\n\n") +
+            ui->bvLinkedBookmarks->GetSelectedBookmarkNames().join("\n");
 
     int removeConfirmed = (QMessageBox::Yes == QMessageBox::question(
                 this, "Remove Related Bookmark", removeConfirmText, QMessageBox::Yes | QMessageBox::No,
@@ -716,7 +716,8 @@ void BookmarkEditDialog::on_btnRemoveLink_clicked()
     if (!removeConfirmed)
         return;
 
-    editedLinkedBookmarks.removeAll(ui->bvLinkedBookmarks->GetSelectedBookmarkID());
+    foreach (long long linkBId, ui->bvLinkedBookmarks->GetSelectedBookmarkIDs())
+        editedLinkedBookmarks.removeAll(linkBId);
     PopulateLinkedBookmarks();
 }
 

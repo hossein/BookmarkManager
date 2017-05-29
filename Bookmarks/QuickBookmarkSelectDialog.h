@@ -13,7 +13,7 @@ class QuickBookmarkSelectDialog : public QDialog
 public:
     struct OutParams
     {
-        long long selectedBId;
+        QList<long long> selectedBIds;
     };
 
 private:
@@ -32,5 +32,5 @@ public slots:
 private slots:
     void on_leFilter_textEdited(const QString& text);
     void bvBookmarksActivated(long long BID);
-    void bvBookmarksCurrentRowChanged(long long currentBID, long long previousBID);
+    void bvBookmarksSelectionChanged(const QList<long long>& selectedBIDs);
 };

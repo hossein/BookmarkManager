@@ -36,8 +36,8 @@ public:
             const QStringList& tagsList, QList<long long>& associatedTIDs,
             const QList<FileManager::BookmarkFile>& editedFilesList, int defaultFileIndex);
 
-    //The former is a shortcut function that wraps the latter which needs a transaction in a
-    //  transaction.
+    //The former ones are shortcut function that wrap the latter, which needs a transaction, in a transaction.
+    bool DeleteBookmarksTrans(const QList<long long>& BIDs);
     bool DeleteBookmarkTrans(long long BID);
     bool DeleteBookmark(long long BID);
 

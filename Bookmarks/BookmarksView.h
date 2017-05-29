@@ -5,7 +5,7 @@
 
 class QModelIndex;
 class QAbstractItemModel;
-class QItemSelectionModel;
+class QItemSelection;
 class QScrollBar;
 class QTableView;
 
@@ -59,11 +59,12 @@ protected:
     //Action and Information Functions
 public:
     void RefreshUIDataDisplay(bool rePopulateModels, const BookmarkFilter& bfilter,
-                              UIDDRefreshAction refreshAction = RA_None, long long selectBID = -1);
+                              UIDDRefreshAction refreshAction = RA_None,
+                              const QList<long long>& selectedBIDs = QList<long long>());
 
-    QString GetSelectedBookmarkName() const;
-    long long GetSelectedBookmarkID() const;
-    void SelectBookmarkWithID(long long bookmarkId);
+    QStringList GetSelectedBookmarkNames() const;
+    QList<long long> GetSelectedBookmarkIDs() const;
+    void SelectBookmarksWithIDs(const QList<long long>& bookmarkIds);
 
     //Passes to BookmarksSortFilterProxyModel
     bool SetFilter(const BookmarkFilter& filter, bool forceReset);
@@ -85,11 +86,11 @@ public slots:
 private slots:
     void modelLayoutChanged();
     void tvBookmarksActivated(const QModelIndex &index);
-    void tvBookmarksCurrentRowChanged(const QModelIndex& current, const QModelIndex& previous);
+    void tvBookmarksSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
     void tvBookmarksHeaderPressed(int logicalIndex);
     void tvBookmarksHeaderClicked(int logicalIndex);
 
 signals:
     void activated(long long BID);
-    void currentRowChanged(long long currentBID, long long previousBID);
+    void selectionChanged(const QList<long long>& selectedBIDs);
 };

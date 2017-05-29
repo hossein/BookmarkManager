@@ -180,23 +180,31 @@ bool BookmarksBusinessLogic::AddOrEditBookmark(
     return true;
 }
 
-bool BookmarksBusinessLogic::DeleteBookmarkTrans(long long BID)
+bool BookmarksBusinessLogic::DeleteBookmarksTrans(const QList<long long>& BIDs)
 {
+    //Similar implementation to `BookmarksBusinessLogic::MoveBookmarksToFolderTrans`.
     bool success;
 
     BeginActionTransaction();
     {
-        success = DeleteBookmark(BID);
-        if (!success)
+        foreach (long long BID, BIDs)
         {
-            RollBackActionTransaction();
-            return false; //Always return false
+            success = DeleteBookmark(BID);
+            if (!success)
+            {
+                RollBackActionTransaction();
+                return false; //Always return false
+            }
         }
     }
     CommitActionTransaction();
 
     return success; //i.e `true`.
+}
 
+bool BookmarksBusinessLogic::DeleteBookmarkTrans(long long BID)
+{
+    return DeleteBookmarksTrans(QList<long long>() << BID);
 }
 
 bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
@@ -328,6 +336,7 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
 
 bool BookmarksBusinessLogic::MoveBookmarksToFolderTrans(const QList<long long>& BIDs, long long FOID)
 {
+    //Similar implementation to `BookmarksBusinessLogic::DeleteBookmarksTrans`.
     bool success;
 
     BeginActionTransaction();

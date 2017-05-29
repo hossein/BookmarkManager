@@ -105,7 +105,7 @@ private slots:
     void InitializeLinkedBookmarksUI();
     void PopulateLinkedBookmarks();
 
-    void bvLinkedBookmarksCurrentRowChanged(long long currentBID, long long previousBID);
+    void bvLinkedBookmarksSelectionChanged(const QList<long long>& selectedBIDs);
     void on_btnLinkBookmark_clicked();
     void on_btnRemoveLink_clicked();
 

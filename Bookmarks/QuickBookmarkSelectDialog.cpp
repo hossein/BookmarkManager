@@ -17,8 +17,8 @@ QuickBookmarkSelectDialog::QuickBookmarkSelectDialog(
     //BookmarksView
     ui->bvBookmarks->Initialize(dbm, BookmarksView::LM_LimitedDisplayWithHeaders, &dbm->bms.model);
     connect(ui->bvBookmarks, SIGNAL(activated(long long)), this, SLOT(bvBookmarksActivated(long long)));
-    connect(ui->bvBookmarks, SIGNAL(currentRowChanged(long long,long long)),
-            this, SLOT(bvBookmarksCurrentRowChanged(long long,long long)));
+    connect(ui->bvBookmarks, SIGNAL(selectionChanged(QList<long long>)),
+            this, SLOT(bvBookmarksSelectionChanged(QList<long long>)));
 
     //Don't enable Ok button unless user selects something.
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
@@ -35,13 +35,13 @@ QuickBookmarkSelectDialog::~QuickBookmarkSelectDialog()
 
 void QuickBookmarkSelectDialog::accept()
 {
-    long long selectedBId = ui->bvBookmarks->GetSelectedBookmarkID();
+    QList<long long> selectedBIds = ui->bvBookmarks->GetSelectedBookmarkIDs();
 
-    if (selectedBId == -1)
+    if (selectedBIds.empty())
         return; //Just in case, and as a requirement of this class.
 
     if (outParams != NULL)
-        outParams->selectedBId = selectedBId;
+        outParams->selectedBIds = selectedBIds;
 
     QDialog::accept();
 }
@@ -57,8 +57,7 @@ void QuickBookmarkSelectDialog::bvBookmarksActivated(long long BID)
     accept();
 }
 
-void QuickBookmarkSelectDialog::bvBookmarksCurrentRowChanged(long long currentBID, long long previousBID)
+void QuickBookmarkSelectDialog::bvBookmarksSelectionChanged(const QList<long long>& selectedBIDs)
 {
-    Q_UNUSED(previousBID);
-    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(currentBID != -1);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(!selectedBIDs.empty());
 }

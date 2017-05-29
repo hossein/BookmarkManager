@@ -92,8 +92,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //Signal connections.
     connect(ui->bv, SIGNAL(activated(long long)), this, SLOT(bvActivated(long long)));
-    connect(ui->bv, SIGNAL(currentRowChanged(long long,long long)),
-            this, SLOT(bvCurrentRowChanged(long long,long long)));
+    connect(ui->bv, SIGNAL(selectionChanged(QList<long long>)),
+            this, SLOT(bvSelectionChanged(QList<long long>)));
     //Connecting signal after Initialize()ing tf will miss the first emitted signal, which is folder
     //  '0, Unsorted' being activated. But tf is already initialized and has already returned  the
     //  correct FOID=0 in the above `RefreshUIDataDisplay` call thus correct bookmark are shown.
@@ -146,7 +146,7 @@ void MainWindow::on_btnEdit_clicked()
 
 void MainWindow::on_btnDelete_clicked()
 {
-    DeleteSelectedBookmark();
+    DeleteSelectedBookmarks();
 }
 
 void MainWindow::bvActivated(long long BID)
@@ -155,19 +155,26 @@ void MainWindow::bvActivated(long long BID)
     ViewSelectedBookmark();
 }
 
-void MainWindow::bvCurrentRowChanged(long long currentBID, long long previousBID)
+void MainWindow::bvSelectionChanged(const QList<long long>& selectedBIDs)
 {
-    Q_UNUSED(previousBID);
-    register bool valid = (currentBID != -1);
-    ui->btnView->setEnabled(valid);
-    ui->btnEdit->setEnabled(valid);
-    ui->btnDelete->setEnabled(valid);
+    //Interestingly, selectionChanged signal is not emitted, and thus this function is not called,
+    //when moving bookmarks accross folders, because we only hide/show items but the selection is
+    //not changed! This is okay as long as the only thing we do with the selection is setting the
+    //buttons' enabled state and the like. Initial selection of bookmarks sets the buttons' correct
+    //enabled state, which remains valid even after bookmarks are moved.
+
+    bool hasSelection = (!selectedBIDs.empty());
+    bool singleSelected = (selectedBIDs.length() == 1);
+
+    ui->btnView->setEnabled(singleSelected);
+    ui->btnEdit->setEnabled(singleSelected);
+    ui->btnDelete->setEnabled(hasSelection);
 }
 
 void MainWindow::tfCurrentFolderChanged(long long FOID)
 {
     Q_UNUSED(FOID);
-    RefreshUIDataDisplay(false, RA_Focus, -1,
+    RefreshUIDataDisplay(false, RA_Focus, QList<long long>(),
                          (UIDDRefreshAction)(RA_SaveSelAndScroll | RA_NoRefreshView));
 }
 
@@ -176,8 +183,7 @@ void MainWindow::tfRequestMoveBookmarksToFolder(const QList<long long>& BIDs, lo
     BookmarksBusinessLogic bbLogic(&dbm, this);
     bbLogic.MoveBookmarksToFolderTrans(BIDs, FOID);
     ui->tf->SetCurrentFOIDSilently(FOID);
-    //Note [MULTI-BM-SELECT]: This should select ALL of them later.
-    RefreshUIDataDisplay(false, RA_CustomSelectAndFocus, BIDs[0]);
+    RefreshUIDataDisplay(false, RA_CustomSelectAndFocus, BIDs);
 }
 
 void MainWindow::tvTagSelectionChanged()
@@ -188,14 +194,14 @@ void MainWindow::tvTagSelectionChanged()
     //  We don't populate the data again though.
     //20141009: A new save selection method now saves selection upon filtering by tags.
     //  Read the comments in the following function at the place where selection is restored.
-    RefreshUIDataDisplay(false, RA_SaveSelAndFocus, -1,
+    RefreshUIDataDisplay(false, RA_SaveSelAndFocus, QList<long long>(),
                          (UIDDRefreshAction)(RA_SaveSelAndScroll | RA_NoRefreshView));
 }
 
 void MainWindow::leSearchTextChanged(const QString& text)
 {
     Q_UNUSED(text);
-    RefreshUIDataDisplay(false, RA_SaveSel, -1, //Do not use RA_Focus here, user continues to type
+    RefreshUIDataDisplay(false, RA_SaveSel, QList<long long>(), //Do not use RA_Focus here, user continues to type
                          (UIDDRefreshAction)(RA_SaveSelAndScroll | RA_NoRefreshView));
 }
 
@@ -203,7 +209,7 @@ void MainWindow::chkSearchRegExpToggled(bool checked)
 {
     Q_UNUSED(checked);
     if (!ui->leSearch->text().isEmpty()) //Only refresh if there is something to search
-        RefreshUIDataDisplay(false, RA_SaveSelAndFocus, -1,
+        RefreshUIDataDisplay(false, RA_SaveSelAndFocus, QList<long long>(),
                              (UIDDRefreshAction)(RA_SaveSelAndScroll | RA_NoRefreshView));
 }
 
@@ -255,7 +261,7 @@ void MainWindow::on_actionSettings_triggered()
 }
 
 void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
-                                      UIDDRefreshAction bookmarksAction, long long selectBID,
+                                      UIDDRefreshAction bookmarksAction, const QList<long long>& selectBIDs,
                                       UIDDRefreshAction tagsAction, long long selectTID,
                                       const QList<long long>& newTIDsToCheck)
 {
@@ -269,6 +275,10 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
     //  selection is just used when editing the bookmark, so likely its row in the model won't change.
     //BUT for saving the currently selected tag, we save its TId, because editing a bookmark may add
     //  another tags and change the currently selected tag's row.
+    //Note that if we re-add all the items, saving a QModelIndex doesn't work. QPersistentModelIndex
+    //  may become invalid as well. Andre suggests manually iterating over the items and select what
+    //  we want in these situations:
+    //  https://forum.qt.io/topic/24652/how-to-retain-the-selection-when-altering-the-query-of-a-qsqlquerymodel/6
 
     //[RestoringScrollPositionProceedsCustomSelection] used in BookmarksView and TagsView `::RefreshUIDataDisplay`
     //This is useful for tags, where we want to ensure the selected tag is visible even if new tags
@@ -281,7 +291,7 @@ void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,
     //After managing tags, make the appropriate BookmarkFilter and use it for BookmarksView.
     BookmarkFilter bfilter;
     GetBookmarkFilter(bfilter);
-    ui->bv->RefreshUIDataDisplay(rePopulateModels, bfilter, bookmarksAction, selectBID);
+    ui->bv->RefreshUIDataDisplay(rePopulateModels, bfilter, bookmarksAction, selectBIDs);
 
     //Refresh status labels.
     RefreshStatusLabels();
@@ -409,13 +419,14 @@ void MainWindow::NewBookmark()
     if (result != QDialog::Accepted)
         return;
 
-    RefreshUIDataDisplay(true, RA_CustomSelectAndFocus, outParams.addedBId, RA_SaveSelAndScrollAndCheck,
-                         -1, outParams.associatedTIDs);
+    RefreshUIDataDisplay(true, RA_CustomSelectAndFocus, QList<long long>() << outParams.addedBId,
+                         RA_SaveSelAndScrollAndCheck, -1, outParams.associatedTIDs);
 }
 
 void MainWindow::ViewSelectedBookmark()
 {
-    BookmarkViewDialog bmViewDialog(&dbm, ui->bv->GetSelectedBookmarkID(), this);
+    const long long BID = ui->bv->GetSelectedBookmarkIDs()[0];
+    BookmarkViewDialog bmViewDialog(&dbm, BID, this);
 
     if (!bmViewDialog.canShow())
         return; //In case of errors a message is already shown.
@@ -428,7 +439,7 @@ void MainWindow::ViewSelectedBookmark()
 void MainWindow::EditSelectedBookmark()
 {
     BookmarkEditDialog::OutParams outParams;
-    const long long BID = ui->bv->GetSelectedBookmarkID();
+    const long long BID = ui->bv->GetSelectedBookmarkIDs()[0];
     BookmarkEditDialog bmEditDialog(&dbm, BID, -1, &outParams, this);
 
     if (!bmEditDialog.canShow())
@@ -439,28 +450,28 @@ void MainWindow::EditSelectedBookmark()
         return;
 
     //20141009: The model is reset so we should do the selection manually ourselves.
-    RefreshUIDataDisplay(true, RA_CustomSelAndSaveScrollAndFocus, BID, RA_SaveSelAndScrollAndCheck,
-                         -1, outParams.associatedTIDs);
+    RefreshUIDataDisplay(true, RA_CustomSelAndSaveScrollAndFocus, QList<long long>() << BID,
+                         RA_SaveSelAndScrollAndCheck, -1, outParams.associatedTIDs);
 }
 
-void MainWindow::DeleteSelectedBookmark()
+void MainWindow::DeleteSelectedBookmarks()
 {
-    QString selectedBookmarkName = ui->bv->GetSelectedBookmarkName();
+    QString selectedBookmarkNames = ui->bv->GetSelectedBookmarkNames().join("\n");
 
     if (QMessageBox::Yes !=
         QMessageBox::question(this, "Delete Bookmark",
-                              "Are you sure you want to send the selected bookmark \""
-                              + selectedBookmarkName + "\" to the trash?",
+                              "Are you sure you want to send the following selected bookmark(s) to the trash?\n\n"
+                              + selectedBookmarkNames,
                               QMessageBox::Yes | QMessageBox::No, QMessageBox::No))
         return;
 
     BookmarksBusinessLogic bbLogic(&dbm, this);
-    bool success = bbLogic.DeleteBookmarkTrans(ui->bv->GetSelectedBookmarkID());
+    bool success = bbLogic.DeleteBookmarksTrans(ui->bv->GetSelectedBookmarkIDs());
     if (!success)
         return;
 
     //After delete, no item remains selected.
-    RefreshUIDataDisplay(true, RA_SaveScrollPosAndFocus, -1, RA_SaveSelAndScrollAndCheck);
+    RefreshUIDataDisplay(true, RA_SaveScrollPosAndFocus, QList<long long>(), RA_SaveSelAndScrollAndCheck);
 }
 
 void MainWindow::ImportURLs(const QStringList& urls, long long importFOID)
@@ -558,8 +569,7 @@ void MainWindow::ImportBookmarks(ImportedEntityList& elist)
     {
         //Show the folder into which the bookmarks are imported.
         ui->tf->SetCurrentFOIDSilently(elist.importFOID);
-        //Note [MULTI-BM-SELECT]: Select the whole list later.
-        RefreshUIDataDisplay(true, RA_CustomSelectAndFocus, addedBIDs[0],
+        RefreshUIDataDisplay(true, RA_CustomSelectAndFocus, addedBIDs,
                 RA_SaveSelAndScrollAndCheck, -1, allAssociatedTIDs.toList());
     }
 
