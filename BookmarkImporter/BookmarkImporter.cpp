@@ -335,26 +335,16 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib, long long importFOI
 
         long long addedBID = -1; //Must set to -1 to show adding.
         QList<long long> associatedTIDs;
-        //We just need an empty thing for 'updating' functions. No need to initialize.
+        //We just need an empty thing for 'updating' functions. No need to initialize, especially:
+        //  do NOT initialize `Ex_ExtraInfosModel` by calling `GetEmptyExtraInfosModel`.
         BookmarkManager::BookmarkData editOriginalBData;
 
         BookmarksBusinessLogic bbLogic(dbm, m_dialogParent);
         bbLogic.BeginActionTransaction();
 
         bool success = bbLogic.AddOrEditBookmark(
-                    addedBID, bdata, -1, editOriginalBData, QList<long long>(),
+                    addedBID, bdata, -1, editOriginalBData, QList<long long>(), ib.ExPr_ExtraInfosList,
                     ib.Ex_finalTags, associatedTIDs, bookmarkFiles, defaultFileIndex);
-        if (!success)
-        {
-            //A messagebox must have already been displayed.
-            bbLogic.RollBackActionTransaction();
-
-            RemoveTempFileIfExists(mhtFilePathName);
-            return false;
-        }
-
-        success = dbm->bms.UpdateBookmarkExtraInfos(
-                    addedBID, QList<BookmarkManager::BookmarkExtraInfoData>(), ib.ExPr_ExtraInfosList);
         if (!success)
         {
             //A messagebox must have already been displayed.

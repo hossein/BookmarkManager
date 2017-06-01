@@ -181,7 +181,9 @@ void MainWindow::tfCurrentFolderChanged(long long FOID)
 void MainWindow::tfRequestMoveBookmarksToFolder(const QList<long long>& BIDs, long long FOID)
 {
     BookmarksBusinessLogic bbLogic(&dbm, this);
-    bbLogic.MoveBookmarksToFolderTrans(BIDs, FOID);
+    bool success = bbLogic.MoveBookmarksToFolderTrans(BIDs, FOID);
+    if (!success)
+        return;
     ui->tf->SetCurrentFOIDSilently(FOID);
     RefreshUIDataDisplay(false, RA_CustomSelectAndFocus, BIDs);
 }

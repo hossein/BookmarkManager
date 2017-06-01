@@ -157,6 +157,7 @@ void BookmarkEditDialog::accept()
     BookmarksBusinessLogic bbLogic(dbm, this);
     bool success = bbLogic.AddOrEditBookmarkTrans(
                 editBId, bdata, originalEditBId, editOriginalBData, editedLinkedBookmarks,
+                QList<BookmarkManager::BookmarkExtraInfoData>() /* Ex_ExtraInfosModel will be used */,
                 tagsList, associatedTIDs, editedFilesList, DefaultFileIndex());
 
     if (success)

@@ -25,6 +25,7 @@ public:
             long long& editBId, BookmarkManager::BookmarkData& bdata,
             long long originalEditBId, BookmarkManager::BookmarkData& editOriginalBData,
             const QList<long long>& editedLinkedBookmarks,
+            const QList<BookmarkManager::BookmarkExtraInfoData>& editedExtraInfos,
             const QStringList& tagsList, QList<long long>& associatedTIDs,
             const QList<FileManager::BookmarkFile>& editedFilesList, int defaultFileIndex);
 
@@ -33,6 +34,7 @@ public:
             long long& editBId, BookmarkManager::BookmarkData& bdata,
             long long originalEditBId, BookmarkManager::BookmarkData& editOriginalBData,
             const QList<long long>& editedLinkedBookmarks,
+            const QList<BookmarkManager::BookmarkExtraInfoData>& editedExtraInfos,
             const QStringList& tagsList, QList<long long>& associatedTIDs,
             const QList<FileManager::BookmarkFile>& editedFilesList, int defaultFileIndex);
 

@@ -129,9 +129,9 @@ public:
     /// Sets the BID on all rows BEFORE submitting.
     bool UpdateBookmarkExtraInfos(long long BID, QSqlTableModel& extraInfosModel);
     /// The following two are just utility functions that ease modifying the model.
-    void InsertBookmarkExtraInfoIntoModel(QSqlTableModel& extraInfosModel, long long BID,
+    bool InsertBookmarkExtraInfoIntoModel(QSqlTableModel& extraInfosModel, long long BID,
                                           const QString& Name, BookmarkExtraInfoData::DataType Type, const QString& Value);
-    void RemoveBookmarkExtraInfoFromModel(QSqlTableModel& extraInfosModel, const QModelIndex& index);
+    bool RemoveBookmarkExtraInfoFromModel(QSqlTableModel& extraInfosModel, const QModelIndex& index);
 
     //Extra Infos with custom item lists
     bool RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkExtraInfoData>& extraInfos);

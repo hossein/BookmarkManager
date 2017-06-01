@@ -127,7 +127,7 @@ bool BookmarkManager::CountBookmarksInFolder(int& count, const long long FOID)
 
     //Unlikely that this returns no results, but we have to call `query.first()` anyway.
     if (!query.first()) //Simply no results where returned.
-        return Error(retrieveError + "\Count was not found.");
+        return Error(retrieveError + "\nCount was not found.");
     count = query.record().value(0).toInt();
 
     return true;
@@ -150,7 +150,7 @@ bool BookmarkManager::CountBookmarksInFolders(int& count, const QSet<long long>&
 
     //Unlikely that this returns no results, but we have to call `query.first()` anyway.
     if (!query.first()) //Simply no results where returned.
-        return Error(retrieveError + "\Count was not found.");
+        return Error(retrieveError + "\nCount was not found.");
     count = query.record().value(0).toInt();
 
     return true;
@@ -380,7 +380,7 @@ bool BookmarkManager::UpdateBookmarkExtraInfos(long long BID, QSqlTableModel& ex
     return true;
 }
 
-void BookmarkManager::InsertBookmarkExtraInfoIntoModel(
+bool BookmarkManager::InsertBookmarkExtraInfoIntoModel(
         QSqlTableModel& extraInfosModel, long long BID,
         const QString& Name, BookmarkManager::BookmarkExtraInfoData::DataType Type, const QString& Value)
 {
@@ -391,14 +391,20 @@ void BookmarkManager::InsertBookmarkExtraInfoIntoModel(
     record.setValue(beiidx.Type, static_cast<int>(Type));
     record.setValue(beiidx.Value, Value);
 
-    //[Return value not checked. Assume success.]
-    extraInfosModel.insertRecord(-1, record);
+    bool success = extraInfosModel.insertRecord(-1, record);
+    if (!success)
+        return Error("Could not add bookmark extra information.", extraInfosModel.lastError());
+
+    return true;
 }
 
-void BookmarkManager::RemoveBookmarkExtraInfoFromModel(QSqlTableModel& extraInfosModel, const QModelIndex& index)
+bool BookmarkManager::RemoveBookmarkExtraInfoFromModel(QSqlTableModel& extraInfosModel, const QModelIndex& index)
 {
-    //[Return value not checked. Assume success.]
-    extraInfosModel.removeRow(index.row());
+    bool success = extraInfosModel.removeRow(index.row());
+    if (!success)
+        return Error("Could not remove bookmark extra information.", extraInfosModel.lastError());
+
+    return true;
 }
 
 bool BookmarkManager::RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkManager::BookmarkExtraInfoData>& extraInfos)
@@ -445,14 +451,14 @@ bool BookmarkManager::RetrieveBookmarkExtraInfos(long long BID, QList<BookmarkMa
 
 static long long BookmarkExtraInfoKey(const BookmarkManager::BookmarkExtraInfoData& exInfo)
 {
-    //Use BEIID as key to allow same-name properties.
+    //Use BEIID as key to allow [same-name ExtraInfos].
     return exInfo.BEIID;
 }
 
 static bool BookmarkExtraInfoEquals(const BookmarkManager::BookmarkExtraInfoData& exInfo1,
                                     const BookmarkManager::BookmarkExtraInfoData& exInfo2)
 {
-    //Must compare BEIID, not Name to allow same-name properties.
+    //Must compare BEIID, not Name to allow [same-name ExtraInfos].
     return exInfo1.BEIID == exInfo2.BEIID;
 }
 

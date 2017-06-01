@@ -86,9 +86,11 @@ bool BookmarksBusinessLogic::AddOrEditBookmarkTrans(
         long long& editBId, BookmarkManager::BookmarkData& bdata,
         long long originalEditBId, BookmarkManager::BookmarkData& editOriginalBData,
         const QList<long long>& editedLinkedBookmarks,
+        const QList<BookmarkManager::BookmarkExtraInfoData>& editedExtraInfos,
         const QStringList& tagsList, QList<long long>& associatedTIDs,
         const QList<FileManager::BookmarkFile>& editedFilesList, int defaultFileIndex)
 {
+    //[Similar BookmarksBusinessLogic Implementation]
     bool success;
 
     //IMPORTANT: In case of RollBack, do NOT return!
@@ -97,7 +99,7 @@ bool BookmarksBusinessLogic::AddOrEditBookmarkTrans(
     BeginActionTransaction();
     {
         success = AddOrEditBookmark(editBId, bdata, originalEditBId, editOriginalBData,
-                                    editedLinkedBookmarks, tagsList, associatedTIDs,
+                                    editedLinkedBookmarks, editedExtraInfos, tagsList, associatedTIDs,
                                     editedFilesList, defaultFileIndex);
 
         if (!success)
@@ -121,6 +123,7 @@ bool BookmarksBusinessLogic::AddOrEditBookmark(
         long long& editBId, BookmarkManager::BookmarkData& bdata,
         long long originalEditBId, BookmarkManager::BookmarkData& editOriginalBData,
         const QList<long long>& editedLinkedBookmarks,
+        const QList<BookmarkManager::BookmarkExtraInfoData>& editedExtraInfos,
         const QStringList& tagsList, QList<long long>& associatedTIDs,
         const QList<FileManager::BookmarkFile>& editedFilesList, int defaultFileIndex)
 {
@@ -136,11 +139,17 @@ bool BookmarksBusinessLogic::AddOrEditBookmark(
     if (!success)
         return false;
 
-    //We use models, this function is no longer necessary.
-    //success = dbm->bms.UpdateBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosList,
-    //                                            editedExtraInfos);
-    //DO NOT: success = editOriginalBData.Ex_ExtraInfosModel.submitAll(); Read docs
-    success = dbm->bms.UpdateBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosModel);
+    //Use ExtraInfos model or list based on whether model has been set or not.
+    if (editOriginalBData.Ex_ExtraInfosModel.tableName().isEmpty())
+    {
+        success = dbm->bms.UpdateBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosList,
+                                                    editedExtraInfos);
+    }
+    else
+    {
+        //DO NOT: success = editOriginalBData.Ex_ExtraInfosModel.submitAll(); Read docs
+        success = dbm->bms.UpdateBookmarkExtraInfos(editBId, editOriginalBData.Ex_ExtraInfosModel);
+    }
     if (!success)
         return false;
 
@@ -182,7 +191,7 @@ bool BookmarksBusinessLogic::AddOrEditBookmark(
 
 bool BookmarksBusinessLogic::DeleteBookmarksTrans(const QList<long long>& BIDs)
 {
-    //Similar implementation to `BookmarksBusinessLogic::MoveBookmarksToFolderTrans`.
+    //[Similar BookmarksBusinessLogic Implementation]
     bool success;
 
     BeginActionTransaction();
@@ -336,7 +345,7 @@ bool BookmarksBusinessLogic::DeleteBookmark(long long BID)
 
 bool BookmarksBusinessLogic::MoveBookmarksToFolderTrans(const QList<long long>& BIDs, long long FOID)
 {
-    //Similar implementation to `BookmarksBusinessLogic::DeleteBookmarksTrans`.
+    //[Similar BookmarksBusinessLogic Implementation]
     bool success;
 
     BeginActionTransaction();
