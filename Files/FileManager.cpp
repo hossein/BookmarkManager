@@ -167,6 +167,12 @@ bool FileManager::RetrieveBookmarkFiles(long long BID, QList<FileManager::Bookma
         bf.Size         = query.value(bfidx.Size        ).toLongLong();
         bf.MD5          = query.value(bfidx.MD5         ).toByteArray();
 
+        //Although these properties are not used or regarded in `UpdateBookmarkFiles` function,
+        //we initialize them here to clear any invalid values as they are POD types.
+        bf.Ex_SharedFileLocationPolicy = BookmarkFile::SFLP_NotSet;
+        bf.Ex_IsDefaultFileForEditedBookmark = false; //We don't have Bookmark.DefBFID's value.
+        bf.Ex_RemoveAfterAttach = false;
+
         bookmarkFiles.append(bf);
     }
 
@@ -220,10 +226,28 @@ bool FileManager::UpdateBookmarkFiles(long long BID, const QString& folderHint, 
         BookmarkFile bf = nbf;
 
         //Insert new files into our FileArchive.
-        if (bf.FID)
+        if (bf.FID == -1) //Add new file from the file system
         {
             if (!AddFile(bf, fileArchiveName, folderHint, groupHint, errorWhileContext))
                 return false;
+        }
+        else //Sharing a file
+        {
+            if (bf.Ex_SharedFileLocationPolicy == BookmarkFile::SFLP_KeepInOriginalLocation)
+            {
+                //File location is okay; do nothing
+            }
+            else if (bf.Ex_SharedFileLocationPolicy == BookmarkFile::SFLP_MoveToNewLocation)
+            {
+                //Copy to new location
+                if (!ChangeFileLocation(bf.FID, fileArchiveName, folderHint, groupHint, errorWhileContext))
+                    return false;
+            }
+            else //BookmarkFile::SFLP_NotSet, not initialized, etc
+            {
+                QString sflpError = "Error while %1:\nInvalid shared file location policy.";
+                return Error(sflpError.arg(errorWhileContext));
+            }
         }
 
         //Associate the bookmark-file relationship.

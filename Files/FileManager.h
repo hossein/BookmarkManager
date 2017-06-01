@@ -54,6 +54,22 @@ public:
         long long Size;       //[DISTINCT PROPERTY]
         QByteArray MD5;       //[DISTINCT PROPERTY]
 
+        enum SharedFileLocationPolicy
+        {
+            //Potential future policies could be 'CopyToNewLocation' (duplicates file, creates an
+            //entire new FID) and 'Automatic' (if file archives are different then duplicate).
+            /// Invalid
+            SFLP_NotSet = 0,
+            /// Doesn't change shared files location
+            SFLP_KeepInOriginalLocation = 1,
+            /// Changes shared file location. Does NOT update `this->ArchiveURL`, but this should be
+            /// fine for practical purposes as `ArchiveURL` is not a [DISTINCT PROPERTY] and two
+            /// BookmarkFile's with the same info but different `ArchiveURL`s are considered equal.
+            /// Only if BookmarkFile is going to be opened or its path modified later caller has to
+            /// update `ArchiveURL` manually.
+            SFLP_MoveToNewLocation = 2,
+        };
+        SharedFileLocationPolicy Ex_SharedFileLocationPolicy;
         bool Ex_IsDefaultFileForEditedBookmark;
         bool Ex_RemoveAfterAttach;
     };
@@ -98,6 +114,11 @@ public:
     //Bookmark updating: involves BOTH adding and deleting. NEEDS Transaction.
     /// Although the interface currently doesn't allow sharing a file between multiple bookmarks,
     ///     this function uses BFID for its calculations and allows it.
+    ///     If FID == -1, then the files are considered non-attached and will be read from the file
+    ///     system. If files are going to be added to a bookmark, set their BFID = -1. Setting BFID
+    ///     to -1 and using a FID != -1 allows sharing files between bookmarks.
+    ///     In any case, setting BookmarkFile.BID for added files is not necessary and is ignored;
+    ///     the `BID` argument is always used to determine the target bookmark.
     /// IMPORTANT: Do NOT make `editedBookmarkFiles` non-const; in transactions where consecutive
     ///     actions are happening, this can't just change the parameters it wants.
     ///     This function just returns the BFIDs that are added or edited in EQUIVALENT INDEXES TO

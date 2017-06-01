@@ -300,18 +300,18 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib, long long importFOI
         }
         mhtfile.close();
 
-        //Same logic exists in BookmarkEditDialog::accept and its file attaching functions.
+        //Same logic exists in BookmarkEditDialog::accept and its [File Attaching] functions.
         QFileInfo fileInfo(mhtFilePathName);
         FileManager::BookmarkFile bf;
         bf.BFID         = -1; //Leave to FileManager.
-        bf.BID          = -1; //Not added yet
+        bf.BID          = -1; //Not added yet; Not important.
         bf.FID          = -1; //Leave to FileManager.
         bf.OriginalName = mhtFilePathName;
         bf.ArchiveURL   = ""; //Leave to FileManager.
         bf.ModifyDate   = fileInfo.lastModified();
         bf.Size         = fileInfo.size();
         bf.MD5          = Util::GetMD5HashForFile(mhtFilePathName);
-        bf.Ex_IsDefaultFileForEditedBookmark = true; //[KeepDefaultFile-1].Generalization: Must be set
+        bf.Ex_IsDefaultFileForEditedBookmark = true; //Not important.
         bf.Ex_RemoveAfterAttach = false; //We don't want to put it in recycle bin. Will manually delete.
 
         bookmarkFiles.append(bf);

@@ -453,7 +453,7 @@ void BookmarkEditDialog::on_btnAttach_clicked()
             continue;
         }
 
-        //IMPORTANT:
+        //IMPORTANT: [File Attaching]:
         //Original file Information MUST be filled by us. We will SET BOTH `BFID` AND `FID` to -1,
         //  for which FileManager will take care of the IDs and archive url, etc.
         //Note: BOTH `BFID` and `FID` are CRUCIAL to be set to `-1`!
@@ -464,7 +464,7 @@ void BookmarkEditDialog::on_btnAttach_clicked()
         //      set BFID=-1 and FID=RealFileID for this purpose.
         FileManager::BookmarkFile bf;
         bf.BFID         = -1; //Leave to FileManager.
-        bf.BID          = editBId;
+        bf.BID          = editBId; //Not important.
         bf.FID          = -1; //Leave to FileManager.
         bf.OriginalName = fileName;
         bf.ArchiveURL   = ""; //Leave to FileManager.
