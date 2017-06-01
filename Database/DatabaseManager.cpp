@@ -417,7 +417,40 @@ bool DatabaseManager::UpgradeDatabase(int dbVersion)
             return Error("Migration Error: v2, Renaming BookmarkTrash", query.lastError());
     }
 
-    //if (dbVersion <= 3)
+    if (dbVersion <= 3)
+    {
+        /// BookmarkExtraInfo was missing FOREIGN KEY constraints for databases migrated from alpha versions.
+        if (!query.exec("CREATE Table BookmarkExtraInfo2"
+                        "( BEIID INTEGER PRIMARY KEY AUTOINCREMENT, BID INTEGER, "
+                        "  Name TEXT, Type TEXT, Value TEXT,"
+                        "  FOREIGN KEY(BID) REFERENCES Bookmark(BID) ON DELETE CASCADE )"))
+            return Error("Migration Error: v3, Creating BookmarkExtraInfo", query.lastError());
+
+        if (!query.exec("INSERT INTO BookmarkExtraInfo2 (BEIID, BID, Name, Type, Value) "
+                        "SELECT BEIID, BID, Name, Type, Value FROM BookmarkExtraInfo"))
+            return Error("Migration Error: v3, Copying BookmarkExtraInfo", query.lastError());
+
+        if (!query.exec("DROP TABLE BookmarkExtraInfo"))
+            return Error("Migration Error: v3, Dropping BookmarkExtraInfo", query.lastError());
+
+        if (!query.exec("ALTER TABLE BookmarkExtraInfo2 RENAME TO BookmarkExtraInfo"))
+            return Error("Migration Error: v3, Renaming BookmarkExtraInfo", query.lastError());
+
+        /// Remove BookmarkExtraInfo for bookmarks that don't exist
+        if (!query.exec("DELETE FROM BookmarkExtraInfo WHERE BID NOT IN (SELECT BID FROM Bookmark)"))
+            return Error("Migration Error: v3, Updating BookmarkExtraInfo", query.lastError());
+
+        /// Migration v1 -> 2 fixed BookmarkLink's foreign key, but hasn't deleted wrong values.
+        if (!query.exec("DELETE FROM BookmarkLink WHERE BID1 NOT IN (SELECT BID FROM Bookmark)"))
+            return Error("Migration Error: v4, Updating BookmarkLink (step 1)", query.lastError());
+
+        if (!query.exec("DELETE FROM BookmarkLink WHERE BID2 NOT IN (SELECT BID FROM Bookmark)"))
+            return Error("Migration Error: v4, Updating BookmarkLink (step 2)", query.lastError());
+
+        ///  Migration v1 -> 2 fixed BookmarkTag's foreign key, but hasn't deleted wrong values.
+        if (!query.exec("DELETE FROM BookmarkTag WHERE BID NOT IN (SELECT BID FROM Bookmark)"))
+            return Error("Migration Error: v4, Updating BookmarkTag", query.lastError());
+    }
 
     if (!query.exec("UPDATE Info SET Version = " + QString::number(conf->programDatabaseVersion)))
         return Error("Migration Error: Updating database version", query.lastError());
