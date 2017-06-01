@@ -121,6 +121,16 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="btnMerge">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>&amp;Merge</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="horizontalSpacer">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -257,8 +267,12 @@
  </customwidgets>
  <tabstops>
   <tabstop>btnNew</tabstop>
+  <tabstop>btnMerge</tabstop>
+  <tabstop>btnView</tabstop>
   <tabstop>btnEdit</tabstop>
   <tabstop>btnDelete</tabstop>
+  <tabstop>leSearch</tabstop>
+  <tabstop>chkSearchRegExp</tabstop>
  </tabstops>
  <resources/>
  <connections/>

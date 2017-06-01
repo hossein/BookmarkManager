@@ -140,6 +140,8 @@ public:
 
     /// Convenience function mainly to get linked bookmarks' names. Preserves the order.
     bool RetrieveBookmarkNames(const QList<long long>& BIDs, QStringList& names);
+    /// Convenience function mainly used during merging
+    bool RetrieveBookmarkFullURLs(const QList<long long>& BIDs, QMultiHash<long long, QString>& bookmarkURLs);
     /// Convenience functions used during importing.
     bool RetrieveAllFullURLs(QMultiHash<long long, QString>& bookmarkURLs);
     /// Works case-sensitively.

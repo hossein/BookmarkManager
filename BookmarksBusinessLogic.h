@@ -47,4 +47,9 @@ public:
     bool MoveBookmarksToFolderTrans(const QList<long long>& BIDs, long long FOID);
     bool MoveBookmarkToFolderTrans(long long BID, long long FOID);
     bool MoveBookmarkToFolder(long long BID, long long FOID);
+
+    //Merge bookmarks onto the FIRST one. Former ones call the latter one, wrapped in a transaction.
+    bool MergeBookmarksTrans(const QList<long long>& BIDs, QList<long long>& associatedTIDs);
+    bool MergeBookmarksTrans(long long mainBID, long long subBID, QList<long long>& associatedTIDs);
+    bool MergeBookmarks(long long mainBID, long long subBID, QList<long long>& associatedTIDs);
 };

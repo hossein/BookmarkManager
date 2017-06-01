@@ -570,6 +570,35 @@ bool BookmarkManager::RetrieveBookmarkNames(const QList<long long>& BIDs, QStrin
     return true;
 }
 
+bool BookmarkManager::RetrieveBookmarkFullURLs(const QList<long long>& BIDs, QMultiHash<long long, QString>& bookmarkURLs)
+{
+    bookmarkURLs.clear(); //Do it for caller
+    if (BIDs.empty())
+        return true;
+
+    QString BIDsStr;
+    foreach(long long BID, BIDs)
+        BIDsStr += QString::number(BID) + ",";
+    BIDsStr.chop(1); //Remove the last comma
+
+    QString retrieveError = "Could not get selected bookmarks' information from database.";
+    QSqlQuery query(db);
+    query.prepare(QString("SELECT BID, URLs FROM Bookmark WHERE BID IN (%1)").arg(BIDsStr));
+
+    if (!query.exec())
+        return Error(retrieveError, query.lastError());
+
+    while (query.next())
+    {
+        //We indexed explicitly in our select statement; indexes are constant.
+        QStringList urls = Util::RemoveEmptyLinesAndTrim(query.value(1).toString()).split('\n');
+        foreach (const QString& url, urls)
+            bookmarkURLs.insertMulti(query.value(0).toLongLong(), url);
+    }
+
+    return true;
+}
+
 bool BookmarkManager::RetrieveAllFullURLs(QMultiHash<long long, QString>& bookmarkURLs)
 {
     QString retrieveError = "Could not get bookmarks information from database.";

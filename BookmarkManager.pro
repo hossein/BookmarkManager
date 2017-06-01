@@ -56,6 +56,7 @@ SOURCES += BMApplication.cpp \
     Bookmarks/BookmarksView.cpp \
     Bookmarks/BookmarkViewDialog.cpp \
     Bookmarks/FiveStarRatingWidget.cpp \
+    Bookmarks/MergeConfirmationDialog.cpp \
     Bookmarks/QuickBookmarkSelectDialog.cpp \
     Database/DatabaseManager.cpp \
     Files/FileArchiveManager.cpp \
@@ -107,6 +108,7 @@ HEADERS += BMApplication.h \
     Bookmarks/BookmarksView.h \
     Bookmarks/BookmarkViewDialog.h \
     Bookmarks/FiveStarRatingWidget.h \
+    Bookmarks/MergeConfirmationDialog.h \
     Bookmarks/QuickBookmarkSelectDialog.h \
     Database/DatabaseManager.h \
     Database/IManager.h \
@@ -133,6 +135,7 @@ HEADERS += BMApplication.h \
     Tags/TagsView.h \
     Util/CtLogger.h \
     Util/ListWidgetWithEmptyPlaceholder.h \
+    Util/RichRadioButton.h \
     Util/TransactionalFileOperator.h \
     Util/Util.h \
     Util/WinFunctions.h
@@ -143,6 +146,7 @@ FORMS += MainWindow.ui \
     Bookmarks/BookmarkEditDialog.ui \
     Bookmarks/BookmarkExtraInfoAddEditDialog.ui \
     Bookmarks/BookmarkViewDialog.ui \
+    Bookmarks/MergeConfirmationDialog.ui \
     Bookmarks/QuickBookmarkSelectDialog.ui \
     FileViewer/OpenWithDialog.ui \
     Settings/SettingsDialog.ui

@@ -31,6 +31,7 @@ public:
 private slots:
     //// Private slots responding to UI ///////////////////////////////////////////////////////////
     void on_btnNew_clicked();
+    void on_btnMerge_clicked();
     void on_btnView_clicked();
     void on_btnEdit_clicked();
     void on_btnDelete_clicked();
@@ -58,6 +59,7 @@ private:
     void RefreshStatusLabels();
 
     void NewBookmark();
+    void MergeSelectedBookmarks();
     void ViewSelectedBookmark();
     void EditSelectedBookmark();
     void DeleteSelectedBookmarks();

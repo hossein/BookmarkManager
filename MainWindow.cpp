@@ -4,6 +4,7 @@
 #include "Bookmarks/BookmarkFilter.h"
 #include "Bookmarks/BookmarkEditDialog.h"
 #include "Bookmarks/BookmarkViewDialog.h"
+#include "Bookmarks/MergeConfirmationDialog.h"
 #include "BookmarksBusinessLogic.h"
 
 #include "BookmarkImporter/BookmarkImporter.h"
@@ -134,6 +135,11 @@ void MainWindow::on_btnNew_clicked()
     NewBookmark();
 }
 
+void MainWindow::on_btnMerge_clicked()
+{
+    MergeSelectedBookmarks();
+}
+
 void MainWindow::on_btnView_clicked()
 {
     ViewSelectedBookmark();
@@ -165,7 +171,9 @@ void MainWindow::bvSelectionChanged(const QList<long long>& selectedBIDs)
 
     bool hasSelection = (!selectedBIDs.empty());
     bool singleSelected = (selectedBIDs.length() == 1);
+    bool multiSelected = (selectedBIDs.length() > 1);
 
+    ui->btnMerge->setEnabled(multiSelected);
     ui->btnView->setEnabled(singleSelected);
     ui->btnEdit->setEnabled(singleSelected);
     ui->btnDelete->setEnabled(hasSelection);
@@ -423,6 +431,38 @@ void MainWindow::NewBookmark()
 
     RefreshUIDataDisplay(true, RA_CustomSelectAndFocus, QList<long long>() << outParams.addedBId,
                          RA_SaveSelAndScrollAndCheck, -1, outParams.associatedTIDs);
+}
+
+void MainWindow::MergeSelectedBookmarks()
+{
+    QList<long long> mergeBIDs = ui->bv->GetSelectedBookmarkIDs();
+
+    MergeConfirmationDialog::OutParams outParams;
+    MergeConfirmationDialog mergeConfirmDialog(&dbm, mergeBIDs, &outParams, this);
+
+
+    if (!mergeConfirmDialog.canShow())
+        return; //In case of errors a message is already shown.
+
+    int result = mergeConfirmDialog.exec();
+    if (result != QDialog::Accepted)
+        return;
+
+    //Move the main BID to the first index.
+    if (mergeBIDs[0] != outParams.mainBId)
+    {
+        mergeBIDs.removeAll(outParams.mainBId);
+        mergeBIDs.insert(0, outParams.mainBId);
+    }
+
+    QList<long long> associatedTIDs;
+    BookmarksBusinessLogic bbLogic(&dbm, this);
+    bool success = bbLogic.MergeBookmarksTrans(mergeBIDs, associatedTIDs);
+    if (!success)
+        return;
+
+    RefreshUIDataDisplay(true, RA_CustomSelectAndFocus, QList<long long>() << outParams.mainBId,
+                         RA_SaveSelAndScrollAndCheck, -1, associatedTIDs);
 }
 
 void MainWindow::ViewSelectedBookmark()
