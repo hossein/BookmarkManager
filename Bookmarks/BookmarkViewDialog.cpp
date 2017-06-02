@@ -4,6 +4,7 @@
 #include "BookmarkFilter.h"
 #include "BookmarksBusinessLogic.h"
 #include "Util/Util.h"
+#include "Util/WindowSizeMemory.h"
 
 #include <QApplication>
 #include <QResizeEvent>
@@ -64,6 +65,10 @@ BookmarkViewDialog::BookmarkViewDialog(DatabaseManager* dbm, long long viewBId, 
                           + ui->mainVerticalLayout->contentsMargins().bottom();
         this->setFixedHeight(ui->widTopPane->height() + thisMargins + layoutMargins);
     }
+
+    //Two different sizes possible for this window:
+    QString wsmName = QString("BookmarkViewDialog") + (viewBData.Ex_FilesList.empty() ? "NoFiles" : "");
+    WindowSizeMemory::SetWindowSizeMemory(this, this, dbm, wsmName, true, true, false, 1);
 
     if (viewBData.Ex_LinkedBookmarksList.size() == 0)
     {

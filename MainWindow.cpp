@@ -12,10 +12,10 @@
 #include "BookmarkImporter/FirefoxBookmarkJSONFileParser.h"
 
 #include "Settings/SettingsDialog.h"
+#include "Util/WindowSizeMemory.h"
 
 #include <QDebug>
 #include <QDir>
-#include <QDesktopWidget>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -30,47 +30,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // Set size and position
-    int dWidth = QApplication::desktop()->availableGeometry().width();
-    int dHeight = QApplication::desktop()->availableGeometry().height();
-    resize(dWidth * 75/100, dHeight * 75/100);
-
-    QRect geom = geometry();
-    geom.moveCenter(QApplication::desktop()->availableGeometry().center());
-    this->setGeometry(geom);
-
-    // Set additional UI sizes
-    QList<int> hsizes, vsizes;
-    hsizes << this->width() / 3 << this->width() * 2 / 3;
-    ui->splitter->setSizes(hsizes);
-    vsizes << this->height() * 2 / 3 << this->height() / 3;
-    ui->splitterFT->setSizes(vsizes);
-
-    // Add additional UI controls
-    ui->action_importFirefoxBookmarks->setEnabled(false); //Not implemented yet.
-    QMenu* menuFile = new QMenu("    &File    ");
-    menuFile->addAction(ui->actionImportUrlsAsBookmarks);
-    menuFile->addSeparator();
-    menuFile->addAction(ui->action_importFirefoxBookmarks);
-    menuFile->addAction(ui->actionImportFirefoxBookmarksJSONfile);
-    menuFile->addSeparator();
-    menuFile->addAction(ui->actionSettings);
-
-    QMenu* menuDebug = new QMenu("    &Debug    ");
-    menuDebug->addAction(ui->actionGetMHT);
-
-    QList<QMenu*> menus = QList<QMenu*>() << menuFile << menuDebug;
-    foreach (QMenu* menu, menus)
-    {
-        QToolButton* btn = new QToolButton();
-        btn->setText(menu->title());
-        btn->setMenu(menu);
-        btn->setPopupMode(QToolButton::InstantPopup);
-        //btn->setArrowType(Qt::LeftArrow);
-        btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
-        ui->mainToolBar->addWidget(btn);
-    }
-
     // Load database
     QString databaseFilePath = QDir::currentPath() + "/" + conf.programDatabasetFileName;
     if (!dbm.BackupOpenOrCreate(databaseFilePath))
@@ -82,6 +41,9 @@ MainWindow::MainWindow(QWidget *parent) :
     //Can't do full `RefreshUIDataDisplay` because bv and tf are not initialized yet; this line is
     //  needed before initializing them:
     dbm.PopulateModelsAndInternalTables();
+
+    //After dbm initializing, set up main UI and sizes
+    InitializeUIControlsAndPositions();
 
     // Initialize important controls
     ui->bv->Initialize(&dbm, BookmarksView::LM_FullInformationAndEdit, &dbm.bms.model);
@@ -268,6 +230,44 @@ void MainWindow::on_actionSettings_triggered()
 {
     SettingsDialog setsDlg(&dbm, this);
     setsDlg.exec();
+}
+
+void MainWindow::InitializeUIControlsAndPositions()
+{
+    // Set size and position
+    WindowSizeMemory::SetWindowSizeMemory(this, this, &dbm, "MainWindow", true, true, true, 0.75f);
+
+    // Set additional UI sizes
+    QList<int> hsizes, vsizes;
+    hsizes << this->width() / 3 << this->width() * 2 / 3;
+    ui->splitter->setSizes(hsizes);
+    vsizes << this->height() * 2 / 3 << this->height() / 3;
+    ui->splitterFT->setSizes(vsizes);
+
+    // Add additional UI controls
+    ui->action_importFirefoxBookmarks->setEnabled(false); //Not implemented yet.
+    QMenu* menuFile = new QMenu("    &File    ");
+    menuFile->addAction(ui->actionImportUrlsAsBookmarks);
+    menuFile->addSeparator();
+    menuFile->addAction(ui->action_importFirefoxBookmarks);
+    menuFile->addAction(ui->actionImportFirefoxBookmarksJSONfile);
+    menuFile->addSeparator();
+    menuFile->addAction(ui->actionSettings);
+
+    QMenu* menuDebug = new QMenu("    &Debug    ");
+    menuDebug->addAction(ui->actionGetMHT);
+
+    QList<QMenu*> menus = QList<QMenu*>() << menuFile << menuDebug;
+    foreach (QMenu* menu, menus)
+    {
+        QToolButton* btn = new QToolButton();
+        btn->setText(menu->title());
+        btn->setMenu(menu);
+        btn->setPopupMode(QToolButton::InstantPopup);
+        //btn->setArrowType(Qt::LeftArrow);
+        btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
+        ui->mainToolBar->addWidget(btn);
+    }
 }
 
 void MainWindow::RefreshUIDataDisplay(bool rePopulateModels,

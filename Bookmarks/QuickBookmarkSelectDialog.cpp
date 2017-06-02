@@ -1,6 +1,8 @@
 #include "QuickBookmarkSelectDialog.h"
 #include "ui_QuickBookmarkSelectDialog.h"
 
+#include "Util/WindowSizeMemory.h"
+
 #include <QPushButton>
 #include <QScrollBar>
 
@@ -9,6 +11,7 @@ QuickBookmarkSelectDialog::QuickBookmarkSelectDialog(
     : QDialog(parent), ui(new Ui::QuickBookmarkSelectDialog), dbm(dbm), outParams(outParams)
 {
     ui->setupUi(this);
+    WindowSizeMemory::SetWindowSizeMemory(this, this, dbm, "QuickBookmarkSelectDialog", true, true, false, 1);
 
     //Tags
     ui->leFilter->setModel(&dbm->tags.model);

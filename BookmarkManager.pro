@@ -82,6 +82,7 @@ SOURCES += BMApplication.cpp \
     Util/CtLogger.cpp \
     Util/TransactionalFileOperator.cpp \
     Util/Util.cpp \
+    Util/WindowSizeMemory.cpp \
     Util/WinFunctions.cpp
 
 HEADERS += BMApplication.h \
@@ -138,6 +139,7 @@ HEADERS += BMApplication.h \
     Util/RichRadioButton.h \
     Util/TransactionalFileOperator.h \
     Util/Util.h \
+    Util/WindowSizeMemory.h \
     Util/WinFunctions.h
 
 FORMS += MainWindow.ui \

@@ -50,6 +50,8 @@ private slots:
     void on_actionSettings_triggered();
 
 private:
+    void InitializeUIControlsAndPositions();
+
     /// Master functions for data refresh and display /////////////////////////////////////////////
     void RefreshUIDataDisplay(bool rePopulateModels,
                               UIDDRefreshAction bookmarksAction = RA_None, const QList<long long>& selectBIDs = QList<long long>(),
