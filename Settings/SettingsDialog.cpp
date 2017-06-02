@@ -9,8 +9,7 @@ SettingsDialog::SettingsDialog(DatabaseManager* dbm, QWidget *parent) :
 {
     ui->setupUi(this);
 
-    bool FsTransformUnicode = dbm->sets.GetSettingBool("FsTransformUnicode",
-                                                       dbm->conf->defaultFsTransformUnicode);
+    bool FsTransformUnicode = dbm->sets.GetSetting("FsTransformUnicode", dbm->conf->defaultFsTransformUnicode);
     ui->chkFsTransformUnicode->setChecked(FsTransformUnicode);
 }
 

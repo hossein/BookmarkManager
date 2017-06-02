@@ -121,8 +121,7 @@ bool FileArchiveManager::RemoveFileFromArchive(const QString& fileRelArchiveURL,
 QString FileArchiveManager::CalculateFileArchiveURL(const QString& fileFullPathName,
                                                     const QString& folderHint, const QString& groupHint)
 {
-    bool FsTransformUnicode =
-            dbm->sets.GetSettingBool("FsTransformUnicode", dbm->conf->defaultFsTransformUnicode);
+    bool FsTransformUnicode = dbm->sets.GetSetting("FsTransformUnicode", dbm->conf->defaultFsTransformUnicode);
     QFileInfo fi(fileFullPathName);
 
     if (m_fileLayout == 0) //File hash layout

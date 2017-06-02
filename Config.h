@@ -136,7 +136,7 @@ public:
     Config()
     {
         //// SETTINGS DEFAULT VALUES
-        defaultFsTransformUnicode = "0";
+        defaultFsTransformUnicode = false;
 
         //// CONSTANTS
         concurrentBookmarkProcessings = 10;
@@ -158,7 +158,7 @@ public:
     ~Config() { }
 
     //// SETTINGS DEFAULT VALUES
-    QString defaultFsTransformUnicode;
+    bool defaultFsTransformUnicode;
 
     //// CONSTANTS
     int concurrentBookmarkProcessings;

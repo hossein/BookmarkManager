@@ -263,8 +263,7 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib, long long importFOI
     QList<FileManager::BookmarkFile> bookmarkFiles;
     if (ib.ExPr_attachedFileError.isEmpty())
     {
-        bool FsTransformUnicode = dbm->sets.GetSettingBool("FsTransformUnicode",
-                                                           dbm->conf->defaultFsTransformUnicode);
+        bool FsTransformUnicode = dbm->sets.GetSetting("FsTransformUnicode", dbm->conf->defaultFsTransformUnicode);
         QString safeFileName = Util::SafeAndShortFSName(ib.ExPr_attachedFileName, true, FsTransformUnicode);
         mhtFilePathName = m_tempPath + "/" + safeFileName;
         QFile mhtfile(mhtFilePathName);

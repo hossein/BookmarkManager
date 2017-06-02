@@ -9,6 +9,11 @@ SettingsManager::SettingsManager(QWidget* dialogParent, Config* conf)
 {
 }
 
+bool SettingsManager::HaveSetting(const QString& name)
+{
+    return m_settings.contains(name);
+}
+
 QString SettingsManager::GetSetting(const QString& name, const QString& defaultValue)
 {
     if (m_settings.contains(name))
@@ -17,18 +22,29 @@ QString SettingsManager::GetSetting(const QString& name, const QString& defaultV
         return defaultValue;
 }
 
-bool SettingsManager::GetSettingBool(const QString& name, const QString& defaultValue)
+int SettingsManager::GetSetting(const QString& name, int defaultValue)
 {
-    QString strSetting = GetSetting(name, defaultValue);
+    if (m_settings.contains(name))
+        return m_settings[name].toInt();
+    else
+        return defaultValue;
+}
+
+qint64 SettingsManager::GetSetting(const QString& name, qint64 defaultValue)
+{
+    if (m_settings.contains(name))
+        return m_settings[name].toLongLong();
+    else
+        return defaultValue;
+}
+
+bool SettingsManager::GetSetting(const QString& name, bool defaultValue)
+{
+    QString strSetting = GetSetting(name, QString(defaultValue ? "1" : "0"));
     return (strSetting != QString("0"));
 }
 
-bool SettingsManager::HaveSetting(const QString& name)
-{
-    return m_settings.contains(name);
-}
-
-bool SettingsManager::SetSetting(const QString& name, QString value)
+bool SettingsManager::SetSetting(const QString& name, const QString& value)
 {
     QString updateError = "Error while updating settings in the database.";
 
@@ -63,6 +79,16 @@ bool SettingsManager::SetSetting(const QString& name, QString value)
 bool SettingsManager::SetSetting(const QString& name, bool value)
 {
     return SetSetting(name, QString(value ? "1" : "0"));
+}
+
+bool SettingsManager::SetSetting(const QString& name, int value)
+{
+    return SetSetting(name, QString::number(value));
+}
+
+bool SettingsManager::SetSetting(const QString& name, qint64 value)
+{
+    return SetSetting(name, QString::number(value));
 }
 
 bool SettingsManager::DeleteSetting(const QString& name)
