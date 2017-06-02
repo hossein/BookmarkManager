@@ -31,6 +31,51 @@
 //  keep the list of newly opened files and don't delete them in the 30 seconds later clean up is
 //  also possible; but we don't do it for now.
 
+//Note: [Merging Bookmark Files]
+//There are multiple solutions for implementing merging bookmark files.
+//(A) Although it's TEMPTING to just change the BID of Sub's BookmarkFiles such that Main owns
+//  them, we won't do this because:
+//  1. This function is general and should support moving files between different file archives.
+//     Two bookmarks from different folder with different file archives can be merged. We want
+//     to move the files as well.
+//  2. Even without considering different file archives, we'd like files of the same bookmark to
+//     be in the same folder. We don't want to postpone this until user manually uses the
+//     'Check and Fix File Archives' feature.
+//  3. We have a standard mechanism to be used instead: `FileManager::ChangeFileLocation`.
+//(B) We can also create a new BookmarkFile that practically copies the old file to the new
+//  bookmark and then delete the previous bookmark. We won't do this as well because:
+//  1. It sends the old files unnecessarily to Trash.
+//  2. Files may be stored under a different name than their own real name, especially in older
+//     FAM file layouts.
+//(C) Other main solution, will then be to use the designated `FileManager::ChangeFileLocation`
+//  to relocate the file and also make Sub's file to be owned by the Main file. Downsides are:
+//  1. Not really a downside; but it requires separate steps other than just AddOrEditBookmark
+//     call and increases the transaction length.
+//  2. It requires manual file management outside of FileManager's standard procedures, i.e we
+//     need to publicize and use the otherwise private FileManager::AddBookmarkFile; however,
+//     FileManager class is intended to be used using only its FileManager::UpdateBookmarkFiles
+//     to update files.
+//  3. We can't keep a unified mergedFilesList because we are directly changing files info in
+//     the database. So we have to manually set the default file index after merging is done.
+//     (This is because AddOrEditBookmark receives index, not BFID, of the default file.)
+//  4. In case of shared files, if Sub's file was shared with a bookmark from a different file
+//     archive, then we are simply moving the file to a new folder without caring about changing
+//     file archives. (If Sub's file is not shared, moving it to the new location is just fine.)
+//     But this is an inherent problem with sharing files and has to be solved generally if
+//     shared files are going to be supported.
+//(D) Finally, we use the correct solution which is:
+//  We extend FileManager::UpdateBookmarkFiles functionality to detect when we are attaching a
+//  shared file, and we can control whether to copy file to the new location.
+//  To merge the files, we set Sub's Bf.BFID = -1 but leave FID != -1, and choose to copy the
+//  file to Main's location using SharedFileLocationPolicy. We add Bf to mainBdata's file list.
+//  FileManager::UpdateBookmarkFiles beautifully understands this is a file sharing request and
+//  adds the file info to Main. When Sub is removed, FileManager::TrashAllBookmarkFiles is smart
+//  enough to detect that files are shared and will not delete them.
+//  Problem "(C).4" stated immediately above still applies, but as mentioned, this is a general
+//  shared-files implementation problem that has to be solved if they are going to be supported.
+//Note that there is a usecase with shared files that we have not managed here: if a file is
+//  shared between Main and Sub, we have to detect it. We don't currently detect this.
+
 /// TODO: Plan:
 ///   x File Manager
 ///   x Make the changes that we need to require multiple file attaching and do it.
@@ -129,6 +174,49 @@
 ///   - More advanced search using operators, match all or any of words, etc.
 ///   - Filtering like "tags:whatever folder:whatever contains-this-text", and top label should show
 ///     what are we filtering by.
+///   - QtWebEngine errors in log:
+///     Blocked script execution in '' because the document's frame is sandboxed and the 'allow-scripts' permission is not set
+///     Blocked form submission to '' because the form's frame is sandboxed and the 'allow-forms' permission is not set
+/// TODOs added on in May 2017:
+///   - Replace all QMessageBox calls that are used to display errors in the following classes with
+///     IManager::Error that you will make static, because we need to log the errors:
+///     BookmarkImporter
+///     BookmarksBusinessLogic
+///     FileViewManager
+///   - BookmarksBusinessLogic::AddOrEditBookmark(Trans) arguments can be simplified to directly use bdata's properties.
+///     Also set editedDefBFID in returned bdata in the end of the function. Docs need to say for extrainfos
+///     the original's model will be checked and if empty the new one's list will be used. Also for files
+///     only list is used.
+///   - Save multi-file bms' files in separate folders, i.e instead of `folderHint` and `groupHint` also have
+///     a `forceSaveInFolder` which we will set to true for bookmarks with multiple files, and 'Check and
+///     Fix...' also puts files of multi-file bms in the same folder (and if it finds a single-file bm has
+///     a files in a folder, it takes the file out).
+///   - Edit Tags in bookmark VIEW dialog.
+///   - Double-view split panes would be really nice and make dragging easy!
+///   - Block internet access for webengine if we can!
+///   - BookmarksView URL column must Util::FullyPercentDecodedUrl the URLs, and show multiple ones below each other.
+///   - On save files, save modif date and md5.
+///     On editing via program, update modif date and md5.
+///     If program detects file has been edited outside (by checking modif time automatically whenever
+///     opening bookmark or editing the file; or by checking md5 when "Clean files" action is used), it
+///     updates modif and md5 itself.
+///   - The "Clean files" or whatever it is called action, will check E:\BM\FileArchive\Wikipedia\QATL33UW\Fear.mht,
+///     and because no Fear.mht exists in E:\BM\FileArchive\Wikipedia\ it will move the file there.
+///     Such subdirs are created when there are multiple files, but in this case the original file has
+///     been removed and so this duplicate file can be moved out of the subdir into the original folder.
+///   - While Trashing a bookmark, linked bookmarks and attached files must also be serialized as JSON so
+///     that it is possible to partially restore them, e.g save their name, ids, md5, etc and restore
+///     them if they still exist.
+///   - In file trash, whatever algorithm it uses, files with unicode names get a hash value like e.g FFFFFFFFFFF2.
+///     It should either be @Unicode, or must not contain this much FF's.
+///   - Ex_IsDefaultFileForEditedBookmark can be either respected by FileManager's retrieve and update functions,
+///     or better: be removed completely. Things will become much simpler.
+///   - When deleting a bookmark, if its attached file is not found it should not show errors.
+///   - Prevent closing BookmarkEditDialog if attaching UI is open.
+///   - Import MHTML
+///   - Re-order files, because you can re-order URLs!
+
+
 
 class Config
 {

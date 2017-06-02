@@ -83,7 +83,11 @@
                 ! Fixed status labels counting and updates
                 ! Fixed viewing files with percent-encoded chars in their names
                 ! Fixed HTML character entities in saved MHT titles
-2016-08-22  19  [Unreleased] Migrate to Qt 5.7, VS2015, and to QtWebEngine instead of QtWebKit.
+2017-06-01  20  [Unreleased] Migrate to Qt 5.7, VS2015, and to QtWebEngine instead of QtWebKit.
                 + Simple text and regexp search
                 + Ability of showing bookmarks in all folders
-                ! Code improvements and bugfixes
+                + Multiple bookmark selection. Can drag and remove together.
+                + Multiple URLs per bookmark
+                + Merging bookmarks
+                * MainWindow and BookmarkViewDialog's sizes are remembered upon re-opening them.
+                ! Code improvements and bugfixes, database migration fixes
