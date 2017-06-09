@@ -212,9 +212,12 @@
 ///   - Ex_IsDefaultFileForEditedBookmark can be either respected by FileManager's retrieve and update functions,
 ///     or better: be removed completely. Things will become much simpler.
 ///   - When deleting a bookmark, if its attached file is not found it should not show errors.
-///   - Prevent closing BookmarkEditDialog if attaching UI is open.
 ///   - Import MHTML
 ///   - Re-order files, because you can re-order URLs!
+///   - The top filterer will be very useful for quickly searching all bookmark when you are in a specific folder.
+///   - When a bookmark URL contains #anchor, the internal viewer must jump to it.
+///   - A dedicated "Read Later" and "I read this" flag for articles.
+///   - Do NOT nag; just warn; on unknown firefox json import entities.
 
 
 

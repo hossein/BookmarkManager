@@ -120,6 +120,14 @@ bool BookmarkEditDialog::validate()
         return false;
     }
 
+    if (ui->stwFileAttachments->currentWidget() == ui->pageAttachNew &&
+        !ui->leFileName->text().trimmed().isEmpty())
+    {
+        QMessageBox::warning(this, "File Attachments",
+                             "Please either attach the file(s) or cancel attachment.");
+        return false;
+    }
+
     return true;
 }
 
