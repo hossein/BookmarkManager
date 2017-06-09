@@ -16,6 +16,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMenu>
+#include <QStandardPaths>
 
 #include <QtSql/QSqlTableModel>
 
@@ -417,7 +418,10 @@ void BookmarkEditDialog::on_btnBrowse_clicked()
     filters << "Web Page Files (*.htm; *.html; *.mht; *.mhtml; *.maff)"
             << "All Files (*.*)";
 
-    QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select File(s)", QString(),
+    const QString documentsDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    QString lastAttachBrowseDir = dbm->sets.GetSetting("LastAttachBrowseDir", documentsDir);
+
+    QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select File(s)", lastAttachBrowseDir,
                                                           filters.join(";;"), &filters.last());
 
     ui->leFileName->setText(fileNames.join("|"));
@@ -437,7 +441,8 @@ void BookmarkEditDialog::on_btnAttach_clicked()
     }
 
     QStringList fileNames = allFileNames.split("|", QString::SkipEmptyParts);
-
+    QFileInfo attachFileNameInfo(fileNames[0]);
+    dbm->sets.SetSetting("LastAttachBrowseDir", attachFileNameInfo.absolutePath());
 
     foreach (QString fileName, fileNames)
     {
