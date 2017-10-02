@@ -10,6 +10,7 @@
 #include "BookmarkImporter/BookmarkImporter.h"
 #include "BookmarkImporter/ImportedBookmarksPreviewDialog.h"
 #include "BookmarkImporter/FirefoxBookmarkJSONFileParser.h"
+#include "BookmarkImporter/MHTSaver.h"
 
 #include "Settings/SettingsDialog.h"
 #include "Util/WindowSizeMemory.h"
@@ -22,6 +23,7 @@
 #include <QPlainTextEdit>
 #include <QResizeEvent>
 #include <QScrollBar>
+#include <QStandardPaths>
 #include <QToolButton>
 #include <QtSql/QSqlRecord>
 
@@ -226,6 +228,29 @@ void MainWindow::on_actionImportUrlsAsBookmarks_triggered()
     ImportURLs(urlsList, importFOID);
 }
 
+void MainWindow::on_actionImportMHTFiles_triggered()
+{
+    long long importFOID = ui->tf->GetCurrentFOID();
+    if (importFOID < 0) //Don't allow importing into '-1, All Bookmarks' and other special folders.
+        importFOID = 0;
+    QString importFolderName = dbm.bfs.GetPathOrName(importFOID);
+    QString dlgTitle = "Import MHTML Files into Folder \"" + importFolderName + "\"";
+
+    const QString documentsDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    QString lastMHTBrowseDir = dbm.sets.GetSetting("LastMHTBrowseDir", documentsDir);
+
+    QStringList mhtFilePaths = QFileDialog::getOpenFileNames(
+                this, dlgTitle, lastMHTBrowseDir, "MHTML File (*.mht *.mhtml)");
+
+    if (mhtFilePaths.isEmpty())
+        return;
+
+    QFileInfo mhtFileNameInfo(mhtFilePaths[0]);
+    dbm.sets.SetSetting("LastMHTBrowseDir", mhtFileNameInfo.absolutePath());
+
+    ImportMHTFiles(mhtFilePaths, importFOID);
+}
+
 void MainWindow::on_actionSettings_triggered()
 {
     SettingsDialog setsDlg(&dbm, this);
@@ -248,6 +273,7 @@ void MainWindow::InitializeUIControlsAndPositions()
     ui->action_importFirefoxBookmarks->setEnabled(false); //Not implemented yet.
     QMenu* menuFile = new QMenu("    &File    ");
     menuFile->addAction(ui->actionImportUrlsAsBookmarks);
+    menuFile->addAction(ui->actionImportMHTFiles);
     menuFile->addSeparator();
     menuFile->addAction(ui->action_importFirefoxBookmarks);
     menuFile->addAction(ui->actionImportFirefoxBookmarksJSONfile);
@@ -546,6 +572,52 @@ void MainWindow::ImportURLs(const QStringList& urls, long long importFOID)
     ImportBookmarks(elist);
 }
 
+void MainWindow::ImportMHTFiles(const QStringList& filePaths, long long importFOID)
+{
+    ImportedEntityList elist;
+    elist.importFOID = importFOID;
+    elist.importSource = ImportedEntityList::Source_Files;
+
+    ImportedBookmarkFolder ibf;
+    ibf.title = "";
+    ibf.intId = 0;
+    ibf.parentId = -1;
+    elist.ibflist.append(ibf);
+
+    int intId = 0;
+    foreach (const QString& mhtFilePath, filePaths)
+    {
+        QFile mhtfile(mhtFilePath);
+        if (!mhtfile.open(QIODevice::ReadOnly))
+        {
+            QMessageBox::warning(this, "Error", "Could not open the file \"" + mhtFilePath + "\".\nImporting stopped.");
+            return;
+        }
+        QByteArray mhtData = mhtfile.readAll();
+        mhtfile.close();
+
+        QString title, url;
+        MHTSaver::ExtractInfoDumb(mhtData, title, url);
+
+        //`.simplified` is needed since e.g an i3e explore title contained newlines and tabs in it!
+        title = title.simplified().trimmed();
+        if (title.isEmpty())
+            title = QFileInfo(mhtFilePath).completeBaseName();
+        if (url.isNull())
+            url = ""; //To not store null in db
+
+        ImportedBookmark ib;
+        ib.title = title;
+        ib.intId = intId++;
+        ib.parentId = 0;
+        ib.uri = url;
+        ib.ExMd_importedFilePath = mhtFilePath;
+        elist.iblist.append(ib);
+    }
+
+    ImportBookmarks(elist);
+}
+
 void MainWindow::ImportFirefoxJSONFile(const QString& jsonFilePath)
 {
     ImportedEntityList elist;
@@ -642,8 +714,6 @@ void MainWindow::ImportBookmarks(ImportedEntityList& elist)
         this->setGeometry(geom);*/
     }
 }
-
-#include "BookmarkImporter/MHTSaver.h"
 
 class MHTDataReceiver : public QObject
 {

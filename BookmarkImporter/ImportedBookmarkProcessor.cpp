@@ -5,6 +5,7 @@
 #include "MHTSaver.h"
 #include "Util/Util.h"
 
+#include <QFileInfo>
 #include <QMetaMethod>
 
 ImportedBookmarkProcessor::ImportedBookmarkProcessor(BookmarkImporter* bmim, ImportedEntityList* elist,
@@ -59,7 +60,11 @@ bool ImportedBookmarkProcessor::Cancel()
 void ImportedBookmarkProcessor::BeginProcess()
 {
     AddMetaData();
-    RetrievePage();
+
+    if (m_elist->importSource == ImportedEntityList::Source_Urls || m_elist->importSource == ImportedEntityList::Source_Firefox)
+        RetrievePage();
+    else if (m_elist->importSource == ImportedEntityList::Source_Files)
+        Import(); //SetBookmarkTitle() is not needed in this case, title is already a non-empty string
 }
 
 void ImportedBookmarkProcessor::EndProcess(bool successful)
@@ -89,6 +94,18 @@ void ImportedBookmarkProcessor::AddMetaData()
         exInfo.Name = "bm: imported from";
         exInfo.Type = ExInfoData::Type_Text;
         exInfo.Value = "url";
+        m_ib->ExPr_ExtraInfosList.append(exInfo);
+    }
+    else if (m_elist->importSource == ImportedEntityList::Source_Files)
+    {
+        exInfo.Name = "bm: imported from";
+        exInfo.Type = ExInfoData::Type_Text;
+        exInfo.Value = "file";
+        m_ib->ExPr_ExtraInfosList.append(exInfo);
+
+        exInfo.Name = "file: imported file name";
+        exInfo.Type = ExInfoData::Type_Text;
+        exInfo.Value = QFileInfo(m_ib->ExMd_importedFilePath).completeBaseName();
         m_ib->ExPr_ExtraInfosList.append(exInfo);
     }
     else if (m_elist->importSource == ImportedEntityList::Source_Firefox)

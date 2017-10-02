@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>804</width>
-    <height>691</height>
+    <height>706</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,6 +54,13 @@
       </item>
       <item>
        <widget class="TagLineEdit" name="leTagsForAll"/>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="chkRemoveImportedFile">
+        <property name="text">
+         <string>Remove files from system after import</string>
+        </property>
+       </widget>
       </item>
       <item>
        <spacer name="verticalSpacer">
@@ -294,12 +301,15 @@
  </customwidgets>
  <tabstops>
   <tabstop>leTagsForAll</tabstop>
-  <tabstop>twBookmarks</tabstop>
-  <tabstop>leTagsForBookmark</tabstop>
+  <tabstop>chkRemoveImportedFile</tabstop>
   <tabstop>optKeep</tabstop>
   <tabstop>optOverwrite</tabstop>
   <tabstop>optAppend</tabstop>
+  <tabstop>chkImportBookmark</tabstop>
+  <tabstop>leTagsForBookmark</tabstop>
+  <tabstop>chkImportFolder</tabstop>
   <tabstop>leTagsForFolder</tabstop>
+  <tabstop>twBookmarks</tabstop>
  </tabstops>
  <resources/>
  <connections>

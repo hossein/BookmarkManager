@@ -156,6 +156,9 @@ void ImportedBookmarksPreviewDialog::accept()
         }
     }
 
+    //Update RemoveImportedFiles value
+    elist->removeImportedFiles = ui->chkRemoveImportedFile->isChecked();
+
     //Show import statistics to user and confirm.
     if (importedCount == 0)
     {
@@ -383,6 +386,8 @@ void ImportedBookmarksPreviewDialog::on_leTagsForFolder_editingFinished()
 void ImportedBookmarksPreviewDialog::AddItems()
 {
     const int rootFolderIntId = (elist->importSource == ImportedEntityList::Source_Firefox ? 1 : 0);
+    ui->chkRemoveImportedFile->setVisible(elist->importSource == ImportedEntityList::Source_Files);
+    ui->chkRemoveImportedFile->setChecked(elist->removeImportedFiles);
 
     int index = 0;
     foreach (const ImportedBookmarkFolder& ibf, elist->ibflist)
@@ -395,8 +400,9 @@ void ImportedBookmarksPreviewDialog::AddItems()
         folderItems[ibf.intId] = twi;
         index++;
 
-        //On Firefox and Urls, don't add or show the root folder.
+        //On Firefox, files and Urls, don't add or show the root folder.
         if (ibf.intId == rootFolderIntId && (elist->importSource == ImportedEntityList::Source_Firefox ||
+                                             elist->importSource == ImportedEntityList::Source_Files ||
                                              elist->importSource == ImportedEntityList::Source_Urls))
             continue;
 

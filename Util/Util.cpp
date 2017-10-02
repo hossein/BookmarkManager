@@ -8,7 +8,9 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QRegularExpression>
 #include <QSet>
+#include <QTextDocument>
 #include <QUrl>
 
 QString Util::RandomHash(int length)
@@ -205,6 +207,75 @@ QByteArray Util::EncodeQuotedPrintable(const QByteArray& byteArray, bool binaryD
         encoded += "?=";
 
     return encoded;
+}
+
+QByteArray Util::DecodeQuotedPrintable(const QByteArray& byteArray)
+{
+    QByteArray decoded;
+
+    const char* data = byteArray.data();
+    const int size = byteArray.size();
+
+    for (int i = 0; i < size; i++)
+    {
+        if (data[i] == '=' && i + 2 < size && data[i + 1] == '\r' && data[i + 2] == '\n')
+        {
+            //Soft line break
+            i += 2;
+        }
+        else if (data[i] == '=' && i + 1 < size && (data[i + 1] == '\r' || data[i + 1] == '\n'))
+        {
+            //Soft line break, non-standard Quoted-Printable.
+            //  Standard requires all line breaks to be \r\n. We detect alone \r or \n here.
+            i += 1;
+        }
+        else if (data[i] == '=' && i + 2 < size)
+        {
+            //Valid hex value.
+            QString hexValue = QString("");
+            hexValue += data[i + 1];
+            hexValue += data[i + 2];
+            bool ok;
+            char dchar = (char)hexValue.toUInt(&ok, 16);
+
+            if (ok)
+            {
+                i += 2;
+                decoded += dchar;
+            }
+            else
+            {
+                //Malformed, send original input out.
+                decoded += data[i];
+            }
+        }
+        else
+        {
+            //ASCII chars
+            decoded += data[i];
+        }
+    }
+
+    return decoded;
+}
+
+QString Util::ExtractHTMLTitleText(const QString& html)
+{
+    QString titlePattern = "<title>(?<title>[^<]*)";
+    QRegularExpression titleRegexp(titlePattern, QRegularExpression::CaseInsensitiveOption);
+    QRegularExpressionMatch match = titleRegexp.match(html);
+    if (match.isValid())
+        return UnEscapeHTMLEntities(match.captured("title"));
+    return QString(); //Null QString
+}
+
+QString Util::UnEscapeHTMLEntities(const QString& value)
+{
+    //http://stackoverflow.com/questions/7696159/how-can-i-convert-entity-characterescape-character-to-html-in-qt
+    QTextDocument text;
+    text.setHtml(value);
+    QString plain = text.toPlainText();
+    return plain;
 }
 
 QString Util::SafeAndShortFSName(const QString& fsName, bool isFileName, bool transformUnicode)

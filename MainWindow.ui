@@ -243,6 +243,14 @@
     <string>Ctrl+Shift+N</string>
    </property>
   </action>
+  <action name="actionImportMHTFiles">
+   <property name="text">
+    <string>Import MHT File(s)...</string>
+   </property>
+   <property name="toolTip">
+    <string>Import one or more MHTML files as bookmarks</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

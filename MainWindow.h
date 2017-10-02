@@ -46,6 +46,7 @@ private slots:
     void on_action_importFirefoxBookmarks_triggered();
     void on_actionImportFirefoxBookmarksJSONfile_triggered();
     void on_actionImportUrlsAsBookmarks_triggered();
+    void on_actionImportMHTFiles_triggered();
     void on_actionGetMHT_triggered();
     void on_actionSettings_triggered();
 
@@ -68,6 +69,7 @@ private:
 
     //// Bookmark importing ///////////////////////////////////////////////////////////////////////
     void ImportURLs(const QStringList& urls, long long importFOID);
+    void ImportMHTFiles(const QStringList& filePaths, long long importFOID);
     void ImportFirefoxJSONFile(const QString& jsonFilePath);
     void ImportBookmarks(ImportedEntityList& elist);
 };

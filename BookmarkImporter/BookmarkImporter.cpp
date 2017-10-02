@@ -261,7 +261,8 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib, ImportedEntityList*
     //  delete it instead of using BookmarkFile::Ex_RemoveAfterAttach.
     QString mhtFilePathName;
     QList<FileManager::BookmarkFile> bookmarkFiles;
-    if (ib.ExPr_attachedFileError.isEmpty())
+    if ((elist->importSource == ImportedEntityList::Source_Urls || elist->importSource == ImportedEntityList::Source_Firefox)
+        && ib.ExPr_attachedFileError.isEmpty())
     {
         bool FsTransformUnicode = dbm->sets.GetSetting("FsTransformUnicode", dbm->conf->defaultFsTransformUnicode);
         QString safeFileName = Util::SafeAndShortFSName(ib.ExPr_attachedFileName, true, FsTransformUnicode);
@@ -312,6 +313,24 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib, ImportedEntityList*
         bf.MD5          = Util::GetMD5HashForFile(mhtFilePathName);
         bf.Ex_IsDefaultFileForEditedBookmark = true; //Not important.
         bf.Ex_RemoveAfterAttach = false; //We don't want to put it in recycle bin. Will manually delete.
+
+        bookmarkFiles.append(bf);
+    }
+    else if (elist->importSource == ImportedEntityList::Source_Files)
+    {
+        //Same logic exists in BookmarkEditDialog::accept and its [File Attaching] functions.
+        QFileInfo fileInfo(ib.ExMd_importedFilePath);
+        FileManager::BookmarkFile bf;
+        bf.BFID         = -1; //Leave to FileManager.
+        bf.BID          = -1; //Not added yet; Not important.
+        bf.FID          = -1; //Leave to FileManager.
+        bf.OriginalName = ib.ExMd_importedFilePath;
+        bf.ArchiveURL   = ""; //Leave to FileManager.
+        bf.ModifyDate   = fileInfo.lastModified();
+        bf.Size         = fileInfo.size();
+        bf.MD5          = Util::GetMD5HashForFile(ib.ExMd_importedFilePath);
+        bf.Ex_IsDefaultFileForEditedBookmark = true; //Not important.
+        bf.Ex_RemoveAfterAttach = elist->removeImportedFiles; //If ordered, we'll put the file in recycle bin.
 
         bookmarkFiles.append(bf);
     }

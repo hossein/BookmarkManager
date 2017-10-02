@@ -9,7 +9,6 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 
-#include <QTextDocument>
 #include <QTimer>
 
 MHTSaver::MHTSaver(QObject *parent) :
@@ -98,6 +97,26 @@ void MHTSaver::Cancel()
     m_cancel = true;
     foreach (QNetworkReply* reply, m_ongoingReplies.keys())
         reply->abort(); //`finished()` will also be emitted, so don't remove them.
+}
+
+void MHTSaver::ExtractInfoDumb(const QByteArray& mhtData, QString& title, QString& url)
+{
+    //Find the title.
+    //Not the entire mht file is in Quoted-Printable format, but we blindly treat it like it is.
+    QString decodedQuotedPrintable = QString::fromUtf8(Util::DecodeQuotedPrintable(mhtData));
+    title = Util::ExtractHTMLTitleText(decodedQuotedPrintable).trimmed();
+
+    //Find the URL from the still ENCODED data, to keep the equals signs '=' in URLs intact.
+    QString contentLocationPattern = "^Content-Location:(?<contentLocation>.*)$";
+    QRegularExpression::PatternOptions patternOptions =
+            (QRegularExpression::CaseInsensitiveOption |
+            QRegularExpression::MultilineOption); //Makes ^ and $ match start and end of line.
+    QRegularExpression contentLocationRegexp(contentLocationPattern, patternOptions);
+    QRegularExpressionMatch match = contentLocationRegexp.match(mhtData);
+    if (match.isValid())
+        url = match.captured("contentLocation").trimmed(); //Trim the starting space and ending \r.
+    else
+        url = QString(); //Null QString
 }
 
 void MHTSaver::LoadResource(const QUrl& url, int redirectDepth)
@@ -364,7 +383,7 @@ void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
             {
                 QRegularExpressionMatch match = matches.next();
                 QString linkedUrl = match.captured("url");
-                DecideAndLoadURL(url, unEscapeHTMLEntities(linkedUrl));
+                DecideAndLoadURL(url, Util::UnEscapeHTMLEntities(linkedUrl));
             }
         }
         else
@@ -375,7 +394,7 @@ void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
                 QString rel = match.captured("rel");
                 QString linkedUrl = match.captured("url");
                 if (m_loadLinkRelTypes.contains(rel, Qt::CaseInsensitive))
-                    DecideAndLoadURL(url, unEscapeHTMLEntities(linkedUrl));
+                    DecideAndLoadURL(url, Util::UnEscapeHTMLEntities(linkedUrl));
             }
         }
     }
@@ -389,11 +408,9 @@ void MHTSaver::ParseAndAddHTMLResources(QNetworkReply* reply)
     //Also, if this is the first resource, get the html <title> from it.
     if (m_resources.size() == 1)
     {
-        QString titlePattern = "<title>(?<title>[^<]*)";
-        QRegularExpression titleRegexp(titlePattern, QRegularExpression::CaseInsensitiveOption);
-        QRegularExpressionMatch match = titleRegexp.match(str);
-        if (match.isValid())
-            m_status.mainResourceTitle = unEscapeHTMLEntities(match.captured("title"));
+        QString title = Util::ExtractHTMLTitleText(str);
+        if (!title.isNull())
+            m_status.mainResourceTitle = title;
     }
 }
 
@@ -663,15 +680,6 @@ int MHTSaver::findResourceWithURL(const QUrl& url)
         if (m_resources[i].fullUrl == url)
             return i;
     return -1;
-}
-
-QString MHTSaver::unEscapeHTMLEntities(const QString& value)
-{
-    //http://stackoverflow.com/questions/7696159/how-can-i-convert-entity-characterescape-character-to-html-in-qt
-    QTextDocument text;
-    text.setHtml(value);
-    QString plain = text.toPlainText();
-    return plain;
 }
 
 QString MHTSaver::getRawContentType(const QString& contentType)

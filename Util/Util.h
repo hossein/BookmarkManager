@@ -27,6 +27,14 @@ public:
     static QByteArray EncodeQuotedPrintable(const QByteArray& byteArray, bool binaryData = false,
                                             const QEncodingOptions& qenc = QEncodingOptions());
 
+    static QByteArray DecodeQuotedPrintable(const QByteArray& byteArray);
+
+    //Extract html <title> tag contents. If no <title> tag was found, returns a Null QString.
+    static QString ExtractHTMLTitleText(const QString& html);
+
+    //Converts all html entities (e.g "&amp;" to "&") in the string.
+    static QString UnEscapeHTMLEntities(const QString& value);
+
 public:
     ///Utility function
     ///`isFileName=true` will not try to find illegal characters for file names, however it

@@ -129,6 +129,15 @@ public slots:
 signals:
     void MHTDataReady(const QByteArray& data, const MHTSaver::Status& status);
 
+public:
+    //Extracts HTML page <title> (NOT the multipart format's Subject, as we haven't implemented a
+    //Q-encoding decoder) and the URL of its first part, which is supposed to be the HTML file.
+    //This function is dumb; it does not try to parse the multi-part format at all; it just does
+    //simple string search in the file, and can return wrong values. If it can't find one of the
+    //title or url attributes, it sets them to Null QString.
+    //It assumes the encoding is UTF-8.
+    static void ExtractInfoDumb(const QByteArray& mhtData, QString& title, QString& url);
+
 private:
     //// Loading Resources From Web ///////////////////////////////////////////
     void LoadResource(const QUrl& url, int redirectDepth);
@@ -150,8 +159,6 @@ private:
 
     //// Utility Functions ////////////////////////////////////////////////////
     int findResourceWithURL(const QUrl& url);
-
-    QString unEscapeHTMLEntities(const QString& value);
 
     QString getRawContentType(const QString& contentType);
     bool isMimeTypeTextFile(const QString& mimeType);

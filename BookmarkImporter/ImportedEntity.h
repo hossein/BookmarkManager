@@ -31,6 +31,9 @@ struct ImportedBookmark
     QDateTime dtAdded;
     QDateTime dtModified;
 
+    //== Metadata about the to-be-imported bookmark before initializing =======
+    QString ExMd_importedFilePath;
+
     //== Managed by initial analyzing =========================================
     //  From by BookmarkImporter::Analyze and ImportedBookmarksPreviewDialog
 
@@ -95,12 +98,18 @@ struct ImportedBookmarkFolder
 
 struct ImportedEntityList
 {
+    ImportedEntityList()
+    {
+        removeImportedFiles = false;
+    }
+
     long long importFOID;
 
-    enum ImportSource { Source_Urls, Source_Firefox };
+    enum ImportSource { Source_Urls, Source_Files, Source_Firefox };
     ImportSource importSource;
     QString importSourceProfile;
     QString importSourceFileName;
+    bool removeImportedFiles;
 
     QList<ImportedBookmark> iblist;
     QList<ImportedBookmarkFolder> ibflist;
