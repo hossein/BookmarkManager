@@ -215,7 +215,7 @@ bool BookmarkImporter::Import(ImportedEntityList& elist, QList<long long>& added
 
     foreach (const ImportedBookmark& ib, elist.iblist)
     {
-        if (!ImportOne(ib, elist.importFOID))
+        if (!ImportOne(ib, &elist))
             continue; //Actually never return. Import all the bookmarks.
     }
 
@@ -251,7 +251,7 @@ bool BookmarkImporter::InitializeImport()
     return true;
 }
 
-bool BookmarkImporter::ImportOne(const ImportedBookmark& ib, long long importFOID)
+bool BookmarkImporter::ImportOne(const ImportedBookmark& ib, ImportedEntityList* elist)
 {
     if (!ib.Ex_finalImport)
         //Marked by user to not import.
@@ -324,7 +324,7 @@ bool BookmarkImporter::ImportOne(const ImportedBookmark& ib, long long importFOI
 
         BookmarkManager::BookmarkData bdata;
         bdata.BID = -1; //Not important.
-        bdata.FOID = importFOID;
+        bdata.FOID = elist->importFOID;
         bdata.Name = ib.title.trimmed(); //[title-less bookmarks] are not possible after processing.
         bdata.URLs = ib.uri;
         bdata.Desc = ib.description;

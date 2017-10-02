@@ -221,7 +221,7 @@ void ImportedBookmarkProcessor::SetBookmarkTitle(const QString& suggestedTitle)
 void ImportedBookmarkProcessor::Import()
 {
     //No need to check return value.
-    bool successful = m_bmim->ImportOne(*m_ib, m_elist->importFOID);
+    bool successful = m_bmim->ImportOne(*m_ib, m_elist);
 
     if (!successful)
     {

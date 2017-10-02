@@ -523,7 +523,7 @@ void MainWindow::ImportURLs(const QStringList& urls, long long importFOID)
     elist.importSource = ImportedEntityList::Source_Urls;
 
     ImportedBookmarkFolder ibf;
-    ibf.title = "Imported URLs";
+    ibf.title = "";
     ibf.intId = 0;
     ibf.parentId = -1;
     elist.ibflist.append(ibf);
